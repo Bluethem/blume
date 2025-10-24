@@ -14,3 +14,11 @@
 # ActiveSupport::Inflector.inflections(:en) do |inflect|
 #   inflect.acronym "RESTful"
 # end
+
+ActiveSupport::Inflector.inflections(:en) do |inflect|
+  inflect.irregular 'certificacion', 'certificaciones'
+  inflect.irregular 'notificacion', 'notificaciones'
+  inflect.irregular 'cita', 'citas'
+  inflect.irregular 'medico', 'medicos'
+  inflect.irregular 'paciente', 'pacientes'
+end
