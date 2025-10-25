@@ -76,4 +76,24 @@ class Usuario < ApplicationRecord
   def normalize_email
     self.email = email.downcase.strip if email.present?
   end
+
+  # Generar token de reset de contraseña
+  def generate_password_reset_token
+    self.reset_password_token = SecureRandom.urlsafe_base64(32)
+    self.reset_password_sent_at = Time.current
+    save(validate: false)
+  end
+  
+  # Verificar si el token expiró (válido por 2 horas)
+  def password_reset_token_expired?
+    return true if reset_password_sent_at.nil?
+    reset_password_sent_at < 2.hours.ago
+  end
+  
+  # Limpiar token de reset
+  def clear_password_reset_token
+    self.reset_password_token = nil
+    self.reset_password_sent_at = nil
+    save(validate: false)
+  end
 end

@@ -1,0 +1,157 @@
+<div class="relative flex min-h-screen w-full flex-col items-center justify-center bg-gradient-to-b from-white to-background-light dark:from-background-dark dark:to-gray-900 p-4">
+  <div class="flex w-full max-w-6xl">
+    <!-- Formulario de Login -->
+    <div class="flex flex-1 items-center justify-center">
+      <div class="w-full max-w-md rounded-xl bg-card-light dark:bg-card-dark shadow-lg p-8 space-y-6">
+        
+        <!-- Logo y Título -->
+        <div class="text-center">
+          <img 
+            alt="Blume Logo" 
+            class="mx-auto h-12 w-auto mb-4"
+            src="assets/images/favicon-32x32.png"
+          />
+          <h1 class="text-3xl font-bold text-text-primary-light dark:text-text-primary-dark">Iniciar Sesión</h1>
+        </div>
+
+        <!-- Mensaje de Error Global -->
+        <div *ngIf="errorMessage" class="bg-error-bg border border-red-400 text-error-text px-4 py-3 rounded-lg">
+          {{ errorMessage }}
+        </div>
+
+        <!-- Formulario -->
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-4">
+          
+          <!-- Email -->
+          <div>
+            <label class="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark" for="email">
+              Correo Electrónico
+            </label>
+            <div class="relative mt-1">
+              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">mail</span>
+              </div>
+              <input 
+                formControlName="email"
+                autocomplete="email" 
+                class="block w-full rounded-lg border-border-light dark:border-border-dark bg-transparent py-3 pl-10 pr-3 text-text-primary-light dark:text-text-primary-dark placeholder:text-text-secondary-light dark:placeholder:text-text-secondary-dark focus:border-primary focus:ring-primary dark:focus:border-primary dark:focus:ring-primary" 
+                id="email" 
+                placeholder="tu@email.com"
+                type="email"
+                [class.border-red-500]="email?.invalid && email?.touched"
+              />
+            </div>
+            <p *ngIf="email?.invalid && email?.touched" class="mt-2 text-sm text-error-text bg-error-bg p-2 rounded-md">
+              <span *ngIf="email?.errors?.['required']">El correo es requerido.</span>
+              <span *ngIf="email?.errors?.['email']">Correo electrónico inválido.</span>
+            </p>
+          </div>
+
+          <!-- Password -->
+          <div>
+            <label class="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark" for="password">
+              Contraseña
+            </label>
+            <div class="relative mt-1">
+              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark">lock</span>
+              </div>
+              <input 
+                formControlName="password"
+                autocomplete="current-password" 
+                class="block w-full rounded-lg border-border-light dark:border-border-dark bg-transparent py-3 pl-10 pr-10 text-text-primary-light dark:text-text-primary-dark placeholder:text-text-secondary-light dark:placeholder:text-text-secondary-dark focus:border-primary focus:ring-primary dark:focus:border-primary dark:focus:ring-primary" 
+                id="password"
+                placeholder="••••••••"
+                [type]="showPassword ? 'text' : 'password'"
+                [class.border-red-500]="password?.invalid && password?.touched"
+              />
+              <button 
+                class="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer" 
+                (click)="togglePasswordVisibility()" 
+                type="button"
+              >
+                <span 
+                  class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark"
+                  [class.hidden]="showPassword"
+                >
+                  visibility
+                </span>
+                <span 
+                  class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark"
+                  [class.hidden]="!showPassword"
+                >
+                  visibility_off
+                </span>
+              </button>
+            </div>
+            <p *ngIf="password?.invalid && password?.touched" class="mt-2 text-sm text-error-text bg-error-bg p-2 rounded-md">
+              <span *ngIf="password?.errors?.['required']">La contraseña es requerida.</span>
+              <span *ngIf="password?.errors?.['minlength']">La contraseña debe tener al menos 6 caracteres.</span>
+            </p>
+          </div>
+
+          <!-- Remember Me y Forgot Password -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <input 
+                formControlName="rememberMe"
+                class="h-4 w-4 rounded border-border-light dark:border-border-dark text-primary focus:ring-primary" 
+                id="remember-me"
+                type="checkbox"
+              />
+              <label class="ml-2 block text-sm text-text-secondary-light dark:text-text-secondary-dark" for="remember-me">
+                Recordarme
+              </label>
+            </div>
+            <div class="text-sm">
+              <a class="font-medium text-primary hover:text-red-700" routerLink="/forgot-password">
+                ¿Olvidaste tu contraseña?
+              </a>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div>
+            <button 
+              class="w-full justify-center rounded-lg bg-primary py-3 px-4 text-sm font-semibold text-white shadow-sm hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed" 
+              type="submit"
+              [disabled]="isLoading"
+            >
+              <span *ngIf="!isLoading">Iniciar Sesión</span>
+              <span *ngIf="isLoading">Iniciando sesión...</span>
+            </button>
+          </div>
+        </form>
+
+        <!-- Divider -->
+        <div class="relative my-6">
+          <div aria-hidden="true" class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-border-light dark:border-border-dark"></div>
+          </div>
+          <div class="relative flex justify-center text-sm">
+            <span class="bg-card-light dark:bg-card-dark px-2 text-text-secondary-light dark:text-text-secondary-dark">o</span>
+          </div>
+        </div>
+
+        <!-- Register Link -->
+        <div class="text-center text-sm">
+          <p class="text-text-secondary-light dark:text-text-secondary-dark">
+            ¿No tienes cuenta? 
+            <a class="font-medium text-primary hover:text-red-700" routerLink="/register">Regístrate</a>
+          </p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Ilustración (oculta en móvil) -->
+    <div class="hidden lg:flex flex-1 items-center justify-center p-8">
+      <img 
+        class="max-w-full h-auto object-contain" 
+        alt="Ilustración de una doctora revisando a un paciente en una tablet, representando la modernidad y el cuidado en el sistema de citas médicas Blume." 
+        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXQCm4AK6szVKkqlCxiy64ZcwBnMVV3SZmQww4R7N_G3k9HX4a2JUBXGn8OYJzelfwsbC5d717zshRhQVe0xFIP7jNtXvH5odQE1tvDCFXrjWzdYAhEA4oGtwNCdUpJ3rhV_h4dEy5SS0X_SGCOTMzVxEdQ8T3QveYIEZZkajiNAnUoOLPATavu2C5nJNkzLsnIpkiZkPK-NgwrOSXIx_TUJuMgvRY2AZT5Vr7v7z7F_T4F5vxn36QkFx5NmB6GJFhbZ45GgGDY9E"
+      />
+    </div>
+
+  </div>
+</div>

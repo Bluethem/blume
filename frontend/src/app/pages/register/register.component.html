@@ -1,0 +1,474 @@
+<div class="relative flex min-h-screen w-full flex-col items-center justify-center bg-background-light dark:bg-background-dark p-4">
+  <div class="layout-container flex h-full grow flex-col w-full max-w-2xl">
+    
+    <!-- Título -->
+    <div class="flex flex-col items-center text-center mb-8">
+      <p class="text-primary text-4xl font-black leading-tight tracking-[-0.033em]">
+        Crea tu cuenta en Blume
+      </p>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 sm:p-8 w-full">
+      
+      <!-- Progress Stepper -->
+      <div class="mb-8">
+        <div class="flex items-center">
+          <!-- Step 1 -->
+          <div class="flex flex-col items-center">
+            <div 
+              class="w-8 h-8 rounded-full flex items-center justify-center font-bold transition-colors"
+              [class.bg-primary]="currentStep >= 1"
+              [class.text-white]="currentStep >= 1"
+              [class.bg-gray-300]="currentStep < 1"
+              [class.text-gray-500]="currentStep < 1"
+            >
+              1
+            </div>
+            <p 
+              class="text-xs sm:text-sm mt-2 font-semibold"
+              [class.text-primary]="currentStep === 1"
+              [class.text-text-secondary]="currentStep !== 1"
+            >
+              Personal
+            </p>
+          </div>
+
+          <div class="flex-auto border-t-2 mx-4" 
+               [class.border-primary]="currentStep > 1"
+               [class.border-gray-300]="currentStep <= 1">
+          </div>
+
+          <!-- Step 2 -->
+          <div class="flex flex-col items-center">
+            <div 
+              class="w-8 h-8 rounded-full flex items-center justify-center font-bold transition-colors"
+              [class.bg-primary]="currentStep >= 2"
+              [class.text-white]="currentStep >= 2"
+              [class.bg-gray-300]="currentStep < 2"
+              [class.text-gray-500]="currentStep < 2"
+            >
+              2
+            </div>
+            <p 
+              class="text-xs sm:text-sm mt-2 font-semibold"
+              [class.text-primary]="currentStep === 2"
+              [class.text-text-secondary]="currentStep !== 2"
+            >
+              Médica
+            </p>
+          </div>
+
+          <div class="flex-auto border-t-2 mx-4"
+               [class.border-primary]="currentStep > 2"
+               [class.border-gray-300]="currentStep <= 2">
+          </div>
+
+          <!-- Step 3 -->
+          <div class="flex flex-col items-center">
+            <div 
+              class="w-8 h-8 rounded-full flex items-center justify-center font-bold transition-colors"
+              [class.bg-primary]="currentStep >= 3"
+              [class.text-white]="currentStep >= 3"
+              [class.bg-gray-300]="currentStep < 3"
+              [class.text-gray-500]="currentStep < 3"
+            >
+              3
+            </div>
+            <p 
+              class="text-xs sm:text-sm mt-2 font-semibold"
+              [class.text-primary]="currentStep === 3"
+              [class.text-text-secondary]="currentStep !== 3"
+            >
+              Seguridad
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mensaje de Error Global -->
+      <div *ngIf="errorMessage" class="mb-6 bg-error-bg border border-red-400 text-error-text px-4 py-3 rounded-lg">
+        {{ errorMessage }}
+      </div>
+
+      <!-- PASO 1: Información Personal -->
+      <div *ngIf="currentStep === 1" class="fade_in">
+        <h2 class="text-text-primary dark:text-white text-xl font-bold leading-tight tracking-[-0.015em] mb-6">
+          1. Información Personal
+        </h2>
+        
+        <form [formGroup]="step1Form" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+          
+          <!-- Nombre -->
+          <label class="flex flex-col">
+            <p class="text-text-primary dark:text-gray-300 text-sm font-medium leading-normal pb-2">
+              Nombre *
+            </p>
+            <div class="input-container relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary-light">
+                person
+              </span>
+              <input 
+                formControlName="nombre"
+                class="form-input w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-gray-700 py-3 pl-11 pr-3 text-text-primary-light dark:text-text-primary-dark focus:border-primary focus:ring-primary"
+                placeholder="Ej. Juan"
+                type="text"
+                [class.border-red-500]="step1Form.get('nombre')?.invalid && step1Form.get('nombre')?.touched"
+              />
+            </div>
+            <p *ngIf="step1Form.get('nombre')?.invalid && step1Form.get('nombre')?.touched" 
+               class="mt-1 text-sm text-error-text">
+              El nombre es requerido (mínimo 2 caracteres)
+            </p>
+          </label>
+
+          <!-- Apellido -->
+          <label class="flex flex-col">
+            <p class="text-text-primary dark:text-gray-300 text-sm font-medium leading-normal pb-2">
+              Apellido *
+            </p>
+            <div class="input-container relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary-light">
+                person
+              </span>
+              <input 
+                formControlName="apellido"
+                class="form-input w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-gray-700 py-3 pl-11 pr-3 text-text-primary-light dark:text-text-primary-dark focus:border-primary focus:ring-primary"
+                placeholder="Ej. Pérez"
+                type="text"
+                [class.border-red-500]="step1Form.get('apellido')?.invalid && step1Form.get('apellido')?.touched"
+              />
+            </div>
+            <p *ngIf="step1Form.get('apellido')?.invalid && step1Form.get('apellido')?.touched" 
+               class="mt-1 text-sm text-error-text">
+              El apellido es requerido (mínimo 2 caracteres)
+            </p>
+          </label>
+
+          <!-- Email -->
+          <label class="flex flex-col md:col-span-2">
+            <p class="text-text-primary dark:text-gray-300 text-sm font-medium leading-normal pb-2">
+              Correo Electrónico *
+            </p>
+            <div class="input-container relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary-light">
+                email
+              </span>
+              <input 
+                formControlName="email"
+                class="form-input w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-gray-700 py-3 pl-11 pr-3 text-text-primary-light dark:text-text-primary-dark focus:border-primary focus:ring-primary"
+                placeholder="juan.perez@correo.com"
+                type="email"
+                [class.border-red-500]="step1Form.get('email')?.invalid && step1Form.get('email')?.touched"
+              />
+            </div>
+            <p *ngIf="step1Form.get('email')?.invalid && step1Form.get('email')?.touched" 
+               class="mt-1 text-sm text-error-text">
+              <span *ngIf="step1Form.get('email')?.errors?.['required']">El correo es requerido</span>
+              <span *ngIf="step1Form.get('email')?.errors?.['email']">Correo electrónico inválido</span>
+            </p>
+          </label>
+
+          <!-- Teléfono -->
+          <label class="flex flex-col">
+            <p class="text-text-primary dark:text-gray-300 text-sm font-medium leading-normal pb-2">
+              Teléfono *
+            </p>
+            <div class="input-container relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary-light">
+                phone
+              </span>
+              <input 
+                formControlName="telefono"
+                class="form-input w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-gray-700 py-3 pl-11 pr-3 text-text-primary-light dark:text-text-primary-dark focus:border-primary focus:ring-primary"
+                placeholder="+51 987654321"
+                type="tel"
+                [class.border-red-500]="step1Form.get('telefono')?.invalid && step1Form.get('telefono')?.touched"
+              />
+            </div>
+            <p *ngIf="step1Form.get('telefono')?.invalid && step1Form.get('telefono')?.touched" 
+               class="mt-1 text-sm text-error-text">
+              Teléfono inválido (9-15 dígitos)
+            </p>
+          </label>
+
+          <!-- Dirección -->
+          <label class="flex flex-col">
+            <p class="text-text-primary dark:text-gray-300 text-sm font-medium leading-normal pb-2">
+              Dirección *
+            </p>
+            <div class="input-container relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary-light">
+                home
+              </span>
+              <input 
+                formControlName="direccion"
+                class="form-input w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-gray-700 py-3 pl-11 pr-3 text-text-primary-light dark:text-text-primary-dark focus:border-primary focus:ring-primary"
+                placeholder="Av. Principal 123"
+                type="text"
+                [class.border-red-500]="step1Form.get('direccion')?.invalid && step1Form.get('direccion')?.touched"
+              />
+            </div>
+            <p *ngIf="step1Form.get('direccion')?.invalid && step1Form.get('direccion')?.touched" 
+               class="mt-1 text-sm text-error-text">
+              La dirección es requerida
+            </p>
+          </label>
+
+        </form>
+      </div>
+
+      <!-- PASO 2: Información Médica -->
+      <div *ngIf="currentStep === 2" class="fade_in">
+        <h2 class="text-text-primary dark:text-white text-xl font-bold leading-tight tracking-[-0.015em] mb-6">
+          2. Información Médica
+        </h2>
+        
+        <form [formGroup]="step2Form" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+          
+          <!-- Fecha Nacimiento -->
+          <label class="flex flex-col">
+            <p class="text-text-primary dark:text-gray-300 text-sm font-medium leading-normal pb-2">
+              Fecha de Nacimiento *
+            </p>
+            <div class="input-container relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary-light">
+                calendar_today
+              </span>
+              <input 
+                formControlName="fecha_nacimiento"
+                class="form-input w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-gray-700 py-3 pl-11 pr-3 text-text-primary-light dark:text-text-primary-dark focus:border-primary focus:ring-primary"
+                type="date"
+                [class.border-red-500]="step2Form.get('fecha_nacimiento')?.invalid && step2Form.get('fecha_nacimiento')?.touched"
+              />
+            </div>
+          </label>
+
+          <!-- Género -->
+          <label class="flex flex-col">
+            <p class="text-text-primary dark:text-gray-300 text-sm font-medium leading-normal pb-2">
+              Género *
+            </p>
+            <div class="input-container relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary-light">
+                wc
+              </span>
+              <select 
+                formControlName="genero"
+                class="form-input w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-gray-700 py-3 pl-11 pr-3 text-text-primary-light dark:text-text-primary-dark focus:border-primary focus:ring-primary"
+                [class.border-red-500]="step2Form.get('genero')?.invalid && step2Form.get('genero')?.touched"
+              >
+                <option value="">Seleccionar...</option>
+                <option value="masculino">Masculino</option>
+                <option value="femenino">Femenino</option>
+                <option value="otro">Otro</option>
+              </select>
+            </div>
+          </label>
+
+          <!-- Tipo Documento -->
+          <label class="flex flex-col">
+            <p class="text-text-primary dark:text-gray-300 text-sm font-medium leading-normal pb-2">
+              Tipo de Documento *
+            </p>
+            <div class="input-container relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary-light">
+                badge
+              </span>
+              <select 
+                formControlName="tipo_documento"
+                class="form-input w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-gray-700 py-3 pl-11 pr-3 text-text-primary-light dark:text-text-primary-dark focus:border-primary focus:ring-primary"
+                [class.border-red-500]="step2Form.get('tipo_documento')?.invalid && step2Form.get('tipo_documento')?.touched"
+              >
+                <option value="">Seleccionar...</option>
+                <option value="dni">DNI</option>
+                <option value="pasaporte">Pasaporte</option>
+                <option value="carnet_extranjeria">Carnet de Extranjería</option>
+              </select>
+            </div>
+          </label>
+
+          <!-- Número Documento -->
+          <label class="flex flex-col">
+            <p class="text-text-primary dark:text-gray-300 text-sm font-medium leading-normal pb-2">
+              Número de Documento *
+            </p>
+            <div class="input-container relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary-light">
+                fingerprint
+              </span>
+              <input 
+                formControlName="numero_documento"
+                class="form-input w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-gray-700 py-3 pl-11 pr-3 text-text-primary-light dark:text-text-primary-dark focus:border-primary focus:ring-primary"
+                placeholder="12345678"
+                type="text"
+                [class.border-red-500]="step2Form.get('numero_documento')?.invalid && step2Form.get('numero_documento')?.touched"
+              />
+            </div>
+          </label>
+
+          <!-- Grupo Sanguíneo (Opcional) -->
+          <label class="flex flex-col">
+            <p class="text-text-primary dark:text-gray-300 text-sm font-medium leading-normal pb-2">
+              Grupo Sanguíneo (Opcional)
+            </p>
+            <div class="input-container relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary-light">
+                bloodtype
+              </span>
+              <select 
+                formControlName="grupo_sanguineo"
+                class="form-input w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-gray-700 py-3 pl-11 pr-3 text-text-primary-light dark:text-text-primary-dark focus:border-primary focus:ring-primary"
+              >
+                <option value="">Seleccionar...</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+              </select>
+            </div>
+          </label>
+
+          <!-- Alergias (Opcional) -->
+          <label class="flex flex-col md:col-span-2">
+            <p class="text-text-primary dark:text-gray-300 text-sm font-medium leading-normal pb-2">
+              Alergias (Opcional)
+            </p>
+            <div class="input-container relative">
+              <span class="material-symbols-outlined absolute left-3 top-4 text-text-secondary-light">
+                medical_information
+              </span>
+              <textarea 
+                formControlName="alergias"
+                class="form-input w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-gray-700 py-3 pl-11 pr-3 text-text-primary-light dark:text-text-primary-dark focus:border-primary focus:ring-primary"
+                placeholder="Penicilina, mariscos, etc."
+                rows="3"
+              ></textarea>
+            </div>
+          </label>
+
+        </form>
+      </div>
+
+      <!-- PASO 3: Seguridad -->
+      <div *ngIf="currentStep === 3" class="fade_in">
+        <h2 class="text-text-primary dark:text-white text-xl font-bold leading-tight tracking-[-0.015em] mb-6">
+          3. Seguridad
+        </h2>
+        
+        <form [formGroup]="step3Form" (ngSubmit)="onSubmit()" class="space-y-5">
+          
+          <!-- Contraseña -->
+          <label class="flex flex-col">
+            <p class="text-text-primary dark:text-gray-300 text-sm font-medium leading-normal pb-2">
+              Contraseña *
+            </p>
+            <div class="input-container relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary-light">
+                lock
+              </span>
+              <input 
+                formControlName="password"
+                class="form-input w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-gray-700 py-3 pl-11 pr-3 text-text-primary-light dark:text-text-primary-dark focus:border-primary focus:ring-primary"
+                placeholder="Mínimo 6 caracteres"
+                type="password"
+                [class.border-red-500]="step3Form.get('password')?.invalid && step3Form.get('password')?.touched"
+              />
+            </div>
+            <p *ngIf="step3Form.get('password')?.invalid && step3Form.get('password')?.touched" 
+               class="mt-1 text-sm text-error-text">
+              La contraseña debe tener al menos 6 caracteres
+            </p>
+          </label>
+
+          <!-- Confirmar Contraseña -->
+          <label class="flex flex-col">
+            <p class="text-text-primary dark:text-gray-300 text-sm font-medium leading-normal pb-2">
+              Confirmar Contraseña *
+            </p>
+            <div class="input-container relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary-light">
+                lock
+              </span>
+              <input 
+                formControlName="password_confirmation"
+                class="form-input w-full rounded-lg border border-border-light dark:border-border-dark bg-background-light dark:bg-gray-700 py-3 pl-11 pr-3 text-text-primary-light dark:text-text-primary-dark focus:border-primary focus:ring-primary"
+                placeholder="Repite tu contraseña"
+                type="password"
+                [class.border-red-500]="step3Form.get('password_confirmation')?.invalid && step3Form.get('password_confirmation')?.touched"
+              />
+            </div>
+            <p *ngIf="step3Form.get('password_confirmation')?.errors?.['passwordMismatch'] && step3Form.get('password_confirmation')?.touched" 
+               class="mt-1 text-sm text-error-text">
+              Las contraseñas no coinciden
+            </p>
+          </label>
+
+          <!-- Términos y Condiciones -->
+          <label class="flex items-start">
+            <input 
+              formControlName="terminos"
+              type="checkbox"
+              class="mt-1 h-4 w-4 rounded border-border-light dark:border-border-dark text-primary focus:ring-primary"
+            />
+            <span class="ml-2 text-sm text-text-secondary-light dark:text-text-secondary-dark">
+              Acepto los <a href="#" class="text-primary hover:underline">términos y condiciones</a> y la 
+              <a href="#" class="text-primary hover:underline">política de privacidad</a> *
+            </span>
+          </label>
+          <p *ngIf="step3Form.get('terminos')?.invalid && step3Form.get('terminos')?.touched" 
+             class="mt-1 text-sm text-error-text">
+            Debes aceptar los términos y condiciones
+          </p>
+
+        </form>
+      </div>
+
+      <!-- Navigation Buttons -->
+      <div class="mt-8 flex justify-between gap-4">
+        <button 
+          *ngIf="currentStep > 1"
+          (click)="previousStep()"
+          class="px-6 py-3 rounded-lg text-text-primary dark:text-white border border-border-color dark:border-gray-600 font-semibold hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          type="button"
+        >
+          Anterior
+        </button>
+        
+        <div class="flex-1"></div>
+        
+        <button 
+          *ngIf="currentStep < 3"
+          (click)="nextStep()"
+          class="px-6 py-3 rounded-lg bg-primary text-white font-semibold hover:bg-red-700 transition-colors"
+          type="button"
+        >
+          Siguiente
+        </button>
+
+        <button 
+          *ngIf="currentStep === 3"
+          (click)="onSubmit()"
+          class="px-6 py-3 rounded-lg bg-primary text-white font-semibold hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          type="button"
+          [disabled]="isLoading"
+        >
+          <span *ngIf="!isLoading">Crear Cuenta</span>
+          <span *ngIf="isLoading">Creando cuenta...</span>
+        </button>
+      </div>
+
+      <!-- Login Link -->
+      <div class="mt-6 text-center">
+        <p class="text-sm text-text-secondary dark:text-gray-400">
+          ¿Ya tienes una cuenta? 
+          <a class="font-semibold text-primary hover:underline" routerLink="/login">Inicia sesión</a>
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>
