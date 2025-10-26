@@ -1,4 +1,3 @@
-
 /* ==================== CONTAINER ==================== */
 .login-container {
   @apply min-h-screen;
@@ -10,7 +9,7 @@
 .branding-panel {
   @apply hidden lg:flex;
   @apply w-1/2;
-  @apply bg-gradient-to-br from-primary to-primary-dark;
+  @apply bg-gradient-to-br from-primary to-primary-800;
   @apply p-12;
   @apply items-center justify-center;
   @apply relative overflow-hidden;
