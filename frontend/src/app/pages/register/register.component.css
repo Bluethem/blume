@@ -1,25 +1,308 @@
-/* src/app/pages/register/register.component.css */
-.form-input {
-  height: 3.5rem; /* 56px */
-  font-size: 1rem;
-  font-weight: 400;
-  line-height: 1.5;
+
+/* ==================== CONTAINER (Igual que Login) ==================== */
+.register-container {
+  @apply min-h-screen;
+  @apply flex;
+  @apply bg-background-light dark:bg-background-dark;
 }
 
-.form-input:focus {
-  outline: 0;
-  box-shadow: none;
+/* ==================== BRANDING PANEL (LEFT) ==================== */
+.branding-panel {
+  @apply hidden lg:flex;
+  @apply w-1/2;
+  @apply bg-gradient-to-br from-primary to-primary-dark;
+  @apply p-12;
+  @apply items-center justify-center;
+  @apply relative overflow-hidden;
 }
 
-.input-container {
-  position: relative;
+.branding-panel::before {
+  content: '';
+  @apply absolute inset-0;
+  @apply bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE0YzMuMzEgMCA2IDIuNjkgNiA2cy0yLjY5IDYtNiA2LTYtMi42OS02LTYgMi42OS02IDYtNk0yNCAzNGMzLjMxIDAgNiAyLjY5IDYgNnMtMi42OSA2LTYgNi02LTIuNjktNi02IDIuNjktNiA2LTYiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-10;
+  @apply pointer-events-none;
 }
 
-/* Animación para transición entre pasos */
-@keyframes fadeIn {
+.branding-content {
+  @apply relative z-10;
+  @apply max-w-md;
+  @apply text-white;
+}
+
+/* Logo */
+.logo {
+  @apply flex items-center gap-3 mb-12;
+}
+
+.logo-icon {
+  @apply w-12 h-12;
+}
+
+.logo-text {
+  @apply text-4xl font-bold;
+}
+
+/* Hero Text */
+.hero-text {
+  @apply mb-12;
+}
+
+.hero-title {
+  @apply text-4xl font-bold mb-4;
+  @apply leading-tight;
+}
+
+.hero-description {
+  @apply text-lg opacity-90;
+  @apply leading-relaxed;
+}
+
+/* Benefits */
+.benefits-list {
+  @apply space-y-6;
+}
+
+.benefit-item {
+  @apply flex items-start gap-4;
+}
+
+.benefit-icon {
+  @apply text-3xl;
+  font-variation-settings: 'FILL' 1;
+}
+
+.benefit-content {
+  @apply flex-1;
+}
+
+.benefit-title {
+  @apply text-lg font-semibold mb-1;
+}
+
+.benefit-text {
+  @apply text-sm opacity-80;
+}
+
+/* ==================== FORM PANEL (RIGHT) ==================== */
+.form-panel {
+  @apply w-full lg:w-1/2;
+  @apply flex items-center justify-center;
+  @apply p-6 md:p-12;
+  @apply overflow-y-auto;
+}
+
+.form-container {
+  @apply w-full max-w-md;
+  @apply py-8;
+}
+
+/* Form Header */
+.form-header {
+  @apply mb-8;
+}
+
+.form-title {
+  @apply text-3xl font-bold mb-2;
+  @apply text-text-primary-light dark:text-text-primary-dark;
+}
+
+.form-subtitle {
+  @apply text-text-secondary-light dark:text-text-secondary-dark;
+}
+
+/* Register Form */
+.register-form {
+  @apply space-y-4;
+}
+
+/* Password Field Group */
+.password-field {
+  @apply space-y-2;
+}
+
+/* Password Strength Indicator */
+.password-strength {
+  @apply flex items-center gap-3;
+  @apply px-1;
+}
+
+.strength-bars {
+  @apply flex gap-1 flex-1;
+}
+
+.strength-bar {
+  @apply h-1 flex-1 rounded-full;
+  @apply bg-border-light dark:bg-border-dark;
+  @apply transition-all duration-300;
+}
+
+.strength-bar.active {
+  @apply bg-opacity-100;
+}
+
+.strength-bar.weak {
+  @apply bg-red-500 dark:bg-red-600;
+}
+
+.strength-bar.medium {
+  @apply bg-warning;
+}
+
+.strength-bar.strong {
+  @apply bg-success;
+}
+
+.strength-text {
+  @apply text-xs font-medium;
+  @apply transition-colors duration-300;
+}
+
+.strength-text.strength-weak {
+  @apply text-red-500 dark:text-red-400;
+}
+
+.strength-text.strength-medium {
+  @apply text-warning;
+}
+
+.strength-text.strength-strong {
+  @apply text-success;
+}
+
+/* Terms Checkbox */
+.terms-checkbox {
+  @apply flex items-start gap-3;
+  @apply cursor-pointer;
+  @apply py-2;
+}
+
+.checkbox {
+  @apply w-5 h-5 mt-0.5;
+  @apply rounded;
+  @apply border-2 border-border-light dark:border-border-dark;
+  @apply text-primary;
+  @apply focus:ring-2 focus:ring-primary focus:ring-offset-2;
+  @apply cursor-pointer;
+  @apply shrink-0;
+}
+
+.terms-text {
+  @apply text-sm;
+  @apply text-text-secondary-light dark:text-text-secondary-dark;
+  @apply select-none;
+  @apply leading-relaxed;
+}
+
+.terms-link {
+  @apply text-primary font-medium;
+  @apply hover:underline;
+  @apply transition-colors duration-200;
+}
+
+/* Divider */
+.divider {
+  @apply relative my-6;
+  @apply flex items-center;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  @apply flex-1;
+  @apply border-t border-border-light dark:border-border-dark;
+}
+
+.divider-text {
+  @apply px-4 text-sm;
+  @apply text-text-secondary-light dark:text-text-secondary-dark;
+}
+
+/* Social Signup */
+.social-signup {
+  @apply grid grid-cols-2 gap-3;
+}
+
+.social-btn {
+  @apply flex items-center justify-center gap-2;
+  @apply px-4 py-3;
+  @apply bg-card-light dark:bg-card-dark;
+  @apply border border-border-light dark:border-border-dark;
+  @apply rounded-lg;
+  @apply text-sm font-medium;
+  @apply text-text-primary-light dark:text-text-primary-dark;
+  @apply hover:bg-primary/5;
+  @apply transition-all duration-200;
+  @apply cursor-pointer;
+}
+
+.social-btn:hover {
+  @apply border-primary;
+}
+
+.social-icon {
+  @apply w-5 h-5;
+}
+
+/* Login Link */
+.login-link {
+  @apply mt-6;
+  @apply text-center;
+  @apply text-sm;
+}
+
+.login-text {
+  @apply text-text-secondary-light dark:text-text-secondary-dark;
+}
+
+.login-btn {
+  @apply ml-1 font-semibold;
+  @apply text-primary;
+  @apply hover:underline;
+  @apply transition-colors duration-200;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 1024px) {
+  .branding-panel {
+    @apply hidden;
+  }
+
+  .form-panel {
+    @apply w-full;
+  }
+}
+
+@media (max-width: 640px) {
+  .form-panel {
+    @apply p-4;
+  }
+
+  .form-container {
+    @apply py-4;
+  }
+
+  .form-title {
+    @apply text-2xl;
+  }
+
+  .social-signup {
+    @apply grid-cols-1;
+  }
+
+  .register-form {
+    @apply space-y-3.5;
+  }
+}
+
+/* ==================== ANIMATIONS ==================== */
+.form-container {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -27,7 +310,30 @@
   }
 }
 
-/* Aplicar animación a los contenedores de pasos */
-:host ::ng-deep > div {
-  animation: fadeIn 0.3s ease-in-out;
+.branding-content > * {
+  animation: fadeInLeft 0.6s ease-out backwards;
+}
+
+.branding-content > *:nth-child(1) { animation-delay: 0.1s; }
+.branding-content > *:nth-child(2) { animation-delay: 0.2s; }
+.branding-content > *:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ==================== ACCESSIBILITY ==================== */
+.social-btn:focus-visible,
+.terms-link:focus-visible,
+.login-btn:focus-visible {
+  @apply outline-none;
+  @apply ring-2 ring-primary ring-offset-2;
+  @apply ring-offset-background-light dark:ring-offset-background-dark;
 }

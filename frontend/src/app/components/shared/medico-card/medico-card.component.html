@@ -1,0 +1,99 @@
+<div 
+  class="medico-card"
+  [class.disabled]="disabled"
+  [class.loading]="loading"
+  (click)="onCardClick()"
+>
+  <!-- Foto del médico -->
+  <div class="medico-photo-wrapper">
+    <div class="medico-photo">
+      <!-- Imagen si existe -->
+      <img 
+        *ngIf="medico.foto" 
+        [src]="medico.foto" 
+        [alt]="medico.nombre || 'Médico'"
+        class="medico-img"
+      >
+
+      <!-- Iniciales si no hay foto -->
+      <div *ngIf="!medico.foto" class="photo-placeholder">
+        <span class="initials">{{ initials }}</span>
+      </div>
+
+      <!-- Badge de disponibilidad -->
+      <div 
+        *ngIf="medico.disponible !== undefined"
+        class="availability-badge"
+        [class.available]="medico.disponible"
+        [class.unavailable]="!medico.disponible"
+      >
+        <span class="badge-dot"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Información del médico -->
+  <div class="medico-info">
+    <!-- Nombre -->
+    <h3 class="medico-name">{{ medico.nombre }}</h3>
+
+    <!-- Especialidad -->
+    <p class="medico-especialidad">{{ medico.especialidad }}</p>
+
+    <!-- Rating -->
+    <div *ngIf="showRating && medico.rating" class="medico-rating">
+      <div class="stars">
+        <span 
+          *ngFor="let star of fullStars" 
+          class="material-symbols-outlined star filled"
+        >
+          star
+        </span>
+        <span 
+          *ngIf="hasHalfStar" 
+          class="material-symbols-outlined star half"
+        >
+          star_half
+        </span>
+        <span 
+          *ngFor="let star of emptyStars" 
+          class="material-symbols-outlined star empty"
+        >
+          star
+        </span>
+      </div>
+      <span class="rating-number">{{ displayRating }}</span>
+    </div>
+
+    <!-- Experiencia -->
+    <div *ngIf="showExperience && medico.experiencia" class="medico-meta">
+      <span class="material-symbols-outlined meta-icon">work</span>
+      <span class="meta-text">{{ medico.experiencia }}</span>
+    </div>
+
+    <!-- Precio -->
+    <div *ngIf="showPrice && medico.precio" class="medico-price">
+      <span class="price-label">Consulta:</span>
+      <span class="price-amount">${{ medico.precio }}</span>
+    </div>
+  </div>
+
+  <!-- Botón de acción -->
+  <div class="medico-action">
+    <app-button
+      [variant]="buttonVariant"
+      [disabled]="disabled"
+      [loading]="loading"
+      [fullWidth]="true"
+      size="md"
+      (clicked)="onButtonClick($event)"
+    >
+      {{ buttonText }}
+    </app-button>
+  </div>
+
+  <!-- Overlay de loading -->
+  <div *ngIf="loading" class="loading-overlay">
+    <div class="spinner"></div>
+  </div>
+</div>

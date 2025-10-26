@@ -1,0 +1,94 @@
+<div 
+  class="stepper"
+  [class.stepper-horizontal]="orientation === 'horizontal'"
+  [class.stepper-vertical]="orientation === 'vertical'"
+>
+  <!-- Progress bar (solo en horizontal) -->
+  <div *ngIf="orientation === 'horizontal'" class="stepper-progress">
+    <div class="progress-bar" [style.width.%]="progressPercentage"></div>
+  </div>
+
+  <!-- Steps -->
+  <div class="stepper-steps">
+    <div 
+      *ngFor="let step of steps; let i = index"
+      class="step-wrapper"
+      [class.step-active]="isStepActive(i)"
+      [class.step-completed]="isStepCompleted(i)"
+      [class.step-disabled]="isStepDisabled(i)"
+      [class.step-clickable]="!isStepDisabled(i)"
+      (click)="onStepClick(i)"
+    >
+      <!-- Step connector (línea entre pasos) -->
+      <div 
+        *ngIf="i < steps.length - 1 && orientation === 'horizontal'" 
+        class="step-connector"
+        [class.connector-completed]="isStepCompleted(i)"
+      ></div>
+
+      <!-- Step content -->
+      <div class="step-content">
+        <!-- Step indicator (círculo con número o ícono) -->
+        <div class="step-indicator">
+          <!-- Check icon si está completado -->
+          <span 
+            *ngIf="isStepCompleted(i)" 
+            class="material-symbols-outlined step-icon-check"
+          >
+            check
+          </span>
+
+          <!-- Custom icon si existe y no está completado -->
+          <span 
+            *ngIf="!isStepCompleted(i) && step.icon" 
+            class="material-symbols-outlined step-icon-custom"
+          >
+            {{ step.icon }}
+          </span>
+
+          <!-- Número del paso si no hay icon y no está completado -->
+          <span 
+            *ngIf="!isStepCompleted(i) && !step.icon" 
+            class="step-number"
+          >
+            {{ i + 1 }}
+          </span>
+
+          <!-- Ripple effect para paso activo -->
+          <span 
+            *ngIf="isStepActive(i)" 
+            class="step-ripple"
+          ></span>
+        </div>
+
+        <!-- Step label y description -->
+        <div class="step-text" *ngIf="showLabels">
+          <div class="step-label">{{ step.label }}</div>
+          <div 
+            *ngIf="showDescriptions && step.description" 
+            class="step-description"
+          >
+            {{ step.description }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Vertical connector -->
+      <div 
+        *ngIf="i < steps.length - 1 && orientation === 'vertical'" 
+        class="step-connector-vertical"
+        [class.connector-completed]="isStepCompleted(i)"
+      ></div>
+    </div>
+  </div>
+
+  <!-- Summary info (opcional) -->
+  <div class="stepper-summary" *ngIf="steps.length > 0">
+    <span class="summary-text">
+      Paso {{ currentStep + 1 }} de {{ steps.length }}
+    </span>
+    <span class="summary-completed" *ngIf="completedStepsCount > 0">
+      ({{ completedStepsCount }} completado{{ completedStepsCount > 1 ? 's' : '' }})
+    </span>
+  </div>
+</div>

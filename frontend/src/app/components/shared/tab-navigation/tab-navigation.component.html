@@ -1,0 +1,63 @@
+<div class="tab-navigation" [class]="tabsClasses">
+  <!-- Tabs container -->
+  <div class="tabs-wrapper" #tabsContainer>
+    <!-- Tab items -->
+    <a
+      *ngFor="let tab of tabs"
+      class="tab-item"
+      [class.tab-active]="isTabActive(tab.id)"
+      [class.tab-disabled]="tab.disabled"
+      [routerLink]="tab.route || null"
+      [routerLinkActive]="tab.route ? 'tab-active' : ''"
+      [attr.aria-current]="isTabActive(tab.id) ? 'page' : null"
+      [attr.aria-disabled]="tab.disabled"
+      (click)="onTabClick(tab, $event)"
+    >
+      <!-- Icon -->
+      <span 
+        *ngIf="tab.icon" 
+        class="material-symbols-outlined tab-icon"
+      >
+        {{ tab.icon }}
+      </span>
+
+      <!-- Label -->
+      <span class="tab-label">{{ tab.label }}</span>
+
+      <!-- Badge -->
+      <span 
+        *ngIf="tab.badge !== undefined && tab.badge > 0" 
+        class="tab-badge"
+      >
+        {{ tab.badge > 99 ? '99+' : tab.badge }}
+      </span>
+    </a>
+
+    <!-- Animated indicator (solo para variant underline) -->
+    <div 
+      *ngIf="variant === 'underline'" 
+      class="tab-indicator"
+      [style.left]="indicatorStyle.left"
+      [style.width]="indicatorStyle.width"
+    ></div>
+  </div>
+
+  <!-- Scroll buttons (solo si scrollable) -->
+  <button
+    *ngIf="scrollable"
+    class="scroll-btn scroll-btn-left"
+    (click)="scrollToActiveTab()"
+    aria-label="Scroll left"
+  >
+    <span class="material-symbols-outlined">chevron_left</span>
+  </button>
+
+  <button
+    *ngIf="scrollable"
+    class="scroll-btn scroll-btn-right"
+    (click)="scrollToActiveTab()"
+    aria-label="Scroll right"
+  >
+    <span class="material-symbols-outlined">chevron_right</span>
+  </button>
+</div>

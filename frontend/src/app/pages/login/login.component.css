@@ -1,0 +1,288 @@
+
+/* ==================== CONTAINER ==================== */
+.login-container {
+  @apply min-h-screen;
+  @apply flex;
+  @apply bg-background-light dark:bg-background-dark;
+}
+
+/* ==================== BRANDING PANEL (LEFT) ==================== */
+.branding-panel {
+  @apply hidden lg:flex;
+  @apply w-1/2;
+  @apply bg-gradient-to-br from-primary to-primary-dark;
+  @apply p-12;
+  @apply items-center justify-center;
+  @apply relative overflow-hidden;
+}
+
+.branding-panel::before {
+  content: '';
+  @apply absolute inset-0;
+  @apply bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE0YzMuMzEgMCA2IDIuNjkgNiA2cy0yLjY5IDYtNiA2LTYtMi42OS02LTYgMi42OS02IDYtNk0yNCAzNGMzLjMxIDAgNiAyLjY5IDYgNnMtMi42OSA2LTYgNi02LTIuNjktNi02IDIuNjktNiA2LTYiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-10;
+  @apply pointer-events-none;
+}
+
+.branding-content {
+  @apply relative z-10;
+  @apply max-w-md;
+  @apply text-white;
+}
+
+/* Logo */
+.logo {
+  @apply flex items-center gap-3 mb-12;
+}
+
+.logo-icon {
+  @apply w-12 h-12;
+}
+
+.logo-text {
+  @apply text-4xl font-bold;
+}
+
+/* Hero Text */
+.hero-text {
+  @apply mb-12;
+}
+
+.hero-title {
+  @apply text-4xl font-bold mb-4;
+  @apply leading-tight;
+}
+
+.hero-description {
+  @apply text-lg opacity-90;
+  @apply leading-relaxed;
+}
+
+/* Features */
+.features-list {
+  @apply space-y-4;
+}
+
+.feature-item {
+  @apply flex items-center gap-3;
+}
+
+.feature-icon {
+  @apply text-2xl;
+  font-variation-settings: 'FILL' 1;
+}
+
+.feature-text {
+  @apply text-base font-medium;
+}
+
+/* ==================== FORM PANEL (RIGHT) ==================== */
+.form-panel {
+  @apply w-full lg:w-1/2;
+  @apply flex items-center justify-center;
+  @apply p-6 md:p-12;
+}
+
+.form-container {
+  @apply w-full max-w-md;
+}
+
+/* Form Header */
+.form-header {
+  @apply mb-8;
+}
+
+.form-title {
+  @apply text-3xl font-bold mb-2;
+  @apply text-text-primary-light dark:text-text-primary-dark;
+}
+
+.form-subtitle {
+  @apply text-text-secondary-light dark:text-text-secondary-dark;
+}
+
+/* Error Banner */
+.error-banner {
+  @apply flex items-center gap-3;
+  @apply p-4 mb-6;
+  @apply bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-800/30;
+  @apply rounded-lg;
+  @apply text-red-600 dark:text-red-400;
+}
+
+.error-icon {
+  @apply text-xl;
+  font-variation-settings: 'FILL' 1;
+}
+
+.error-text {
+  @apply text-sm font-medium;
+}
+
+/* Login Form */
+.login-form {
+  @apply space-y-5;
+}
+
+/* Form Options */
+.form-options {
+  @apply flex items-center justify-between;
+  @apply -mt-1;
+}
+
+.remember-checkbox {
+  @apply flex items-center gap-2;
+  @apply cursor-pointer;
+}
+
+.checkbox {
+  @apply w-4 h-4;
+  @apply rounded;
+  @apply border-2 border-border-light dark:border-border-dark;
+  @apply text-primary;
+  @apply focus:ring-2 focus:ring-primary focus:ring-offset-2;
+  @apply cursor-pointer;
+}
+
+.checkbox-label {
+  @apply text-sm;
+  @apply text-text-secondary-light dark:text-text-secondary-dark;
+  @apply select-none;
+}
+
+.forgot-link {
+  @apply text-sm font-medium;
+  @apply text-primary;
+  @apply hover:underline;
+  @apply transition-colors duration-200;
+}
+
+/* Divider */
+.divider {
+  @apply relative my-8;
+  @apply flex items-center;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  @apply flex-1;
+  @apply border-t border-border-light dark:border-border-dark;
+}
+
+.divider-text {
+  @apply px-4 text-sm;
+  @apply text-text-secondary-light dark:text-text-secondary-dark;
+}
+
+/* Social Login */
+.social-login {
+  @apply grid grid-cols-2 gap-3;
+}
+
+.social-btn {
+  @apply flex items-center justify-center gap-2;
+  @apply px-4 py-3;
+  @apply bg-card-light dark:bg-card-dark;
+  @apply border border-border-light dark:border-border-dark;
+  @apply rounded-lg;
+  @apply text-sm font-medium;
+  @apply text-text-primary-light dark:text-text-primary-dark;
+  @apply hover:bg-primary/5;
+  @apply transition-all duration-200;
+  @apply cursor-pointer;
+}
+
+.social-btn:hover {
+  @apply border-primary;
+}
+
+.social-icon {
+  @apply w-5 h-5;
+}
+
+/* Register Link */
+.register-link {
+  @apply mt-8;
+  @apply text-center;
+  @apply text-sm;
+}
+
+.register-text {
+  @apply text-text-secondary-light dark:text-text-secondary-dark;
+}
+
+.register-btn {
+  @apply ml-1 font-semibold;
+  @apply text-primary;
+  @apply hover:underline;
+  @apply transition-colors duration-200;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 1024px) {
+  .branding-panel {
+    @apply hidden;
+  }
+
+  .form-panel {
+    @apply w-full;
+  }
+}
+
+@media (max-width: 640px) {
+  .form-panel {
+    @apply p-4;
+  }
+
+  .form-title {
+    @apply text-2xl;
+  }
+
+  .social-login {
+    @apply grid-cols-1;
+  }
+}
+
+/* ==================== ANIMATIONS ==================== */
+.form-container {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.branding-content > * {
+  animation: fadeInLeft 0.6s ease-out backwards;
+}
+
+.branding-content > *:nth-child(1) { animation-delay: 0.1s; }
+.branding-content > *:nth-child(2) { animation-delay: 0.2s; }
+.branding-content > *:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ==================== ACCESSIBILITY ==================== */
+.social-btn:focus-visible,
+.forgot-link:focus-visible,
+.register-btn:focus-visible {
+  @apply outline-none;
+  @apply ring-2 ring-primary ring-offset-2;
+  @apply ring-offset-background-light dark:ring-offset-background-dark;
+}

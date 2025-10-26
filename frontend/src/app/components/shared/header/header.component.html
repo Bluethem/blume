@@ -1,0 +1,183 @@
+<header class="header">
+  <div class="header-container">
+    <!-- Logo y nombre -->
+    <div class="header-brand">
+      <div class="logo">
+        <svg class="logo-icon" fill="currentColor" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <path clip-rule="evenodd" d="M24 18.4228L42 11.475V34.3663C42 34.7796 41.7457 35.1504 41.3601 35.2992L24 42V18.4228Z" fill="currentColor" fill-rule="evenodd"></path>
+          <path clip-rule="evenodd" d="M24 8.18819L33.4123 11.574L24 15.2071L14.5877 11.574L24 8.18819ZM9 15.8487L21 20.4805V37.6263L9 32.9945V15.8487ZM27 37.6263V20.4805L39 15.8487V32.9945L27 37.6263ZM25.354 2.29885C24.4788 1.98402 23.5212 1.98402 22.646 2.29885L4.98454 8.65208C3.7939 9.08038 3 10.2097 3 11.475V34.3663C3 36.0196 4.01719 37.5026 5.55962 38.098L22.9197 44.7987C23.6149 45.0671 24.3851 45.0671 25.0803 44.7987L42.4404 38.098C43.9828 37.5026 45 36.0196 45 34.3663V11.475C45 10.2097 44.2061 9.08038 43.0155 8.65208L25.354 2.29885Z" fill="currentColor" fill-rule="evenodd"></path>
+        </svg>
+      </div>
+      <h2 class="brand-name">Blume</h2>
+    </div>
+
+    <!-- Menú Desktop -->
+    <nav class="desktop-nav">
+      <a 
+        *ngFor="let item of menuItems"
+        [routerLink]="item.route"
+        routerLinkActive="nav-link-active"
+        class="nav-link"
+        (click)="closeMobileMenu()"
+      >
+        {{ item.label }}
+      </a>
+    </nav>
+
+    <!-- Acciones del header -->
+    <div class="header-actions">
+      <!-- Botón Agendar Cita (Desktop) -->
+      <button 
+        *ngIf="showBookButton"
+        class="book-btn desktop-only"
+        (click)="onBookAppointment()"
+      >
+        <span>Book Appointment</span>
+      </button>
+
+      <!-- Notificaciones -->
+      <div class="notification-wrapper">
+        <button 
+          class="icon-btn"
+          [class.has-notifications]="hasNotifications"
+          (click)="toggleNotifications()"
+          [attr.aria-label]="'Notificaciones' + (hasNotifications ? ' (' + notificationBadge + ')' : '')"
+        >
+          <span class="material-symbols-outlined">notifications</span>
+          <span 
+            *ngIf="hasNotifications" 
+            class="notification-badge"
+          >
+            {{ notificationBadge }}
+          </span>
+        </button>
+
+        <!-- Dropdown de notificaciones -->
+        <div 
+          *ngIf="notificationsOpen" 
+          class="dropdown notifications-dropdown"
+          (click)="$event.stopPropagation()"
+        >
+          <div class="dropdown-header">
+            <h3>Notificaciones</h3>
+            <span class="notification-count">{{ notificationCount }}</span>
+          </div>
+          <div class="dropdown-content">
+            <p class="empty-state">No hay notificaciones nuevas</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Avatar y menú de usuario -->
+      <div class="profile-wrapper">
+        <button 
+          class="avatar-btn"
+          (click)="toggleProfileMenu()"
+          [attr.aria-label]="'Menú de ' + (userInfo?.name || 'usuario')"
+        >
+          <div 
+            class="avatar"
+            [class.has-avatar]="userInfo?.avatar"
+          >
+            <img 
+              *ngIf="userInfo?.avatar" 
+              [src]="userInfo?.avatar" 
+              [alt]="userInfo?.name || 'Usuario'"
+              class="avatar-img"
+            >
+            <span 
+              *ngIf="!userInfo?.avatar" 
+              class="material-symbols-outlined avatar-icon"
+            >
+              person
+            </span>
+          </div>
+        </button>
+
+        <!-- Dropdown de perfil -->
+        <div 
+          *ngIf="profileMenuOpen" 
+          class="dropdown profile-dropdown"
+          (click)="$event.stopPropagation()"
+        >
+          <div class="dropdown-header" *ngIf="userInfo">
+            <div class="user-info">
+              <p class="user-name">{{ userInfo.name }}</p>
+              <p class="user-email">{{ userInfo.email }}</p>
+            </div>
+          </div>
+          <div class="dropdown-content">
+            <a 
+              routerLink="/dashboard/profile" 
+              class="dropdown-item"
+              (click)="closeMenus(); closeMobileMenu()"
+            >
+              <span class="material-symbols-outlined">person</span>
+              <span>Mi Perfil</span>
+            </a>
+            <a 
+              routerLink="/dashboard/settings" 
+              class="dropdown-item"
+              (click)="closeMenus(); closeMobileMenu()"
+            >
+              <span class="material-symbols-outlined">settings</span>
+              <span>Configuración</span>
+            </a>
+            <div class="dropdown-divider"></div>
+            <button 
+              class="dropdown-item"
+              (click)="onProfileClick(); closeMenus()"
+            >
+              <span class="material-symbols-outlined">logout</span>
+              <span>Cerrar Sesión</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botón menú hamburguesa (Mobile) -->
+      <button 
+        class="hamburger-btn mobile-only"
+        (click)="toggleMobileMenu()"
+        [class.active]="mobileMenuOpen"
+        aria-label="Toggle menu"
+      >
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Menú Mobile -->
+  <nav 
+    class="mobile-nav"
+    [class.open]="mobileMenuOpen"
+  >
+    <a 
+      *ngFor="let item of menuItems"
+      [routerLink]="item.route"
+      routerLinkActive="nav-link-active"
+      class="mobile-nav-link"
+      (click)="closeMobileMenu()"
+    >
+      {{ item.label }}
+    </a>
+    
+    <!-- Botón Agendar Cita (Mobile) -->
+    <button 
+      *ngIf="showBookButton"
+      class="book-btn mobile-book-btn"
+      (click)="onBookAppointment(); closeMobileMenu()"
+    >
+      <span>Book Appointment</span>
+    </button>
+  </nav>
+</header>
+
+<!-- Overlay para cerrar menús -->
+<div 
+  *ngIf="mobileMenuOpen || notificationsOpen || profileMenuOpen"
+  class="overlay"
+  (click)="closeMobileMenu(); closeMenus()"
+></div>

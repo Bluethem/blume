@@ -1,0 +1,130 @@
+
+.form-input-wrapper {
+  @apply w-full;
+}
+
+/* Label */
+.form-label {
+  @apply block text-base font-medium text-text-primary-light dark:text-text-primary-dark mb-2;
+}
+
+/* Input container */
+.form-input-container {
+  @apply relative w-full;
+}
+
+/* Input - estilos base ya están en .form-input-custom en styles.css */
+.form-input-custom {
+  @apply h-14 px-4 text-base;
+}
+
+/* Icons */
+.form-icon {
+  @apply absolute top-1/2 -translate-y-1/2 pointer-events-none;
+  @apply text-text-secondary-light dark:text-text-secondary-dark;
+}
+
+.form-icon-left {
+  @apply left-4;
+}
+
+.form-icon-right {
+  @apply right-4;
+}
+
+.form-icon .material-symbols-outlined {
+  @apply text-xl;
+}
+
+/* Password toggle button */
+.form-password-toggle {
+  @apply pointer-events-auto cursor-pointer;
+  @apply transition-colors duration-200;
+  @apply hover:text-primary;
+}
+
+/* Error state */
+.form-input-custom.border-error {
+  @apply border-2 border-red-500 dark:border-red-400;
+}
+
+.form-input-custom.border-error:focus {
+  @apply ring-2 ring-red-500 dark:ring-red-400 border-red-500 dark:border-red-400;
+}
+
+/* Error message */
+.form-error {
+  @apply mt-2 text-sm text-red-500 dark:text-red-400;
+  animation: slideDown 0.2s ease-out;
+}
+
+/* Hint message */
+.form-hint {
+  @apply mt-2 text-sm text-text-secondary-light dark:text-text-secondary-dark;
+}
+
+/* Disabled state */
+input:disabled {
+  @apply cursor-not-allowed;
+}
+
+/* Readonly state */
+input:read-only {
+  @apply bg-border-light dark:bg-border-dark;
+  @apply cursor-default;
+}
+
+/* Focus state animation */
+.form-input-custom:focus {
+  animation: focusPulse 0.3s ease-out;
+}
+
+/* Animations */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes focusPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(234, 42, 51, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(234, 42, 51, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 0 2px rgba(234, 42, 51, 0.1);
+  }
+}
+
+/* Placeholder styling */
+input::placeholder {
+  @apply text-text-secondary-light dark:text-text-secondary-dark;
+  @apply transition-opacity duration-200;
+}
+
+input:focus::placeholder {
+  @apply opacity-60;
+}
+
+/* Autofill styling */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0px 1000px var(--tw-bg-background-light) inset;
+  -webkit-text-fill-color: var(--tw-text-primary-light);
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+:root.dark input:-webkit-autofill,
+:root.dark input:-webkit-autofill:hover,
+:root.dark input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0px 1000px var(--tw-bg-background-dark) inset;
+  -webkit-text-fill-color: var(--tw-text-primary-dark);
+}

@@ -1,0 +1,87 @@
+<div class="form-input-wrapper">
+  <!-- Label -->
+  <label 
+    *ngIf="label" 
+    [attr.for]="id"
+    class="form-label"
+  >
+    {{ label }}
+    <span *ngIf="required" class="text-error ml-1">*</span>
+  </label>
+
+  <!-- Input container -->
+  <div class="form-input-container">
+    <!-- Left icon -->
+    <span 
+      *ngIf="icon && iconPosition === 'left'" 
+      class="form-icon form-icon-left"
+    >
+      <span class="material-symbols-outlined">{{ icon }}</span>
+    </span>
+
+    <!-- Input -->
+    <input
+      [type]="inputType"
+      [attr.id]="id"
+      [attr.name]="name"
+      [placeholder]="placeholder"
+      [disabled]="disabled"
+      [readonly]="readonly"
+      [required]="required"
+      [class]="inputClasses"
+      [ngModel]="value"
+      [attr.autocomplete]="autocomplete"
+      [attr.maxlength]="maxlength"
+      [attr.minlength]="minlength"
+      [attr.pattern]="pattern"
+      (ngModelChange)="handleInput($any($event))"
+      (blur)="handleBlur($event)"
+      (focus)="handleFocus($event)"
+    />
+
+    <!-- Right icon -->
+    <span 
+      *ngIf="icon && iconPosition === 'right' && type !== 'password'" 
+      class="form-icon form-icon-right"
+    >
+      <span class="material-symbols-outlined">{{ icon }}</span>
+    </span>
+
+    <!-- Password toggle -->
+    <button
+      *ngIf="type === 'password'"
+      type="button"
+      class="form-icon form-icon-right form-password-toggle"
+      (click)="togglePasswordVisibility()"
+      [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+    >
+      <span class="material-symbols-outlined">
+        {{ showPassword ? 'visibility_off' : 'visibility' }}
+      </span>
+    </button>
+  </div>
+
+  <!-- Error message -->
+  <p 
+    *ngIf="hasError" 
+    class="form-error"
+  >
+    {{ error }}
+  </p>
+
+  <!-- Hint message -->
+  <p 
+    *ngIf="hint && !hasError" 
+    class="form-hint"
+  >
+    {{ hint }}
+  </p>
+
+  <!-- Character count (if maxlength is set) -->
+  <p 
+    *ngIf="maxlength && !hasError && !hint" 
+    class="form-hint text-right"
+  >
+    {{ value.length }} / {{ maxlength }}
+  </p>
+</div>

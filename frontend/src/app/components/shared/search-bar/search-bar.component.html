@@ -1,0 +1,36 @@
+<div class="search-bar-wrapper">
+  <div 
+    class="search-bar-container"
+    [class.search-bar-focused]="isFocused"
+    [class.search-bar-disabled]="disabled"
+  >
+    <!-- Search icon -->
+    <span class="search-icon">
+      <span class="material-symbols-outlined">search</span>
+    </span>
+
+    <!-- Input -->
+    <input
+      type="text"
+      class="search-input"
+      [placeholder]="placeholder"
+      [disabled]="disabled"
+      [autofocus]="autofocus"
+      [(ngModel)]="searchValue"
+      (input)="onSearchChange(searchValue)"
+      (focus)="onFocus()"
+      (blur)="onBlur()"
+    />
+
+    <!-- Clear button -->
+    <button
+      *ngIf="showClear"
+      type="button"
+      class="search-clear-btn"
+      (click)="onClear()"
+      aria-label="Limpiar búsqueda"
+    >
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+</div>

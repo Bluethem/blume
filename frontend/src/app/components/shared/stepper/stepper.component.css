@@ -1,0 +1,317 @@
+
+/* ==================== STEPPER BASE ==================== */
+.stepper {
+  @apply w-full;
+  @apply relative;
+}
+
+/* ==================== PROGRESS BAR (HORIZONTAL) ==================== */
+.stepper-progress {
+  @apply absolute top-6 left-0 right-0;
+  @apply h-1 bg-border-light dark:bg-border-dark;
+  @apply rounded-full;
+  @apply z-0;
+}
+
+.progress-bar {
+  @apply h-full bg-primary;
+  @apply rounded-full;
+  @apply transition-all duration-500 ease-out;
+}
+
+/* ==================== STEPS CONTAINER ==================== */
+.stepper-steps {
+  @apply relative z-10;
+}
+
+/* Horizontal layout */
+.stepper-horizontal .stepper-steps {
+  @apply flex items-start justify-between;
+  @apply gap-4;
+}
+
+/* Vertical layout */
+.stepper-vertical .stepper-steps {
+  @apply flex flex-col;
+  @apply gap-2;
+}
+
+/* ==================== STEP WRAPPER ==================== */
+.step-wrapper {
+  @apply relative;
+  @apply flex flex-col items-center;
+  @apply transition-all duration-300;
+}
+
+/* Horizontal step */
+.stepper-horizontal .step-wrapper {
+  @apply flex-1;
+  @apply min-w-0;
+}
+
+/* Vertical step */
+.stepper-vertical .step-wrapper {
+  @apply w-full flex-row items-start;
+  @apply gap-4;
+}
+
+.step-clickable {
+  @apply cursor-pointer;
+}
+
+.step-clickable:hover .step-indicator {
+  @apply transform scale-110;
+}
+
+.step-disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+.step-disabled:hover .step-indicator {
+  @apply transform scale-100;
+}
+
+/* ==================== STEP CONTENT ==================== */
+.step-content {
+  @apply flex flex-col items-center gap-2;
+}
+
+.stepper-vertical .step-content {
+  @apply flex-row items-start;
+}
+
+/* ==================== STEP INDICATOR (CÍRCULO) ==================== */
+.step-indicator {
+  @apply relative;
+  @apply w-12 h-12;
+  @apply rounded-full;
+  @apply flex items-center justify-center;
+  @apply bg-card-light dark:bg-card-dark;
+  @apply border-2 border-border-light dark:border-border-dark;
+  @apply transition-all duration-300;
+  @apply shrink-0;
+}
+
+/* Estado: Pendiente */
+.step-wrapper .step-indicator {
+  @apply text-text-secondary-light dark:text-text-secondary-dark;
+}
+
+/* Estado: Activo */
+.step-active .step-indicator {
+  @apply border-primary bg-primary;
+  @apply text-white;
+  @apply shadow-lg shadow-primary/30;
+}
+
+/* Estado: Completado */
+.step-completed .step-indicator {
+  @apply border-success bg-success;
+  @apply text-white;
+}
+
+/* Estado: Deshabilitado */
+.step-disabled .step-indicator {
+  @apply border-unavailable bg-unavailable/20;
+  @apply text-unavailable;
+}
+
+/* ==================== STEP ICONS ==================== */
+.step-icon-check,
+.step-icon-custom {
+  @apply text-xl;
+  font-variation-settings: 'FILL' 1;
+}
+
+.step-number {
+  @apply text-base font-bold;
+}
+
+/* ==================== STEP RIPPLE ==================== */
+.step-ripple {
+  @apply absolute inset-0;
+  @apply rounded-full;
+  @apply bg-primary;
+  @apply opacity-30;
+  animation: ripple 2s infinite;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* ==================== STEP TEXT ==================== */
+.step-text {
+  @apply text-center;
+  @apply max-w-[120px];
+}
+
+.stepper-vertical .step-text {
+  @apply text-left max-w-none;
+}
+
+.step-label {
+  @apply text-sm font-semibold;
+  @apply text-text-primary-light dark:text-text-primary-dark;
+  @apply transition-colors duration-300;
+}
+
+.step-description {
+  @apply text-xs;
+  @apply text-text-secondary-light dark:text-text-secondary-dark;
+  @apply mt-1;
+}
+
+/* Colores según estado */
+.step-active .step-label {
+  @apply text-primary;
+}
+
+.step-completed .step-label {
+  @apply text-success;
+}
+
+.step-disabled .step-label {
+  @apply text-unavailable;
+}
+
+/* ==================== CONNECTORS (LÍNEAS) ==================== */
+
+/* Horizontal connector */
+.step-connector {
+  @apply absolute top-6 left-[calc(50%+24px)] right-[calc(-50%+24px)];
+  @apply h-1 bg-border-light dark:bg-border-dark;
+  @apply rounded-full;
+  @apply transition-all duration-500;
+  @apply z-[-1];
+}
+
+.step-connector.connector-completed {
+  @apply bg-success;
+}
+
+/* Vertical connector */
+.step-connector-vertical {
+  @apply absolute left-6 top-[48px] bottom-[-8px];
+  @apply w-1 bg-border-light dark:bg-border-dark;
+  @apply rounded-full;
+  @apply transition-all duration-500;
+}
+
+.step-connector-vertical.connector-completed {
+  @apply bg-success;
+}
+
+/* ==================== STEPPER SUMMARY ==================== */
+.stepper-summary {
+  @apply mt-6 pt-4;
+  @apply border-t border-border-light dark:border-border-dark;
+  @apply flex items-center justify-center gap-2;
+  @apply text-sm;
+}
+
+.summary-text {
+  @apply font-semibold;
+  @apply text-text-primary-light dark:text-text-primary-dark;
+}
+
+.summary-completed {
+  @apply text-success font-medium;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 768px) {
+  /* En mobile, forzar vertical si hay más de 3 pasos */
+  .stepper-horizontal .stepper-steps {
+    @apply flex-col items-start;
+  }
+
+  .stepper-horizontal .step-wrapper {
+    @apply w-full flex-row items-start;
+    @apply gap-4;
+  }
+
+  .stepper-horizontal .step-content {
+    @apply flex-row items-start;
+  }
+
+  .step-text {
+    @apply text-left max-w-none;
+  }
+
+  /* Ocultar progress bar en mobile */
+  .stepper-progress {
+    @apply hidden;
+  }
+
+  /* Mostrar conectores verticales en mobile */
+  .stepper-horizontal .step-connector {
+    @apply hidden;
+  }
+
+  .stepper-horizontal .step-wrapper .step-connector-vertical {
+    @apply block;
+    @apply absolute left-6 top-[48px] bottom-[-8px];
+    @apply w-1 bg-border-light dark:bg-border-dark;
+  }
+
+  .stepper-horizontal .step-wrapper:last-child .step-connector-vertical {
+    @apply hidden;
+  }
+
+  .step-indicator {
+    @apply w-12 h-12;
+  }
+}
+
+@media (max-width: 640px) {
+  .step-indicator {
+    @apply w-10 h-10;
+  }
+
+  .step-icon-check,
+  .step-icon-custom {
+    @apply text-lg;
+  }
+
+  .step-number {
+    @apply text-sm;
+  }
+
+  .step-label {
+    @apply text-xs;
+  }
+
+  .step-description {
+    @apply text-[10px];
+  }
+}
+
+/* ==================== ANIMATIONS ==================== */
+.step-wrapper {
+  animation: fadeInUp 0.3s ease-out backwards;
+}
+
+.step-wrapper:nth-child(1) { animation-delay: 0.05s; }
+.step-wrapper:nth-child(2) { animation-delay: 0.1s; }
+.step-wrapper:nth-child(3) { animation-delay: 0.15s; }
+.step-wrapper:nth-child(4) { animation-delay: 0.2s; }
+.step-wrapper:nth-child(5) { animation-delay: 0.25s; }
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
