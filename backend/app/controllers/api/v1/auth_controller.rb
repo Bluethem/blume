@@ -31,7 +31,7 @@ module Api
         ActiveRecord::Base.transaction do
           # Crear usuario
           user = Usuario.new(register_params)
-          user.rol = params[:rol] || 'paciente' # Por defecto paciente
+          user.rol = :paciente # ← Usar símbolo directamente
           
           if user.save
             # Crear perfil según el rol
@@ -58,7 +58,8 @@ module Api
         end
       rescue => e
         Rails.logger.error("Registration error: #{e.message}")
-        render_error('Error en el registro. Intente nuevamente.')
+        Rails.logger.error(e.backtrace.join("\n"))
+        render_error('Error en el registro. Intente nuevamente.', status: :internal_server_error)
       end
 
       # GET /api/v1/auth/me
