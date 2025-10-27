@@ -301,6 +301,209 @@ module Api
           costo: cita.costo
         }
       end
+
+      def horarios_disponibles
+        fecha = params[:fecha] ? Date.parse(params[:fecha]) : Date.current
+        
+        # Obtener horarios del médico para ese día
+        dia_semana = fecha.wday
+        horarios = @medico.horarios_disponibles.where(dia_semana: dia_semana, activo: true)
+
+        if horarios.empty?
+          return render_success({
+            fecha: fecha,
+            dia_semana: I18n.l(fecha, format: '%A'),
+            disponible: false,
+            horarios: []
+          })
+        end
+
+        # Obtener citas ya agendadas para ese día
+        citas_ocupadas = @medico.citas
+          .where('DATE(fecha_hora_inicio) = ?', fecha)
+          .where(estado: [:pendiente, :confirmada])
+          .pluck(:fecha_hora_inicio)
+
+        # Generar slots disponibles
+        slots_disponibles = []
+        
+        horarios.each do |horario|
+          hora_actual = combinar_fecha_hora(fecha, horario.hora_inicio)
+          hora_fin = combinar_fecha_hora(fecha, horario.hora_fin)
+          duracion = 30.minutes # Puedes hacer esto configurable por médico
+
+          while hora_actual < hora_fin
+            # Verificar que no esté ocupado y que sea futuro
+            unless citas_ocupadas.include?(hora_actual) || hora_actual < Time.current
+              slots_disponibles << {
+                fecha_hora: hora_actual,
+                hora_display: hora_actual.strftime('%I:%M %p'),
+                disponible: true
+              }
+            end
+            hora_actual += duracion
+          end
+        end
+
+        render_success({
+          fecha: fecha,
+          dia_semana: I18n.l(fecha, format: '%A'),
+          disponible: slots_disponibles.any?,
+          horarios: slots_disponibles,
+          duracion_cita: 30
+        })
+      end
+
+      # NUEVO MÉTODO: GET /api/v1/medicos/especialidades
+      # Para obtener lista de especialidades con cantidad de médicos
+      def especialidades
+        especialidades = Especialidad.all.map do |esp|
+          medicos_count = Medico.joins(:especialidades)
+                                .where(especialidades: { id: esp.id })
+                                .where(usuarios: { activo: true })
+                                .count
+          {
+            id: esp.id,
+            nombre: esp.nombre,
+            descripcion: esp.descripcion,
+            total_medicos: medicos_count
+          }
+        end.select { |e| e[:total_medicos] > 0 }
+         .sort_by { |e| e[:nombre] }
+
+        render_success(especialidades)
+      end
+
+      private
+
+      # NUEVO HELPER: Combinar fecha con hora
+      def combinar_fecha_hora(fecha, hora)
+        Time.zone.parse("#{fecha} #{hora}")
+      end
+
+      # MEJORAR método medico_response para incluir datos del dashboard
+      def medico_response(medico, detailed: false, include_horarios: false, for_card: false)
+        response = {
+          id: medico.id,
+          nombre_completo: medico.nombre_completo,
+          email: medico.email,
+          telefono: medico.telefono,
+          numero_colegiatura: medico.numero_colegiatura,
+          anos_experiencia: medico.anos_experiencia,
+          calificacion_promedio: medico.calificacion_promedio || 4.5,
+          tarifa_consulta: medico.tarifa_consulta,
+          especialidades: medico.especialidades.map { |e| { id: e.id, nombre: e.nombre } }
+        }
+
+        # Para cards del dashboard
+        if for_card
+          response.merge!({
+            especialidad: medico.especialidades.first&.nombre || 'General',
+            anos_experiencia: medico.anos_experiencia,
+            costo_consulta: medico.tarifa_consulta,
+            biografia: medico.biografia&.truncate(150),
+            calificacion: medico.calificacion_promedio || 4.5,
+            total_reviews: rand(10..100), # Temporal - implementar reviews reales
+            foto_url: nil,
+            disponible_hoy: tiene_horario_hoy?(medico)
+          })
+        end
+
+        if detailed
+          response.merge!({
+            direccion: medico.direccion,
+            biografia: medico.biografia,
+            total_citas: medico.citas.count,
+            pacientes_atendidos: medico.citas.select(:paciente_id).distinct.count,
+            created_at: medico.created_at,
+            certificaciones: medico.certificaciones.map do |cert|
+              {
+                id: cert.id,
+                nombre: cert.nombre,
+                institucion: cert.institucion_emisora
+              }
+            end,
+            horarios_atencion: agrupar_horarios(medico)
+          })
+        end
+
+        if include_horarios
+          response[:horarios_disponibles] = medico.horarios_disponibles
+                                                   .where(activo: true)
+                                                   .order(:dia_semana, :hora_inicio)
+                                                   .map { |h| horario_response(h) }
+        end
+
+        response
+      end
+
+      # NUEVO HELPER: Agrupar horarios por día
+      def agrupar_horarios(medico)
+        medico.horarios_disponibles.where(activo: true).group_by(&:dia_semana).map do |dia, horarios|
+          {
+            dia: dia_semana_texto(dia),
+            horarios: horarios.map { |h| "#{h.hora_inicio.strftime('%I:%M %p')} - #{h.hora_fin.strftime('%I:%M %p')}" }
+          }
+        end
+      end
+
+      # NUEVO HELPER: Verificar si tiene horario hoy
+      def tiene_horario_hoy?(medico)
+        dia_hoy = Date.current.wday
+        medico.horarios_disponibles.where(dia_semana: dia_hoy, activo: true).exists?
+      end
+
+      # NUEVO HELPER: Convertir número de día a texto
+      def dia_semana_texto(dia)
+        dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+        dias[dia]
+      end
+
+      # MODIFICAR filtro para buscar por nombre y especialidad
+      def filter_medicos(medicos)
+        # Búsqueda por texto
+        if params[:q].present?
+          busqueda = params[:q].downcase
+          medicos = medicos.joins(:usuario).where(
+            'LOWER(usuarios.nombre) LIKE ? OR LOWER(usuarios.apellido) LIKE ? OR LOWER(medicos.especialidad_principal) LIKE ?',
+            "%#{busqueda}%", "%#{busqueda}%", "%#{busqueda}%"
+          )
+        end
+
+        if params[:especialidad].present?
+          medicos = medicos.where(especialidad_principal: params[:especialidad])
+        end
+
+        if params[:especialidad_id].present?
+          medicos = medicos.joins(:especialidades)
+                           .where(especialidades: { id: params[:especialidad_id] })
+        end
+
+        if params[:calificacion_min].present?
+          medicos = medicos.where('calificacion_promedio >= ?', params[:calificacion_min])
+        end
+
+        if params[:tarifa_max].present?
+          medicos = medicos.where('tarifa_consulta <= ?', params[:tarifa_max])
+        end
+
+        # Ordenamiento
+        orden = params[:orden] || 'nombre'
+        medicos = case orden
+        when 'experiencia'
+          medicos.order(anos_experiencia: :desc)
+        when 'precio_asc'
+          medicos.order(tarifa_consulta: :asc)
+        when 'precio_desc'
+          medicos.order(tarifa_consulta: :desc)
+        when 'calificacion'
+          medicos.order(calificacion_promedio: :desc)
+        else
+          medicos.joins(:usuario).order('usuarios.nombre ASC')
+        end
+
+        medicos
+      end
     end
   end
 end

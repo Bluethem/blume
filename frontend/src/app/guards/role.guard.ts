@@ -1,45 +1,50 @@
-import { inject } from '@angular/core';
-import { Router, CanActivateFn, UrlTree } from '@angular/router';
+import { Injectable } from '@angular/core';
+import { Router, ActivatedRouteSnapshot, RouterStateSnapshot, CanActivate } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
-export const roleGuard: CanActivateFn = (route, state): boolean | UrlTree => {
-  const authService = inject(AuthService);
-  const router = inject(Router);
-  
-  const requiredRole = route.data['role'] as string;
-  const user = authService.currentUserValue;
-  
-  // Si no hay usuario, redirigir al login
-  if (!user) {
-    console.log('No hay usuario autenticado. Redirigiendo a login.');
-    return router.createUrlTree(['/login'], {
-      queryParams: { returnUrl: state.url }
-    });
+@Injectable({
+  providedIn: 'root'
+})
+export class RoleGuard implements CanActivate {
+
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
+
+  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
+    const currentUser = this.authService.currentUserValue;
+    const requiredRole = route.data['role'];
+
+    if (currentUser && requiredRole) {
+      // Verificar si el usuario tiene el rol requerido
+      if (currentUser.rol === requiredRole) {
+        return true;
+      }
+
+      // Si no tiene el rol, redirigir a su dashboard correspondiente
+      this.redirectToDashboard(currentUser.rol);
+      return false;
+    }
+
+    // Si no hay usuario o rol requerido, redirigir al login
+    this.router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
+    return false;
   }
-  
-  // Los administradores tienen acceso a todo
-  if (user.rol === 'administrador') {
-    console.log('Acceso concedido: Usuario es administrador');
-    return true;
+
+  private redirectToDashboard(role: string): void {
+    switch (role) {
+      case 'paciente':
+        this.router.navigate(['/dashboard/paciente']);
+        break;
+      case 'medico':
+        this.router.navigate(['/dashboard/medico']);
+        break;
+      case 'administrador':
+        this.router.navigate(['/dashboard/admin']);
+        break;
+      default:
+        this.router.navigate(['/login']);
+    }
   }
-  
-  // Verificar si el usuario tiene el rol requerido
-  if (user.rol === requiredRole) {
-    console.log(`Acceso concedido: Usuario tiene rol ${requiredRole}`);
-    return true;
-  }
-  
-  // Si no tiene el rol correcto, redirigir a su dashboard
-  console.log(`Acceso denegado: Usuario con rol ${user.rol} intentó acceder a ${requiredRole}`);
-  
-  switch (user.rol) {
-    case 'paciente':
-      return router.createUrlTree(['/dashboard/paciente']);
-    case 'medico':
-      return router.createUrlTree(['/dashboard/medico']);
-    default:
-      // Si el rol no es reconocido, cerrar sesión
-      authService.logout();
-      return router.createUrlTree(['/login']);
-  }
-};
+}

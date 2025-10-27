@@ -30,20 +30,30 @@ Rails.application.routes.draw do
 
       resources :pacientes, except: [:new, :edit] do
         member do
+          get 'dashboard', to: 'paciente_dashboard#index'
+          get 'dashboard/estadisticas', to: 'paciente_dashboard#estadisticas_detalladas'
           get 'historial_citas', to: 'pacientes#historial_citas'
           get 'proximas_citas', to: 'pacientes#proximas_citas'
+        end
+        resources :citas, only: [:index, :show, :create] do
+          member do
+            put 'cancelar'
+            post 'reagendar'
+          end
         end
       end
 
       resources :medicos, except: [:new, :edit] do
         member do
-          get 'horarios', to: 'medicos#horarios'
-          get 'citas', to: 'medicos#citas'
-          get 'estadisticas', to: 'medicos#estadisticas'
+          get 'horarios', to: 'medicos#horarios'  # Ya lo tienes
+          get 'citas', to: 'medicos#citas'  # Ya lo tienes
+          get 'estadisticas', to: 'medicos#estadisticas'  # Ya lo tienes
+          get 'horarios_disponibles'  # AGREGAR ESTA LÍNEA (nueva)
         end
         collection do
-          get 'buscar', to: 'medicos#buscar'
-          get 'disponibles', to: 'medicos#disponibles'
+          get 'buscar', to: 'medicos#buscar'  # Ya lo tienes
+          get 'disponibles', to: 'medicos#disponibles'  # Ya lo tienes
+          get 'especialidades'  # AGREGAR ESTA LÍNEA (nueva)
         end
       end
 

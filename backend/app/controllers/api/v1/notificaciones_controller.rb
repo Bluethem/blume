@@ -1,3 +1,4 @@
+
 module Api
   module V1
     class NotificacionesController < ApplicationController
@@ -7,6 +8,7 @@ module Api
       def index
         @notificaciones = current_user.notificaciones.order(created_at: :desc)
 
+        # Filtros
         if params[:leida].present?
           @notificaciones = @notificaciones.where(leida: params[:leida])
         end
@@ -15,12 +17,19 @@ module Api
           @notificaciones = @notificaciones.where(tipo: params[:tipo])
         end
 
-        paginated_notificaciones = paginate(@notificaciones)
+        # Paginar
+        page = params[:page] || 1
+        per_page = params[:per_page] || 20
+        
+        paginated_notificaciones = @notificaciones.page(page).per(per_page)
 
         render_success({
           notificaciones: paginated_notificaciones.map { |n| notificacion_response(n) },
-          meta: pagination_meta(paginated_notificaciones),
-          no_leidas_count: current_user.notificaciones.where(leida: false).count
+          total: @notificaciones.count,
+          no_leidas: current_user.notificaciones.where(leida: false).count,
+          page: page.to_i,
+          per_page: per_page.to_i,
+          total_pages: paginated_notificaciones.total_pages
         })
       end
 
@@ -31,20 +40,30 @@ module Api
 
       # PUT /api/v1/notificaciones/:id/marcar_leida
       def marcar_leida
-        if @notificacion.update(leida: true)
-          render_success(notificacion_response(@notificacion), message: 'Notificación marcada como leída')
+        if @notificacion.update(leida: true, fecha_leida: Time.current)
+          render_success(
+            notificacion_response(@notificacion),
+            message: 'Notificación marcada como leída'
+          )
         else
-          render_error('Error al marcar la notificación como leída')
+          render_error('Error al marcar la notificación')
         end
       end
 
       # PUT /api/v1/notificaciones/marcar_todas_leidas
       def marcar_todas_leidas
-        count = current_user.notificaciones.where(leida: false).update_all(leida: true)
-        render_success({ marcadas: count }, message: "#{count} notificaciones marcadas como leídas")
+        count = current_user.notificaciones.where(leida: false).update_all(
+          leida: true,
+          fecha_leida: Time.current
+        )
+
+        render_success(
+          { notificaciones_actualizadas: count },
+          message: "#{count} notificaciones marcadas como leídas"
+        )
       end
 
-      # GET /api/v1/notificaciones/no_leidas
+      # GET /api/v1/notificaciones/no_leidas (ya lo tienes, mejorar)
       def no_leidas
         @notificaciones = current_user.notificaciones
                                       .where(leida: false)
@@ -61,8 +80,11 @@ module Api
 
       def set_notificacion
         @notificacion = current_user.notificaciones.find(params[:id])
+      rescue ActiveRecord::RecordNotFound
+        render_error('Notificación no encontrada', status: :not_found)
       end
 
+      # MEJORAR: Agregar más datos a la respuesta
       def notificacion_response(notificacion)
         {
           id: notificacion.id,
@@ -70,8 +92,62 @@ module Api
           titulo: notificacion.titulo,
           mensaje: notificacion.mensaje,
           leida: notificacion.leida,
-          created_at: notificacion.created_at
+          fecha_leida: notificacion.fecha_leida,
+          created_at: notificacion.created_at,
+          tiempo_relativo: tiempo_relativo(notificacion.created_at),
+          cita_id: notificacion.cita_id,
+          icono: icono_notificacion(notificacion.tipo),
+          color: color_notificacion(notificacion.tipo)
         }
+      end
+
+      # NUEVO HELPER: Calcular tiempo relativo
+      def tiempo_relativo(time)
+        seconds = (Time.current - time).to_i
+        
+        case seconds
+        when 0..59
+          'hace unos segundos'
+        when 60..3599
+          minutes = seconds / 60
+          "hace #{minutes} #{'minuto'.pluralize(minutes)}"
+        when 3600..86399
+          hours = seconds / 3600
+          "hace #{hours} #{'hora'.pluralize(hours)}"
+        else
+          days = seconds / 86400
+          "hace #{days} #{'día'.pluralize(days)}"
+        end
+      end
+
+      # NUEVO HELPER: Icono según tipo de notificación
+      def icono_notificacion(tipo)
+        tipos_iconos = {
+          'cita_creada' => 'event_available',
+          'cita_nueva' => 'event_available',
+          'cita_confirmada' => 'check_circle',
+          'cita_cancelada' => 'cancel',
+          'cita_reprogramada' => 'update',
+          'recordatorio' => 'alarm',
+          'mensaje' => 'mail',
+          'sistema' => 'info'
+        }
+        tipos_iconos[tipo.to_s] || 'notifications'
+      end
+
+      # NUEVO HELPER: Color según tipo de notificación
+      def color_notificacion(tipo)
+        tipos_colores = {
+          'cita_creada' => 'blue',
+          'cita_nueva' => 'blue',
+          'cita_confirmada' => 'green',
+          'cita_cancelada' => 'red',
+          'cita_reprogramada' => 'orange',
+          'recordatorio' => 'orange',
+          'mensaje' => 'purple',
+          'sistema' => 'gray'
+        }
+        tipos_colores[tipo.to_s] || 'gray'
       end
     end
   end
