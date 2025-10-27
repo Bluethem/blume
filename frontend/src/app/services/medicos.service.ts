@@ -42,10 +42,16 @@ export class MedicosService {
    * Obtener horarios disponibles de un médico
    */
   getHorariosDisponibles(id: string, fecha?: string): Observable<ApiResponse> {
-    const params = fecha ? { fecha } : {};
-    return this.http.get<ApiResponse>(`${this.apiUrl}/${id}/horarios_disponibles`, { params });
+    const params: Record<string, string> = {};
+    if (fecha) {
+      params['fecha'] = fecha;
+    }
+    
+    return this.http.get<ApiResponse>(
+      `${this.apiUrl}/${id}/horarios_disponibles`,
+      { params }
+    );
   }
-
   /**
    * Obtener lista de especialidades
    */
