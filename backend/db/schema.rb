@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_10_28_042414) do
+ActiveRecord::Schema[8.1].define(version: 2025_10_28_050000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -158,6 +158,24 @@ ActiveRecord::Schema[8.1].define(version: 2025_10_28_042414) do
     t.index ["rol"], name: "index_usuarios_on_rol"
   end
 
+  create_table "valoraciones", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.boolean "anonimo", default: false, null: false
+    t.integer "calificacion", null: false
+    t.uuid "cita_id"
+    t.text "comentario"
+    t.datetime "created_at", null: false
+    t.uuid "medico_id", null: false
+    t.uuid "paciente_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["calificacion"], name: "index_valoraciones_on_calificacion"
+    t.index ["cita_id"], name: "index_valoraciones_on_cita_id"
+    t.index ["medico_id", "created_at"], name: "index_valoraciones_on_medico_id_and_created_at"
+    t.index ["medico_id"], name: "index_valoraciones_on_medico_id"
+    t.index ["paciente_id", "medico_id"], name: "index_unique_valoracion_paciente_medico", unique: true
+    t.index ["paciente_id"], name: "index_valoraciones_on_paciente_id"
+    t.check_constraint "calificacion >= 1 AND calificacion <= 5", name: "check_calificacion_range"
+  end
+
   add_foreign_key "citas", "medicos"
   add_foreign_key "citas", "pacientes"
   add_foreign_key "citas", "usuarios", column: "cancelada_por_id"
@@ -170,4 +188,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_10_28_042414) do
   add_foreign_key "notificaciones", "citas"
   add_foreign_key "notificaciones", "usuarios"
   add_foreign_key "pacientes", "usuarios"
+  add_foreign_key "valoraciones", "citas"
+  add_foreign_key "valoraciones", "medicos"
+  add_foreign_key "valoraciones", "pacientes"
 end

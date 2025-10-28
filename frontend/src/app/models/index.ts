@@ -31,28 +31,36 @@ export interface Paciente {
 
 export interface Medico {
   id: string;
-  usuario_id: string;
+  nombre_completo: string;
+  nombre_profesional: string;
+  email: string;
+  telefono: string;
   numero_colegiatura: string;
-  anios_experiencia: number; // ✅ CORREGIDO: cambiar "anos" por "anios" si lo usas
-  costo_consulta: number; // ✅ CORREGIDO: era "tarifa_consulta"
+  anios_experiencia: number;
+  costo_consulta: number;
   biografia?: string;
   activo: boolean;
-  created_at: string;
-  updated_at: string;
   
-  // ✅ NUEVO: Relaciones
-  especialidad_principal?: Especialidad;
-  especialidades: Especialidad[];
-  certificaciones?: Certificacion[];
+  // ✅ NUEVO: Especialidades
+  especialidad?: string; // Nombre de la especialidad principal (para compatibilidad)
+  especialidad_principal?: {
+    id: string;
+    nombre: string;
+  };
+  especialidades: Array<{
+    id: string;
+    nombre: string;
+    es_principal: boolean;
+  }>;
   
-  // ✅ CAMPOS CALCULADOS (desde el backend)
-  nombre_completo?: string;
-  nombre_profesional?: string;
-  email?: string;
-  telefono?: string;
-  calificacion_promedio?: number; // Para futuro
-  disponible_hoy?: boolean;
+  // Campos adicionales
+  calificacion?: number;
+  calificacion_promedio?: number;
+  total_reviews?: number;
+  total_resenas?: number;
   foto_url?: string;
+  certificaciones?: string[];
+  disponible_hoy?: boolean;
 }
 
 export interface Especialidad {
@@ -94,18 +102,21 @@ export interface Cita {
   // ✅ RELACIONES
   paciente?: {
     id: string;
-    nombre_completo: string;
-    email: string;
-    telefono: string;
+    nombre_completo?: string;
+    edad?: number;
+    grupo_sanguineo?: string;
+    alergias?: string | string[];
+    email?: string;
+    telefono?: string;
   };
   medico?: {
     id: string;
-    nombre_completo: string;
+    nombre_completo?: string;
     nombre_profesional: string;
     numero_colegiatura: string;
     especialidad?: string;
     especialidades?: string[];
-    direccion?: string;  // ✅ AGREGADO
+    direccion?: string;
     foto_url?: string;
   };
   

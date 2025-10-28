@@ -189,7 +189,8 @@ export class AgendarCitaComponent implements OnInit {
     const citaData: CrearCitaRequest = {
       cita: {
         medico_id: this.medicoSeleccionado.id,
-        fecha_hora_inicio: this.slotSeleccionado.fecha_hora_inicio, // ✅ CORREGIDO
+        fecha_hora_inicio: this.slotSeleccionado.fecha_hora_inicio,
+        fecha_hora_fin: this.slotSeleccionado.fecha_hora_fin,
         motivo_consulta: this.motivoForm.value.motivo_consulta,
         observaciones: this.motivoForm.value.observaciones
       }

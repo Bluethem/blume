@@ -1,0 +1,127 @@
+/* Contenedor de filtros */
+.filtros-container {
+  backdrop-filter: blur(10px);
+}
+
+/* Dropdowns */
+.dropdown-menu {
+  animation: slideDown 0.2s ease-out;
+  max-height: 320px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Scrollbar personalizado para dropdowns */
+.dropdown-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dropdown-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dropdown-menu::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.5);
+  border-radius: 3px;
+}
+
+.dropdown-menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.7);
+}
+
+/* Botones de filtro */
+.filter-button {
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.filter-button::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--primary-color, #E53935);
+  transform: scaleX(0);
+  transition: transform 0.2s ease;
+}
+
+.filter-button.active::after {
+  transform: scaleX(1);
+}
+
+/* Input de búsqueda */
+.search-input {
+  transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.1);
+}
+
+/* Badges de filtros activos */
+.filter-badge {
+  animation: slideIn 0.2s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.filter-badge button {
+  transition: all 0.15s ease;
+}
+
+.filter-badge button:hover {
+  transform: scale(1.1);
+}
+
+/* Botón limpiar filtros */
+.clear-filters-button {
+  animation: fadeIn 0.3s ease-in;
+}
+
+/* Grid responsive */
+@media (max-width: 1024px) {
+  .filtros-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .filtros-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Estados hover para dropdowns */
+.dropdown-option {
+  transition: all 0.15s ease;
+}
+
+.dropdown-option:hover {
+  background: linear-gradient(90deg, transparent, rgba(229, 57, 53, 0.05), transparent);
+}
+
+.dropdown-option.selected {
+  background: linear-gradient(90deg, rgba(229, 57, 53, 0.05), rgba(229, 57, 53, 0.1), rgba(229, 57, 53, 0.05));
+}

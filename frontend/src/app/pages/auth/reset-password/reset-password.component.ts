@@ -107,7 +107,6 @@ export class ResetPasswordComponent implements OnInit {
 
     this.authService.resetPassword(this.token, password, password_confirmation).subscribe({
       next: (response) => {
-        console.log('Reset password response:', response);
         this.isLoading = false;
         this.successMessage = 'Tu contraseña ha sido actualizada exitosamente.';
         this.resetPasswordForm.reset();
@@ -118,7 +117,6 @@ export class ResetPasswordComponent implements OnInit {
         }, 3000);
       },
       error: (error) => {
-        console.error('Error en reset password:', error);
         this.errorMessage = error.message || 'No se pudo restablecer la contraseña. El token puede haber expirado.';
         this.isLoading = false;
       },

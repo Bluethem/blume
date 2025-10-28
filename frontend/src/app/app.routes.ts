@@ -80,21 +80,47 @@ export const routes: Routes = [
         data: { role: 'paciente' },
         loadComponent: () => import('./pages/paciente/citas/agendar-cita/agendar-cita.component')
           .then(m => m.AgendarCitaComponent)
-      }
-      /*
-      // Detalle de Cita
-      {
-        path: 'citas/:id',
-        loadComponent: () => import('./pages/paciente/citas/cita-detalle.component')
-          .then(m => m.CitaDetalleComponent)
       },
-      // Mi Perfil
+
       {
-        path: 'perfil',
-        loadComponent: () => import('./pages/paciente/perfil/perfil-paciente.component')
-          .then(m => m.PerfilPacienteComponent)
+        path: 'citas/lista-medicos',
+        canActivate: [authGuard, roleGuard],
+        data: { role: 'paciente' },
+        loadComponent: () => import('./pages/paciente/citas/lista-medicos/lista-medicos.component')
+          .then(m => m.ListaMedicosComponent)
+      },
+
+      {
+        path: 'citas/perfil-medico/:id',
+        canActivate: [authGuard, roleGuard],
+        data: { role: 'paciente' },
+        loadComponent: () => import('./pages/paciente/citas/perfil-medico/perfil-medico.component')
+          .then(m => m.PerfilMedicoComponent)
+      },
+
+      {
+        path: 'citas/mis-citas',
+        canActivate: [authGuard, roleGuard],
+        data: { role: 'paciente' },
+        loadComponent: () => import('./pages/paciente/citas/mis-citas/mis-citas.component')
+          .then(m => m.MisCitasComponent)
+      },
+
+      {
+        path: 'citas/detalle/:id',
+        canActivate: [authGuard, roleGuard],
+        data: { role: 'paciente' },
+        loadComponent: () => import('./pages/paciente/citas/detalle-cita/detalle-cita.component')
+          .then(m => m.DetalleCitaComponent)
+      },
+
+      {
+        path: 'mi-perfil',
+        canActivate: [authGuard, roleGuard],
+        data: { role: 'paciente' },
+        loadComponent: () => import('./pages/paciente/mi-perfil/mi-perfil.component')
+          .then(m => m.MiPerfilComponent)
       }
-          */
     ]
   },
   /*

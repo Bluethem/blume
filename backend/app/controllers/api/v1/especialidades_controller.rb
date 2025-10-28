@@ -99,13 +99,18 @@ module Api
       end
 
       def medico_simple_response(medico)
+        especialidad_principal = medico.especialidad_principal
         {
           id: medico.id,
           nombre_completo: medico.nombre_completo,
+          nombre_profesional: medico.nombre_profesional,
+          email: medico.email,
+          telefono: medico.telefono,
           numero_colegiatura: medico.numero_colegiatura,
-          anos_experiencia: medico.anos_experiencia,
-          calificacion_promedio: medico.calificacion_promedio,
-          tarifa_consulta: medico.tarifa_consulta
+          anios_experiencia: medico.anios_experiencia,
+          costo_consulta: medico.costo_consulta,
+          activo: medico.usuario.activo,
+          especialidad_principal: especialidad_principal ? { id: especialidad_principal.id, nombre: especialidad_principal.nombre } : nil
         }
       end
     end

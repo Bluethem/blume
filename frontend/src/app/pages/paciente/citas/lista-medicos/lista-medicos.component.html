@@ -1,0 +1,123 @@
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- Header -->
+  <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+    <div class="flex min-w-72 flex-col gap-1">
+      <h1 class="text-3xl lg:text-4xl font-black tracking-tighter text-text-light dark:text-text-dark">
+        Encuentra a tu especialista
+      </h1>
+      <p class="text-secondary-button dark:text-gray-400 text-base font-normal leading-normal">
+        Busca y filtra para encontrar el médico perfecto para ti.
+      </p>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <app-filtros-medicos
+    [especialidades]="especialidades"
+    [filtrosActivos]="filtros"
+    (filtrosChange)="onFiltrosChange($event)"
+    (buscar)="onBuscar($event)"
+    (limpiar)="onLimpiarFiltros()"
+  ></app-filtros-medicos>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center py-20">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
+    <p class="text-red-800 dark:text-red-200">{{ error }}</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && !error && medicos.length === 0" class="text-center py-20">
+    <span class="material-symbols-outlined text-6xl text-gray-400 mb-4">search_off</span>
+    <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+      No se encontraron médicos
+    </h3>
+    <p class="text-gray-500 dark:text-gray-400 mb-4">
+      Intenta ajustar los filtros de búsqueda
+    </p>
+    <button 
+      (click)="onLimpiarFiltros()"
+      class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-red-700 transition-colors"
+    >
+      Limpiar filtros
+    </button>
+  </div>
+
+  <!-- Lista de Médicos -->
+  <div *ngIf="!loading && medicos.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+    <app-medico-card
+      *ngFor="let medico of medicos"
+      [medico]="medico"
+      (verPerfil)="verDetalleMedico(medico)"
+      (agendarCita)="agendarCita(medico)"
+    ></app-medico-card>
+  </div>
+
+  <!-- Paginación -->
+  <div *ngIf="!loading && totalPages > 1" class="flex justify-center mt-12">
+    <nav class="flex items-center gap-2">
+      <!-- Botón anterior -->
+      <button
+        (click)="cambiarPagina(currentPage - 1)"
+        [disabled]="currentPage === 1"
+        class="flex items-center justify-center h-10 w-10 rounded-lg text-secondary-button hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <span class="material-symbols-outlined">chevron_left</span>
+      </button>
+
+      <!-- Primera página -->
+      <button
+        *ngIf="paginasVisibles[0] > 1"
+        (click)="cambiarPagina(1)"
+        class="flex items-center justify-center h-10 w-10 rounded-lg text-secondary-button hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm font-bold"
+      >
+        1
+      </button>
+
+      <!-- Separador -->
+      <span *ngIf="paginasVisibles[0] > 2" class="text-secondary-button">...</span>
+
+      <!-- Páginas visibles -->
+      <button
+        *ngFor="let pagina of paginasVisibles"
+        (click)="cambiarPagina(pagina)"
+        [class.bg-primary]="pagina === currentPage"
+        [class.text-white]="pagina === currentPage"
+        [class.shadow-md]="pagina === currentPage"
+        class="flex items-center justify-center h-10 w-10 rounded-lg text-secondary-button hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm font-bold"
+      >
+        {{ pagina }}
+      </button>
+
+      <!-- Separador -->
+      <span *ngIf="paginasVisibles[paginasVisibles.length - 1] < totalPages - 1" class="text-secondary-button">...</span>
+
+      <!-- Última página -->
+      <button
+        *ngIf="paginasVisibles[paginasVisibles.length - 1] < totalPages"
+        (click)="cambiarPagina(totalPages)"
+        class="flex items-center justify-center h-10 w-10 rounded-lg text-secondary-button hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm font-bold"
+      >
+        {{ totalPages }}
+      </button>
+
+      <!-- Botón siguiente -->
+      <button
+        (click)="cambiarPagina(currentPage + 1)"
+        [disabled]="currentPage === totalPages"
+        class="flex items-center justify-center h-10 w-10 rounded-lg text-secondary-button hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <span class="material-symbols-outlined">chevron_right</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Info de resultados -->
+  <div *ngIf="!loading && medicos.length > 0" class="text-center mt-4 text-sm text-gray-600 dark:text-gray-400">
+    Mostrando {{ (currentPage - 1) * perPage + 1 }} - {{ calcularHasta() }} de {{ totalMedicos }} médicos
+  </div>
+</div>

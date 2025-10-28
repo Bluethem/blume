@@ -1,0 +1,263 @@
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+  <div class="layout-container flex h-full grow flex-col">
+    
+    <!-- Header -->
+    <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-slate-700 px-10 py-3 bg-card-light dark:bg-card-dark shadow-sm">
+      <div class="flex items-center gap-4 text-primary">
+        <span class="material-symbols-outlined text-3xl">local_florist</span>
+        <h2 class="text-xl font-bold leading-tight tracking-[-0.015em]">Blume</h2>
+      </div>
+      <div class="flex flex-1 justify-end gap-6">
+        <div class="flex items-center gap-8">
+          <a class="text-text-light-primary dark:text-dark-primary text-sm font-medium leading-normal cursor-pointer" [routerLink]="['/paciente/citas/mis-citas']">Citas</a>
+          <a class="text-text-light-secondary dark:text-dark-secondary text-sm font-medium leading-normal cursor-pointer" [routerLink]="['/paciente/historial']">Historial</a>
+          <a class="text-text-light-secondary dark:text-dark-secondary text-sm font-medium leading-normal cursor-pointer" [routerLink]="['/paciente/pagos']">Pagos</a>
+        </div>
+        <div class="flex gap-2 items-center">
+          <button class="flex items-center justify-center rounded-lg h-10 bg-slate-100 dark:bg-slate-700/50 text-text-light-primary dark:text-dark-primary gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5">
+            <span class="material-symbols-outlined text-xl">notifications</span>
+          </button>
+          <button class="flex items-center justify-center rounded-lg h-10 bg-slate-100 dark:bg-slate-700/50 text-text-light-primary dark:text-dark-primary gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5">
+            <span class="material-symbols-outlined text-xl">settings</span>
+          </button>
+          <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 cursor-pointer" style='background-image: url("https://ui-avatars.com/api/?name=Usuario&size=200");'></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="flex justify-center items-center py-20">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error && !loading" class="flex flex-col items-center justify-center py-20 px-4">
+      <p class="text-red-600 dark:text-red-400 mb-4">{{ error }}</p>
+      <button (click)="volver()" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+        Volver a Mis Citas
+      </button>
+    </div>
+
+    <!-- Content -->
+    <main *ngIf="!loading && !error && cita" class="flex-1 px-4 sm:px-6 lg:px-10 py-8">
+      <div class="max-w-7xl mx-auto">
+        
+        <!-- Botón volver -->
+        <button (click)="volver()" class="flex items-center gap-2 text-text-light-secondary dark:text-dark-secondary hover:text-primary mb-6 transition-colors">
+          <span class="material-symbols-outlined">arrow_back</span>
+          <span>Volver a Mis Citas</span>
+        </button>
+
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+          <div class="flex flex-col gap-2">
+            <p class="text-3xl font-black leading-tight tracking-[-0.033em] text-text-light-primary dark:text-dark-primary">
+              Detalle de la Cita
+            </p>
+            <p class="text-sm font-normal leading-normal text-text-light-secondary dark:text-dark-secondary">
+              Código de Cita: {{ cita.id.substring(0, 8).toUpperCase() }}
+            </p>
+          </div>
+          <div class="flex items-center gap-4">
+            <div class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg px-4" [ngClass]="estadoClase">
+              <p class="text-sm font-bold leading-normal">{{ estadoTexto }}</p>
+            </div>
+            <div class="text-right">
+              <p class="font-semibold text-text-light-primary dark:text-dark-primary">
+                {{ formatearFecha(cita.fecha_hora_inicio) }}
+              </p>
+              <p class="text-sm text-text-light-secondary dark:text-dark-secondary">
+                {{ formatearHora(cita.fecha_hora_inicio) }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grid Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          <!-- Columna Principal -->
+          <div class="lg:col-span-2 flex flex-col gap-8">
+            
+            <!-- Información del Médico -->
+            <div class="bg-card-light dark:bg-card-dark rounded-xl shadow-md overflow-hidden">
+              <h2 class="text-xl font-bold leading-tight tracking-[-0.015em] px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+                Información del Médico
+              </h2>
+              <div class="p-6">
+                <div class="flex items-start gap-6">
+                  <div 
+                    class="w-24 h-24 bg-center bg-no-repeat aspect-square bg-cover rounded-full flex-shrink-0"
+                    [style.background-image]="'url(' + (cita.medico?.foto_url || 'https://ui-avatars.com/api/?name=' + cita.medico?.nombre_completo) + ')'"
+                    [attr.data-alt]="'Fotografía del ' + cita.medico?.nombre_profesional"
+                  ></div>
+                  <div class="flex flex-col gap-4 flex-1">
+                    <div class="flex flex-col gap-1">
+                      <p class="text-lg font-bold leading-tight text-text-light-primary dark:text-dark-primary">
+                        {{ cita.medico?.nombre_profesional }}
+                      </p>
+                      <p class="text-base font-normal leading-normal text-text-light-secondary dark:text-dark-secondary">
+                        {{ cita.medico?.especialidad }}
+                      </p>
+                      <p class="text-sm font-normal leading-normal text-text-light-secondary dark:text-dark-secondary">
+                        {{ cita.medico?.numero_colegiatura }}
+                      </p>
+                    </div>
+                    <button 
+                      (click)="verPerfilMedico()"
+                      class="flex min-w-[84px] max-w-[200px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-9 px-4 bg-slate-100 dark:bg-slate-700/50 text-text-light-primary dark:text-dark-primary text-sm font-medium leading-normal hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                    >
+                      <span class="truncate">Ver Perfil Completo</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Información del Paciente -->
+            <div class="bg-card-light dark:bg-card-dark rounded-xl shadow-md overflow-hidden">
+              <h2 class="text-xl font-bold leading-tight tracking-[-0.015em] px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+                Información del Paciente
+              </h2>
+              <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                <div>
+                  <p class="text-sm font-medium text-text-light-secondary dark:text-dark-secondary">Nombre Completo</p>
+                  <p class="font-semibold text-text-light-primary dark:text-dark-primary">
+                    {{ cita.paciente?.nombre_completo }}
+                  </p>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-text-light-secondary dark:text-dark-secondary">Edad</p>
+                  <p class="font-semibold text-text-light-primary dark:text-dark-primary">
+                    {{ cita.paciente?.edad || 'N/A' }} años
+                  </p>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-text-light-secondary dark:text-dark-secondary">Grupo Sanguíneo</p>
+                  <p class="font-semibold text-text-light-primary dark:text-dark-primary">
+                    {{ cita.paciente?.grupo_sanguineo || 'No especificado' }}
+                  </p>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-text-light-secondary dark:text-dark-secondary">Alergias</p>
+                  <div class="flex gap-2 pt-1 flex-wrap" *ngIf="alergiasPaciente.length > 0; else sinAlergias">
+                    <div 
+                      *ngFor="let alergia of alergiasPaciente"
+                      class="flex h-6 shrink-0 items-center justify-center gap-x-2 rounded-md bg-primary/10 pl-2 pr-2"
+                    >
+                      <p class="text-primary text-xs font-bold leading-normal">{{ alergia }}</p>
+                    </div>
+                  </div>
+                  <ng-template #sinAlergias>
+                    <p class="font-semibold text-text-light-primary dark:text-dark-primary">Sin alergias registradas</p>
+                  </ng-template>
+                </div>
+              </div>
+            </div>
+
+            <!-- Detalles de la Cita -->
+            <div class="bg-card-light dark:bg-card-dark rounded-xl shadow-md overflow-hidden">
+              <h2 class="text-xl font-bold leading-tight tracking-[-0.015em] px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+                Detalles de la Cita
+              </h2>
+              <div class="p-6 space-y-4">
+                <div>
+                  <p class="text-sm font-medium text-text-light-secondary dark:text-dark-secondary">Motivo de la Consulta</p>
+                  <p class="font-semibold text-text-light-primary dark:text-dark-primary">
+                    {{ cita.motivo_consulta }}
+                  </p>
+                </div>
+                <div *ngIf="cita.observaciones">
+                  <p class="text-sm font-medium text-text-light-secondary dark:text-dark-secondary">Observaciones Previas</p>
+                  <p class="text-text-light-primary dark:text-dark-primary">
+                    {{ cita.observaciones }}
+                  </p>
+                </div>
+                <div *ngIf="cita.diagnostico && cita.estado === 'completada'">
+                  <p class="text-sm font-medium text-text-light-secondary dark:text-dark-secondary">Diagnóstico</p>
+                  <p class="text-text-light-primary dark:text-dark-primary">
+                    {{ cita.diagnostico }}
+                  </p>
+                </div>
+                <div *ngIf="cita.motivo_cancelacion && cita.estado === 'cancelada'">
+                  <p class="text-sm font-medium text-text-light-secondary dark:text-dark-secondary">Motivo de Cancelación</p>
+                  <p class="text-text-light-primary dark:text-dark-primary">
+                    {{ cita.motivo_cancelacion }}
+                  </p>
+                </div>
+                <div class="grid grid-cols-2 gap-6 pt-2">
+                  <div>
+                    <p class="text-sm font-medium text-text-light-secondary dark:text-dark-secondary">Costo</p>
+                    <p class="text-lg font-bold text-text-light-primary dark:text-dark-primary">
+                      ${{ cita.costo }}
+                    </p>
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-text-light-secondary dark:text-dark-secondary">Duración</p>
+                    <p class="text-lg font-bold text-text-light-primary dark:text-dark-primary">
+                      {{ calcularDuracion() }} minutos
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sidebar -->
+          <div class="flex flex-col gap-8">
+            
+            <!-- Acciones -->
+            <div class="bg-card-light dark:bg-card-dark rounded-xl shadow-md p-6">
+              <h3 class="text-lg font-bold mb-4">Acciones</h3>
+              <div class="flex flex-col gap-3">
+                <button 
+                  *ngIf="puedeCancelar()"
+                  (click)="solicitarCancelacion()"
+                  class="flex w-full min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-11 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] gap-2 hover:bg-primary/90 transition-colors"
+                >
+                  <span class="material-symbols-outlined">cancel</span>
+                  <span class="truncate">Solicitar Cancelación</span>
+                </button>
+                <button 
+                  (click)="descargarResumen()"
+                  class="flex w-full min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-11 px-4 bg-slate-100 dark:bg-slate-700/50 text-text-light-primary dark:text-dark-primary text-sm font-medium leading-normal gap-2 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                >
+                  <span class="material-symbols-outlined">download</span>
+                  <span class="truncate">Descargar Resumen</span>
+                </button>
+                <button 
+                  (click)="imprimir()"
+                  class="flex w-full min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-11 px-4 bg-slate-100 dark:bg-slate-700/50 text-text-light-primary dark:text-dark-primary text-sm font-medium leading-normal gap-2 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                >
+                  <span class="material-symbols-outlined">print</span>
+                  <span class="truncate">Imprimir</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Historial de Cambios -->
+            <div class="bg-card-light dark:bg-card-dark rounded-xl shadow-md p-6">
+              <h3 class="text-lg font-bold mb-6">Historial de Cambios</h3>
+              <div class="relative pl-6 border-l-2 border-slate-200 dark:border-slate-700 space-y-8">
+                <div *ngFor="let cambio of historialCambios" class="relative">
+                  <div 
+                    class="absolute -left-[35px] top-1 flex items-center justify-center w-6 h-6 rounded-full"
+                    [ngClass]="cambio.color"
+                  >
+                    <span class="material-symbols-outlined text-white text-base">{{ cambio.icono }}</span>
+                  </div>
+                  <p class="font-semibold text-sm text-text-light-primary dark:text-dark-primary">
+                    {{ cambio.accion }}
+                  </p>
+                  <p class="text-xs text-text-light-secondary dark:text-dark-secondary">
+                    {{ cambio.fecha }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

@@ -2,7 +2,7 @@ module Api
   module V1
     class CitasController < ApplicationController
       before_action :set_cita, only: [:show, :update, :destroy, :confirmar, :cancelar, :completar, :reprogramar]
-      before_action :authorize_cita_access, only: [:show, :update, :destroy, :cancelar, :reprogramar]
+      before_action :authorize_cita_access, only: [:show, :update, :destroy, :cancelar, :reprogramar, :completar]
 
       # GET /api/v1/citas
       def index
@@ -215,6 +215,45 @@ module Api
         })
       end
 
+      # GET /api/v1/citas/contadores
+      def contadores
+        citas = obtener_citas_por_usuario
+        
+        contadores = {
+          todas: citas.count,
+          proximas: citas.where('fecha_hora_inicio > ?', Time.current)
+                       .where(estado: [:pendiente, :confirmada])
+                       .count,
+          completadas: citas.where(estado: :completada).count,
+          canceladas: citas.where(estado: :cancelada).count
+        }
+        
+        render_success(contadores)
+      end
+
+      # GET /api/v1/citas/mis-citas
+      def mis_citas
+        citas = obtener_citas_por_usuario
+        
+        # Aplicar filtros
+        citas = citas.where(estado: params[:estado].split(',')) if params[:estado].present?
+        citas = citas.where(medico_id: params[:medico_id]) if params[:medico_id].present?
+        
+        if params[:fecha_desde].present?
+          citas = citas.where('fecha_hora_inicio >= ?', params[:fecha_desde])
+        end
+        
+        if params[:fecha_hasta].present?
+          citas = citas.where('fecha_hora_inicio <= ?', params[:fecha_hasta])
+        end
+        
+        # Ordenar y paginar
+        citas = citas.includes(medico: :usuario, paciente: :usuario).order(fecha_hora_inicio: :desc)
+        paginated_citas = paginate(citas)
+        
+        render_success(paginated_citas.map { |c| cita_response(c) }, meta: pagination_meta(citas))
+      end
+
       private
 
       def set_cita
@@ -323,28 +362,37 @@ module Api
       def cita_response(cita)
         {
           id: cita.id,
+          paciente_id: cita.paciente_id,
+          medico_id: cita.medico_id,
+          fecha_hora_inicio: cita.fecha_hora_inicio,
+          fecha_hora_fin: cita.fecha_hora_fin,
+          estado: cita.estado,
+          motivo_consulta: cita.motivo_consulta,
+          observaciones: cita.observaciones,
+          diagnostico: cita.diagnostico,
+          motivo_cancelacion: cita.motivo_cancelacion,
+          cancelada_por_id: cita.cancelada_por_id,
+          costo: cita.costo,
+          created_at: cita.created_at,
+          updated_at: cita.updated_at,
           paciente: {
             id: cita.paciente.id,
             nombre_completo: cita.paciente.nombre_completo,
-            email: cita.paciente.email,
-            telefono: cita.paciente.telefono
+            edad: cita.paciente.edad,
+            grupo_sanguineo: cita.paciente.grupo_sanguineo,
+            alergias: cita.paciente.alergias,
+            email: cita.paciente.usuario.email,
+            telefono: cita.paciente.usuario.telefono
           },
           medico: {
             id: cita.medico.id,
             nombre_completo: cita.medico.nombre_completo,
+            nombre_profesional: cita.medico.nombre_profesional,
             numero_colegiatura: cita.medico.numero_colegiatura,
+            foto_url: nil,
+            especialidad: cita.medico.especialidad_principal&.nombre || 'General',
             especialidades: cita.medico.especialidades.map { |e| e.nombre }
-          },
-          fecha_hora_inicio: cita.fecha_hora_inicio,
-          fecha_hora_fin: cita.fecha_hora_fin,
-          motivo_consulta: cita.motivo_consulta,
-          diagnostico: cita.diagnostico,
-          observaciones: cita.observaciones,
-          estado: cita.estado,
-          costo: cita.costo,
-          motivo_cancelacion: cita.motivo_cancelacion,
-          created_at: cita.created_at,
-          updated_at: cita.updated_at
+          }
         }
       end
     end

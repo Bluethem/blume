@@ -46,7 +46,6 @@ export class ForgotPasswordComponent {
     // Llamada real al backend
     this.authService.forgotPassword(email).subscribe({
       next: (response) => {
-        console.log('Forgot password response:', response);
         this.isLoading = false;
         this.successMessage = 'Se ha enviado un enlace de recuperación a tu correo electrónico.';
         this.forgotPasswordForm.reset();
@@ -57,7 +56,6 @@ export class ForgotPasswordComponent {
         }, 3000);
       },
       error: (error) => {
-        console.error('Error en forgot password:', error);
         this.errorMessage = error.message || 'No se pudo enviar el correo de recuperación.';
         this.isLoading = false;
       },

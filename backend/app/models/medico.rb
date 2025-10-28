@@ -25,6 +25,7 @@ class Medico < ApplicationRecord
   has_many :pacientes, through: :citas
   has_many :medico_especialidades, dependent: :destroy
   has_many :especialidades, through: :medico_especialidades
+  has_many :valoraciones, dependent: :destroy
 
   # Validaciones
   validates :usuario_id, presence: true, uniqueness: true
@@ -132,6 +133,40 @@ class Medico < ApplicationRecord
     !citas.where(estado: [:pendiente, :confirmada])
           .where('fecha_hora_inicio < ? AND fecha_hora_fin > ?', fecha_fin, fecha_hora)
           .exists?
+  end
+  def calificacion_promedio
+    return 0.0 if valoraciones.empty?
+    Rails.cache.fetch("medico_#{id}_calificacion", expires_in: 1.hour) do
+      valoraciones.average(:calificacion).to_f.round(1)
+    end
+  end
+
+  def total_resenas
+    valoraciones.count
+  end
+  
+  def actualizar_calificacion_promedio
+    Rails.cache.delete("medico_#{id}_calificacion")
+    calificacion_promedio
+  end
+
+  def distribucion_calificaciones
+    {
+      5 => valoraciones.where(calificacion: 5).count,
+      4 => valoraciones.where(calificacion: 4).count,
+      3 => valoraciones.where(calificacion: 3).count,
+      2 => valoraciones.where(calificacion: 2).count,
+      1 => valoraciones.where(calificacion: 1).count
+    }
+  end
+
+  def foto_url
+    usuario.foto_url || "https://ui-avatars.com/api/?name=#{nombre_completo}&size=200"
+  end
+
+  def disponible_hoy?
+    dia_hoy = Date.today.wday
+    horario_medicos.activos.exists?(dia_semana: dia_hoy)
   end
 
   def total_citas_completadas

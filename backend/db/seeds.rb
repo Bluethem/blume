@@ -586,5 +586,108 @@ puts "\n   Pacientes:"
 pacientes_creados.each do |paciente|
   puts "   - #{paciente.usuario.email} / password123"
 end
+# =====================================================
+# 7. VALORACIONES DE MÉDICOS
+# =====================================================
+puts "\n📝 Creando valoraciones de médicos..."
+
+comentarios_positivos = [
+  "Excelente profesional, muy atento y dedicado. Me sentí muy bien atendido durante toda la consulta.",
+  "El doctor es muy empático y explica todo con mucha claridad. Totalmente recomendado.",
+  "Muy buen médico, con mucha experiencia. Las indicaciones fueron precisas y efectivas.",
+  "Profesional de primer nivel. Me ayudó mucho con mi tratamiento y siempre disponible para dudas.",
+  "Excelente atención médica. Se tomó el tiempo necesario para escucharme y resolver todas mis dudas.",
+  "Un médico extraordinario. Su diagnóstico fue acertado y el tratamiento muy efectivo.",
+  "Muy recomendado. Además de ser profesional, es muy humano en su trato con los pacientes.",
+  "Quedé muy satisfecho con la atención. El doctor realmente se preocupa por la salud de sus pacientes."
+]
+
+comentarios_buenos = [
+  "Buen doctor, aunque a veces la espera es un poco larga. En general, satisfecho con la atención.",
+  "Profesional competente. La consulta fue buena, aunque me hubiera gustado más tiempo de atención.",
+  "Buen médico, explica bien los procedimientos. Solo mejoraría un poco la puntualidad.",
+  "Atención correcta y diagnóstico acertado. Recomendable."
+]
+
+valoraciones_creadas = []
+
+# Crear valoraciones para cada médico
+medicos_creados.each_with_index do |medico, index|
+  # Cada médico recibe entre 5 y 12 valoraciones
+  num_valoraciones = rand(5..12)
+  pacientes_disponibles = pacientes_creados.dup.shuffle
+  
+  num_valoraciones.times do |i|
+    break if pacientes_disponibles.empty?
+    
+    paciente = pacientes_disponibles.pop
+    
+    # Verificar que el paciente tenga una cita completada con este médico
+    cita_completada = Cita.find_by(
+      paciente: paciente,
+      medico: medico,
+      estado: :completada
+    )
+    
+    next unless cita_completada
+    
+    # 70% de valoraciones con 5 estrellas, 20% con 4, 10% con 3
+    rand_val = rand(100)
+    if rand_val < 70
+      calificacion = 5
+      comentarios = comentarios_positivos
+    elsif rand_val < 90
+      calificacion = 4
+      comentarios = comentarios_buenos + comentarios_positivos
+    else
+      calificacion = 3
+      comentarios = comentarios_buenos
+    end
+    
+    # 80% con comentario, 20% sin comentario
+    comentario = rand(100) < 80 ? comentarios.sample : nil
+    
+    # 5% de valoraciones anónimas
+    anonimo = rand(100) < 5
+    
+    valoracion = Valoracion.create!(
+      paciente: paciente,
+      medico: medico,
+      cita: cita_completada,
+      calificacion: calificacion,
+      comentario: comentario,
+      anonimo: anonimo,
+      created_at: cita_completada.created_at + rand(1..7).days
+    )
+    
+    valoraciones_creadas << valoracion
+  end
+  
+  print "."
+end
+
+puts "\n✅ #{valoraciones_creadas.count} valoraciones creadas"
+
+# Mostrar estadísticas de valoraciones por médico
+puts "\n📊 Estadísticas de valoraciones por médico:"
+medicos_creados.first(3).each do |medico|
+  puts "\n   Dr(a). #{medico.nombre_completo}:"
+  puts "   - Calificación promedio: #{medico.calificacion_promedio} ⭐"
+  puts "   - Total de reseñas: #{medico.total_resenas}"
+  puts "   - Distribución: #{medico.distribucion_calificaciones.map { |k, v| "#{k}⭐: #{v}" }.join(", ")}"
+end
+
+puts "="*60
+puts "\n💻 CREDENCIALES DE ACCESO:"
+puts "="*60
+puts "   Admin: admin@hospital.com / password123"
+puts "\n   Médicos:"
+medicos_creados.each do |medico|
+  puts "   - #{medico.usuario.email} / password123"
+end
+puts "\n   Pacientes:"
+pacientes_creados.each do |paciente|
+  puts "   - #{paciente.usuario.email} / password123"
+end
 puts "="*60
 puts "\n¡Listo para usar!"

@@ -238,11 +238,9 @@ export class RegisterComponent {
 
     this.authService.register(registerData).subscribe({
       next: (response) => {
-        console.log('Registro de paciente exitoso:', response);
         this.router.navigate(['/dashboard/paciente']);
       },
       error: (error) => {
-        console.error('Error en registro:', error);
         this.errorMessage = error.message || 'Error al crear la cuenta.';
         this.isLoading = false;
       },

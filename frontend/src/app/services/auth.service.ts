@@ -253,16 +253,17 @@ export class AuthService {
       errorMessage = `Error: ${error.message}`;
     }
 
-    console.error('Error en petición:', {
-      status: error.status,
-      message: errorMessage,
-      error: error.error
-    });
-    
     return throwError(() => ({ 
       message: errorMessage, 
       status: error.status,
       errors: error.error?.errors 
     }));
+  }
+
+  /**
+   * Subir foto de perfil
+   */
+  uploadPhoto(formData: FormData): Observable<ApiResponse<{ foto_url: string }>> {
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/subir-foto`, formData);
   }
 }

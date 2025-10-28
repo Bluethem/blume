@@ -1,0 +1,222 @@
+<!-- filtros-medicos.component.html -->
+<div class="bg-card-light dark:bg-card-dark p-4 rounded-xl shadow-sm mb-8 border border-border-light dark:border-border-dark">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+    
+    <!-- Buscador -->
+    <div class="lg:col-span-2">
+      <label class="flex flex-col w-full">
+        <div class="flex w-full flex-1 items-stretch rounded-lg h-12">
+          <div class="text-secondary-button flex items-center justify-center pl-4 rounded-l-lg bg-background-light dark:bg-background-dark">
+            <span class="material-symbols-outlined">search</span>
+          </div>
+          <input 
+            type="text"
+            [(ngModel)]="searchTerm"
+            (input)="onSearchChange()"
+            class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-text-light dark:text-text-dark focus:outline-0 focus:ring-2 focus:ring-primary focus:ring-inset border-none bg-background-light dark:bg-background-dark h-full placeholder:text-secondary-button px-4 text-base" 
+            placeholder="Buscar por nombre..."
+          />
+        </div>
+      </label>
+    </div>
+
+    <!-- Dropdown Especialidad -->
+    <div class="relative">
+      <button 
+        (click)="dropdownEspecialidad = !dropdownEspecialidad"
+        (blur)="scheduleCloseEspecialidad()"
+        class="w-full flex h-12 shrink-0 items-center justify-between rounded-lg bg-background-light dark:bg-background-dark px-4 border transition-colors"
+        [ngClass]="especialidadSeleccionada ? 'border-primary' : 'border-transparent hover:border-primary'"
+      >
+        <p class="text-text-light dark:text-text-dark text-sm font-medium">
+          {{ especialidadNombre }}
+        </p>
+        <span class="material-symbols-outlined text-secondary-button">expand_more</span>
+      </button>
+
+      <!-- Dropdown Menu Especialidad -->
+      <div 
+        *ngIf="dropdownEspecialidad"
+        class="absolute z-50 mt-2 w-full bg-card-light dark:bg-card-dark rounded-lg shadow-lg border border-border-light dark:border-border-dark max-h-60 overflow-y-auto"
+      >
+        <button
+          (click)="seleccionarEspecialidad('')"
+          class="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-sm"
+          [ngClass]="!especialidadSeleccionada ? 'bg-primary/10 text-primary font-semibold' : ''"
+        >
+          Todas las especialidades
+        </button>
+        <button
+          *ngFor="let esp of especialidades"
+          (click)="seleccionarEspecialidad(esp.id)"
+          class="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-sm"
+          [ngClass]="especialidadSeleccionada === esp.id ? 'bg-primary/10 text-primary font-semibold' : ''"
+        >
+          {{ esp.nombre }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Dropdown Experiencia -->
+    <div class="relative">
+      <button 
+        (click)="dropdownDisponibilidad = !dropdownDisponibilidad"
+        (blur)="scheduleCloseDisponibilidad()"
+        class="w-full flex h-12 shrink-0 items-center justify-between rounded-lg bg-background-light dark:bg-background-dark px-4 border transition-colors"
+        [ngClass]="experienciaMinima ? 'border-primary' : 'border-transparent hover:border-primary'"
+      >
+        <p class="text-text-light dark:text-text-dark text-sm font-medium">
+          {{ experienciaLabel }}
+        </p>
+        <span class="material-symbols-outlined text-secondary-button">expand_more</span>
+      </button>
+
+      <!-- Dropdown Menu Experiencia -->
+      <div 
+        *ngIf="dropdownDisponibilidad"
+        class="absolute z-50 mt-2 w-full bg-card-light dark:bg-card-dark rounded-lg shadow-lg border border-border-light dark:border-border-dark"
+      >
+        <button
+          *ngFor="let opcion of opcionesExperiencia"
+          (click)="seleccionarExperiencia(opcion.value)"
+          class="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-sm"
+          [ngClass]="experienciaMinima === opcion.value ? 'bg-primary/10 text-primary font-semibold' : ''"
+        >
+          {{ opcion.label }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Dropdown Costo -->
+    <div class="relative">
+      <button 
+        (click)="dropdownCosto = !dropdownCosto"
+        (blur)="scheduleCloseCosto()"
+        class="w-full flex h-12 shrink-0 items-center justify-between rounded-lg bg-background-light dark:bg-background-dark px-4 border transition-colors"
+        [ngClass]="costoMaximo ? 'border-primary' : 'border-transparent hover:border-primary'"
+      >
+        <p class="text-text-light dark:text-text-dark text-sm font-medium">
+          {{ costoLabel }}
+        </p>
+        <span class="material-symbols-outlined text-secondary-button">expand_more</span>
+      </button>
+
+      <!-- Dropdown Menu Costo -->
+      <div 
+        *ngIf="dropdownCosto"
+        class="absolute z-50 mt-2 w-full bg-card-light dark:bg-card-dark rounded-lg shadow-lg border border-border-light dark:border-border-dark"
+      >
+        <button
+          *ngFor="let opcion of opcionesCosto"
+          (click)="seleccionarCosto(opcion.value)"
+          class="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-sm"
+          [ngClass]="costoMaximo === opcion.value ? 'bg-primary/10 text-primary font-semibold' : ''"
+        >
+          {{ opcion.label }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Botón Disponibilidad Hoy -->
+    <div class="relative">
+      <button 
+        (click)="toggleDisponibilidad()"
+        class="w-full flex h-12 shrink-0 items-center justify-center gap-2 rounded-lg px-4 border transition-colors"
+        [ngClass]="soloDisponiblesHoy ? 'bg-primary text-white border-primary' : 'bg-background-light dark:bg-background-dark border-transparent hover:border-primary'"
+      >
+        <span class="material-symbols-outlined">today</span>
+        <p class="text-sm font-medium">
+          {{ soloDisponiblesHoy ? 'Disponibles hoy' : 'Disponibilidad' }}
+        </p>
+      </button>
+    </div>
+  </div>
+
+  <!-- Fila de Ordenamiento y Limpiar -->
+  <div class="flex items-center justify-between mt-4 gap-4">
+    <!-- Ordenamiento -->
+    <div class="relative flex-1 max-w-xs">
+      <button 
+        (click)="dropdownOrden = !dropdownOrden"
+        (blur)="scheduleCloseOrden()"
+        class="w-full flex h-10 shrink-0 items-center justify-between rounded-lg bg-background-light dark:bg-background-dark px-4 border border-transparent hover:border-primary transition-colors"
+      >
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-secondary-button text-sm">sort</span>
+          <p class="text-text-light dark:text-text-dark text-sm font-medium">
+            {{ ordenLabel }}
+          </p>
+        </div>
+        <span class="material-symbols-outlined text-secondary-button text-sm">expand_more</span>
+      </button>
+
+      <!-- Dropdown Menu Ordenamiento -->
+      <div 
+        *ngIf="dropdownOrden"
+        class="absolute z-50 mt-2 w-full bg-card-light dark:bg-card-dark rounded-lg shadow-lg border border-border-light dark:border-border-dark"
+      >
+        <button
+          *ngFor="let opcion of opcionesOrden"
+          (click)="seleccionarOrden(opcion.value)"
+          class="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-sm"
+          [ngClass]="ordenSeleccionado === opcion.value ? 'bg-primary/10 text-primary font-semibold' : ''"
+        >
+          {{ opcion.label }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Botón Limpiar Filtros -->
+    <button
+      *ngIf="tienesFiltrosActivos"
+      (click)="limpiarFiltros()"
+      class="flex items-center gap-2 px-4 h-10 rounded-lg bg-gray-200 dark:bg-gray-700 text-secondary-button dark:text-text-dark hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
+    >
+      <span class="material-symbols-outlined text-sm">close</span>
+      Limpiar filtros
+    </button>
+  </div>
+
+  <!-- Indicadores de filtros activos -->
+  <div *ngIf="tienesFiltrosActivos" class="flex flex-wrap gap-2 mt-4">
+    <span 
+      *ngIf="especialidadSeleccionada"
+      class="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium"
+    >
+      {{ especialidadNombre }}
+      <button (click)="seleccionarEspecialidad('')" class="hover:bg-primary/20 rounded-full p-0.5">
+        <span class="material-symbols-outlined" style="font-size: 14px;">close</span>
+      </button>
+    </span>
+
+    <span 
+      *ngIf="costoMaximo"
+      class="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium"
+    >
+      {{ costoLabel }}
+      <button (click)="seleccionarCosto(undefined)" class="hover:bg-primary/20 rounded-full p-0.5">
+        <span class="material-symbols-outlined" style="font-size: 14px;">close</span>
+      </button>
+    </span>
+
+    <span 
+      *ngIf="experienciaMinima"
+      class="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium"
+    >
+      {{ experienciaLabel }}
+      <button (click)="seleccionarExperiencia(undefined)" class="hover:bg-primary/20 rounded-full p-0.5">
+        <span class="material-symbols-outlined" style="font-size: 14px;">close</span>
+      </button>
+    </span>
+
+    <span 
+      *ngIf="soloDisponiblesHoy"
+      class="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium"
+    >
+      Disponibles hoy
+      <button (click)="toggleDisponibilidad()" class="hover:bg-primary/20 rounded-full p-0.5">
+        <span class="material-symbols-outlined" style="font-size: 14px;">close</span>
+      </button>
+    </span>
+  </div>
+</div>

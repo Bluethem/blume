@@ -49,37 +49,20 @@ export class PacienteDashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    console.log('🎯 Dashboard ngOnInit ejecutado');
-    console.log('Usuario:', this.currentUser);
-    console.log('Token:', this.authService.getToken()?.substring(0, 30));
     this.cargarDashboard();
   }
 
   cargarDashboard(): void {
-    console.log('🚀 INICIO cargarDashboard()');
-    console.log('isLoading:', this.isLoading);
-    
     // Evitar cargar si ya está cargando
     if (this.isLoading) {
-      console.warn('⚠️ Ya está cargando, saliendo...');
       return;
     }
 
     this.isLoading = true;
     this.errorMessage = '';
-
-    console.log('🔍 Cargando dashboard...');
-    console.log('Token:', this.authService.getToken()?.substring(0, 20) + '...');
-    console.log('API URL completa:', `${environment.apiUrl}/paciente/dashboard`);
-
-    console.log('📡 Llamando a getDashboard()...');
     
-    const observable = this.dashboardService.getDashboard();
-    console.log('📡 Observable creado:', observable);
-    
-    observable.subscribe({
+    this.dashboardService.getDashboard().subscribe({
       next: (response) => {
-        console.log('✅ NEXT - Dashboard cargado:', response);
         if (response.success && response.data) {
           this.dashboardData = response.data;
           this.proximaCita = response.data.proxima_cita;
@@ -89,11 +72,6 @@ export class PacienteDashboardComponent implements OnInit {
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('❌ ERROR en subscribe:', error);
-        console.error('Status:', error.status);
-        console.error('Message:', error.message);
-        
-        // NO reintentar automáticamente
         if (error.status === 401) {
           this.errorMessage = 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.';
         } else if (error.status === 0) {
@@ -103,13 +81,8 @@ export class PacienteDashboardComponent implements OnInit {
         }
         
         this.isLoading = false;
-      },
-      complete: () => {
-        console.log('🏁 COMPLETE - Observable completado');
       }
     });
-    
-    console.log('📡 Subscribe ejecutado');
   }
 
   // Métodos de navegación

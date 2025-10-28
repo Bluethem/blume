@@ -1,0 +1,86 @@
+/* Timeline */
+.timeline-line {
+  background: linear-gradient(to bottom, #e0e0e0 0%, #e0e0e0 100%);
+}
+
+/* Tabs */
+.tab-button {
+  transition: all 0.2s ease;
+}
+
+/* Cards */
+.cita-card {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.cita-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Estados */
+.estado-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Botones */
+button {
+  transition: all 0.2s ease;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Loading */
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .cita-card {
+    padding: 1rem;
+  }
+
+  .cita-card .flex {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
+/* Dark mode adjustments */
+.dark .timeline-line {
+  background: linear-gradient(to bottom, #3a2a2a 0%, #3a2a2a 100%);
+}
+
+/* Smooth transitions */
+* {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}

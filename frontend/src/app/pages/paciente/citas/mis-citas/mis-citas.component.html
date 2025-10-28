@@ -1,0 +1,349 @@
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+  <div class="layout-container flex h-full grow flex-col">
+    <div class="flex flex-1 justify-center py-5">
+      <div class="layout-content-container flex flex-col w-full max-w-6xl flex-1 px-4 sm:px-6 lg:px-8">
+        
+        <!-- Header -->
+        <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-border-light dark:border-border-dark px-4 py-3">
+          <div class="flex items-center gap-4 text-text-light dark:text-text-dark">
+            <span class="material-symbols-outlined text-primary text-3xl">local_florist</span>
+            <h2 class="text-xl font-bold leading-tight tracking-[-0.015em]">Blume</h2>
+          </div>
+          <div class="hidden md:flex flex-1 justify-center gap-8">
+            <div class="flex items-center gap-9">
+              <a class="text-sm font-medium leading-normal hover:text-primary cursor-pointer" routerLink="/paciente/dashboard">Inicio</a>
+              <a class="text-sm font-bold leading-normal text-primary" routerLink="/paciente/citas/mis-citas">Mis Citas</a>
+              <a class="text-sm font-medium leading-normal hover:text-primary cursor-pointer" routerLink="/paciente/perfil">Perfil</a>
+            </div>
+          </div>
+          <div class="flex items-center gap-4">
+            <button class="flex items-center justify-center rounded-full h-10 w-10 bg-primary/10 dark:bg-primary/20 text-text-light dark:text-text-dark hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors">
+              <span class="material-symbols-outlined text-xl">notifications</span>
+            </button>
+            <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 cursor-pointer" style='background-image: url("https://ui-avatars.com/api/?name=Usuario&size=200");'></div>
+          </div>
+        </header>
+
+        <main class="flex-1 mt-8">
+          <!-- Título -->
+          <div class="flex flex-wrap justify-between items-center gap-4 p-4">
+            <h1 class="text-4xl font-black leading-tight tracking-[-0.033em] min-w-72">Mis Citas Médicas</h1>
+          </div>
+
+          <!-- Tabs de filtros -->
+          <div class="pb-3 sticky top-0 bg-background-light dark:bg-background-dark z-10">
+            <div class="border-b border-border-light dark:border-border-dark px-4 flex items-center justify-between">
+              <div class="flex gap-4 sm:gap-8">
+                <!-- Tab Todas -->
+                <button
+                  (click)="cambiarFiltro('todas')"
+                  [class.border-b-primary]="filtroActivo === 'todas'"
+                  [class.text-text-light]="filtroActivo === 'todas'"
+                  [class.dark:text-text-dark]="filtroActivo === 'todas'"
+                  [class.border-b-transparent]="filtroActivo !== 'todas'"
+                  [class.text-text-secondary-light]="filtroActivo !== 'todas'"
+                  [class.dark:text-text-secondary-dark]="filtroActivo !== 'todas'"
+                  class="flex items-center justify-center border-b-[3px] pb-3 pt-4 group hover:text-text-light dark:hover:text-text-dark transition-colors"
+                >
+                  <p class="text-sm font-bold leading-normal tracking-[0.015em]">Todas</p>
+                  <span class="ml-2 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-semibold px-2 py-0.5 rounded-full">
+                    {{ contadores.todas }}
+                  </span>
+                </button>
+
+                <!-- Tab Próximas -->
+                <button
+                  (click)="cambiarFiltro('proximas')"
+                  [class.border-b-primary]="filtroActivo === 'proximas'"
+                  [class.text-text-light]="filtroActivo === 'proximas'"
+                  [class.dark:text-text-dark]="filtroActivo === 'proximas'"
+                  [class.border-b-transparent]="filtroActivo !== 'proximas'"
+                  [class.text-text-secondary-light]="filtroActivo !== 'proximas'"
+                  [class.dark:text-text-secondary-dark]="filtroActivo !== 'proximas'"
+                  class="flex items-center justify-center border-b-[3px] pb-3 pt-4 group hover:text-text-light dark:hover:text-text-dark transition-colors"
+                >
+                  <p class="text-sm font-bold leading-normal tracking-[0.015em]">Próximas</p>
+                  <span class="ml-2 bg-primary/20 text-primary text-xs font-semibold px-2 py-0.5 rounded-full">
+                    {{ contadores.proximas }}
+                  </span>
+                </button>
+
+                <!-- Tab Completadas -->
+                <button
+                  (click)="cambiarFiltro('completadas')"
+                  [class.border-b-primary]="filtroActivo === 'completadas'"
+                  [class.text-text-light]="filtroActivo === 'completadas'"
+                  [class.dark:text-text-dark]="filtroActivo === 'completadas'"
+                  [class.border-b-transparent]="filtroActivo !== 'completadas'"
+                  [class.text-text-secondary-light]="filtroActivo !== 'completadas'"
+                  [class.dark:text-text-secondary-dark]="filtroActivo !== 'completadas'"
+                  class="flex items-center justify-center border-b-[3px] pb-3 pt-4 group hover:text-text-light dark:hover:text-text-dark transition-colors"
+                >
+                  <p class="text-sm font-bold leading-normal tracking-[0.015em]">Completadas</p>
+                  <span class="ml-2 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-semibold px-2 py-0.5 rounded-full">
+                    {{ contadores.completadas }}
+                  </span>
+                </button>
+
+                <!-- Tab Canceladas -->
+                <button
+                  (click)="cambiarFiltro('canceladas')"
+                  [class.border-b-primary]="filtroActivo === 'canceladas'"
+                  [class.text-text-light]="filtroActivo === 'canceladas'"
+                  [class.dark:text-text-dark]="filtroActivo === 'canceladas'"
+                  [class.border-b-transparent]="filtroActivo !== 'canceladas'"
+                  [class.text-text-secondary-light]="filtroActivo !== 'canceladas'"
+                  [class.dark:text-text-secondary-dark]="filtroActivo !== 'canceladas'"
+                  class="flex items-center justify-center border-b-[3px] pb-3 pt-4 group hover:text-text-light dark:hover:text-text-dark transition-colors"
+                >
+                  <p class="text-sm font-bold leading-normal tracking-[0.015em]">Canceladas</p>
+                  <span class="ml-2 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-semibold px-2 py-0.5 rounded-full">
+                    {{ contadores.canceladas }}
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Buscador y botón nueva cita -->
+          <div class="flex flex-col md:flex-row justify-between gap-4 px-4 py-5">
+            <div class="flex gap-2 flex-1">
+              <div class="relative flex-1">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary-light dark:text-text-secondary-dark">search</span>
+                <input 
+                  [(ngModel)]="busqueda"
+                  (input)="onBuscar()"
+                  class="w-full h-10 pl-10 pr-4 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-primary focus:border-primary" 
+                  placeholder="Buscar por médico o motivo..." 
+                  type="text"
+                />
+              </div>
+              <button 
+                (click)="fechaFiltro ? limpiarFiltros() : null"
+                class="p-2 rounded-lg border border-border-light dark:border-border-dark hover:bg-primary/10 dark:hover:bg-primary/20"
+                [class.bg-primary/10]="fechaFiltro"
+              >
+                <input 
+                  type="date" 
+                  [(ngModel)]="fechaFiltro"
+                  (change)="onFechaChange()"
+                  class="sr-only"
+                  id="date-filter"
+                />
+                <label for="date-filter" class="cursor-pointer">
+                  <span class="material-symbols-outlined">calendar_today</span>
+                </label>
+              </button>
+            </div>
+            <button 
+              (click)="nuevaCita()"
+              class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-primary text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-4 shadow-sm hover:bg-red-700 transition-colors"
+            >
+              <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">add</span>
+              <span class="truncate">Agendar Nueva Cita</span>
+            </button>
+          </div>
+
+          <!-- Loading State -->
+          <div *ngIf="loading" class="flex justify-center items-center py-20">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+
+          <!-- Error State -->
+          <div *ngIf="error && !loading" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mx-4">
+            <p class="text-red-800 dark:text-red-200">{{ error }}</p>
+          </div>
+
+          <!-- Empty State -->
+          <div *ngIf="!loading && !error && citas.length === 0" class="text-center py-20 px-4">
+            <span class="material-symbols-outlined text-6xl text-gray-400 mb-4">event_busy</span>
+            <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              No tienes citas {{ filtroActivo !== 'todas' ? filtroActivo : '' }}
+            </h3>
+            <p class="text-gray-500 dark:text-gray-400 mb-4">
+              {{ filtroActivo === 'proximas' ? 'Agenda tu primera cita con un especialista' : 'Intenta cambiar los filtros' }}
+            </p>
+            <button 
+              *ngIf="filtroActivo === 'proximas'"
+              (click)="nuevaCita()"
+              class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-red-700 transition-colors"
+            >
+              Agendar Cita
+            </button>
+          </div>
+
+          <!-- Lista de citas con timeline -->
+          <div *ngIf="!loading && !error && citas.length > 0" class="grid grid-cols-[auto_1fr] gap-x-4 px-4 mt-6">
+            <!-- Timeline Line -->
+            <div class="relative w-8">
+              <div class="absolute left-1/2 top-0 bottom-0 w-0.5 bg-border-light dark:border-border-dark -translate-x-1/2"></div>
+            </div>
+            <div></div>
+
+            <!-- Citas -->
+            <ng-container *ngFor="let cita of citas; let last = last">
+              <div class="relative">
+                <div class="absolute -left-8 top-1 flex h-full items-start">
+                  <div class="w-8 flex justify-center">
+                    <div 
+                      class="z-10 flex size-6 items-center justify-center rounded-full ring-4 ring-background-light dark:ring-background-dark"
+                      [ngClass]="{
+                        'bg-state-confirmed': cita.estado === 'confirmada',
+                        'bg-state-completed': cita.estado === 'completada',
+                        'bg-state-cancelled': cita.estado === 'cancelada',
+                        'bg-state-pending': cita.estado === 'pendiente'
+                      }"
+                    >
+                      <span class="material-symbols-outlined text-sm text-white">{{ getIconoEstado(cita.estado) }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card de cita -->
+              <div 
+                class="bg-white dark:bg-background-dark rounded-lg border border-border-light dark:border-border-dark p-5 shadow-sm hover:shadow-md transition-shadow mb-6"
+                [class.opacity-70]="cita.estado === 'cancelada'"
+              >
+                <div class="flex justify-between items-start">
+                  <div class="flex-1">
+                    <p 
+                      class="text-lg font-bold"
+                      [class.line-through]="cita.estado === 'cancelada'"
+                      [class.text-text-secondary-light]="cita.estado === 'cancelada'"
+                      [class.dark:text-text-secondary-dark]="cita.estado === 'cancelada'"
+                    >
+                      {{ formatearFecha(cita.fecha_hora_inicio) }}
+                    </p>
+                    <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                      {{ cita.motivo_consulta }}
+                    </p>
+                  </div>
+                  <span 
+                    class="text-xs font-bold py-1 px-3 rounded-full"
+                    [ngClass]="getEstadoClase(cita.estado)"
+                  >
+                    {{ getEstadoTexto(cita.estado) }}
+                  </span>
+                </div>
+
+                <div class="my-4 h-px bg-border-light dark:bg-border-dark"></div>
+
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div 
+                      class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12"
+                      [style.background-image]="'url(' + (cita.medico?.foto_url || 'https://ui-avatars.com/api/?name=' + cita.medico?.nombre_completo) + ')'"
+                      [attr.data-alt]="cita.medico?.nombre_completo"
+                    ></div>
+                    <div>
+                      <p class="font-semibold">{{ cita.medico?.nombre_profesional }}</p>
+                      <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                        {{ cita.medico?.especialidad }}
+                      </p>
+                    </div>
+                  </div>
+                  <p class="font-bold text-lg">${{ cita.costo }}</p>
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="mt-4 flex gap-2 justify-end flex-wrap">
+                  <button 
+                    (click)="verDetalle(cita)"
+                    class="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:text-primary px-3 py-1 rounded-md transition-colors"
+                  >
+                    Ver Detalles
+                  </button>
+
+                  <!-- Botones según estado -->
+                  <ng-container *ngIf="cita.estado === 'confirmada'">
+                    <button 
+                      *ngIf="puedeCancelar(cita)"
+                      (click)="cancelarCita(cita)"
+                      class="text-sm font-medium text-state-cancelled hover:bg-state-cancelled/10 px-3 py-1 rounded-md transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                    <button 
+                      *ngIf="puedeUnirseVideollamada(cita)"
+                      (click)="unirseVideollamada(cita)"
+                      class="text-sm font-bold text-white bg-state-confirmed hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors"
+                    >
+                      Unirse a Videollamada
+                    </button>
+                  </ng-container>
+
+                  <ng-container *ngIf="cita.estado === 'completada'">
+                    <button 
+                      (click)="verDetalle(cita)"
+                      class="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:text-primary px-3 py-1 rounded-md"
+                    >
+                      Ver Diagnóstico
+                    </button>
+                    <button 
+                      (click)="volverAgendar(cita)"
+                      class="text-sm font-bold text-primary bg-primary/10 hover:bg-primary/20 px-4 py-2 rounded-lg transition-colors"
+                    >
+                      Volver a Agendar
+                    </button>
+                  </ng-container>
+
+                  <ng-container *ngIf="cita.estado === 'cancelada'">
+                    <button 
+                      (click)="volverAgendar(cita)"
+                      class="text-sm font-bold text-primary bg-primary/10 hover:bg-primary/20 px-4 py-2 rounded-lg transition-colors"
+                    >
+                      Volver a Agendar
+                    </button>
+                  </ng-container>
+
+                  <ng-container *ngIf="cita.estado === 'pendiente'">
+                    <button 
+                      *ngIf="puedeCancelar(cita)"
+                      (click)="cancelarCita(cita)"
+                      class="text-sm font-medium text-state-cancelled hover:bg-state-cancelled/10 px-3 py-1 rounded-md transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                  </ng-container>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+
+          <!-- Paginación -->
+          <div *ngIf="!loading && totalPages > 1" class="flex justify-center mt-8 p-4">
+            <nav class="flex items-center gap-2">
+              <button
+                (click)="cambiarPagina(currentPage - 1)"
+                [disabled]="currentPage === 1"
+                class="inline-flex items-center justify-center size-9 rounded-md border border-border-light dark:border-border-dark bg-white dark:bg-background-dark text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span class="material-symbols-outlined text-base">chevron_left</span>
+              </button>
+
+              <button
+                *ngFor="let pagina of paginasVisibles"
+                (click)="cambiarPagina(pagina)"
+                [class.border-primary]="pagina === currentPage"
+                [class.bg-primary]="pagina === currentPage"
+                [class.text-white]="pagina === currentPage"
+                class="inline-flex items-center justify-center size-9 rounded-md border border-border-light dark:border-border-dark bg-white dark:bg-background-dark text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-50 dark:hover:bg-gray-800"
+              >
+                {{ pagina }}
+              </button>
+
+              <button
+                (click)="cambiarPagina(currentPage + 1)"
+                [disabled]="currentPage === totalPages"
+                class="inline-flex items-center justify-center size-9 rounded-md border border-border-light dark:border-border-dark bg-white dark:bg-background-dark text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span class="material-symbols-outlined text-base">chevron_right</span>
+              </button>
+            </nav>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+</div>

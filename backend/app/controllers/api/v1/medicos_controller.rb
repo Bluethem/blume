@@ -13,7 +13,9 @@ module Api
                         .where(usuarios: { activo: true })
 
         # Aplicar filtros si existen
-        @medicos = filter_medicos(@medicos) if params[:q].present? || params[:especialidad_id].present? || params[:tarifa_max].present?
+        if params[:q].present? || params[:especialidad_id].present? || params[:tarifa_max].present? || params[:costo_max].present? || params[:experiencia_min].present? || params[:disponible_hoy].present?
+          @medicos = filter_medicos(@medicos)
+        end
 
         # Obtener el total ANTES de paginar
         total_count = @medicos.count
@@ -263,9 +265,21 @@ module Api
           medicos = medicos.por_especialidad(params[:especialidad_id])
         end
 
-        # Filtro por tarifa máxima
-        if params[:tarifa_max].present?
-          medicos = medicos.where('costo_consulta <= ?', params[:tarifa_max])
+        # Filtro por tarifa/costo máxima (alias soportado: tarifa_max o costo_max)
+        costo_max = params[:costo_max] || params[:tarifa_max]
+        if costo_max.present?
+          medicos = medicos.where('costo_consulta <= ?', costo_max)
+        end
+
+        # Filtro por experiencia mínima
+        if params[:experiencia_min].present?
+          medicos = medicos.where('anios_experiencia >= ?', params[:experiencia_min])
+        end
+
+        # Filtro por disponibilidad hoy
+        if params[:disponible_hoy].present? && ActiveModel::Type::Boolean.new.cast(params[:disponible_hoy])
+          dia_hoy = Date.current.wday
+          medicos = medicos.where(id: HorarioMedico.where(dia_semana: dia_hoy, activo: true).select(:medico_id))
         end
 
         # Ordenamiento
@@ -321,6 +335,9 @@ module Api
           anios_experiencia: medico.anios_experiencia,
           costo_consulta: medico.costo_consulta,
           activo: medico.usuario.activo,
+          disponible_hoy: medico.disponible_hoy?,
+          calificacion_promedio: medico.calificacion_promedio,
+          total_resenas: medico.total_resenas,
           especialidad_principal: especialidad_principal ? {
             id: especialidad_principal.id,
             nombre: especialidad_principal.nombre
@@ -389,7 +406,7 @@ module Api
 
       def dia_semana_texto(dia)
         dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
-        dias[dia]
+        dias[dia.to_i]
       end
 
       def asignar_especialidades(medico, especialidad_ids)

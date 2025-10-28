@@ -1,0 +1,263 @@
+<div class="container mx-auto px-4 py-8">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center py-20">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 text-center">
+    <p class="text-red-800 dark:text-red-200 mb-4">{{ error }}</p>
+    <button (click)="volver()" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-red-700 transition-colors">
+      Volver a la lista
+    </button>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!loading && !error && medico" class="grid grid-cols-12 gap-8">
+    <!-- Botón volver -->
+    <div class="col-span-12">
+      <button (click)="volver()" class="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">
+        <span class="material-symbols-outlined">arrow_back</span>
+        <span>Volver a la lista</span>
+      </button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-span-12 lg:col-span-8">
+      <!-- Profile Header -->
+      <div class="bg-card-light dark:bg-card-dark p-6 rounded-xl shadow-sm">
+        <div class="flex flex-col sm:flex-row items-center gap-6">
+          <div class="flex-shrink-0">
+            <div 
+              class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-36 w-36"
+              [style.background-image]="'url(' + medico.foto_url + ')'"
+              [attr.data-alt]="'Foto de perfil del ' + medico.nombre_profesional"
+            ></div>
+          </div>
+          
+          <div class="flex-1 text-center sm:text-left">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h1 class="text-3xl font-bold text-text-light dark:text-text-dark">
+                  {{ medico.nombre_profesional }}
+                </h1>
+                <span class="inline-block bg-primary/20 text-primary px-3 py-1 rounded-full text-sm font-semibold mt-2">
+                  {{ medico.especialidad || medico.especialidad_principal?.nombre }}
+                </span>
+              </div>
+              <button 
+                (click)="agendarCita()"
+                class="w-full sm:w-auto mt-4 sm:mt-0 flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary text-white text-base font-bold leading-normal hover:bg-red-700 transition-colors"
+              >
+                <span class="truncate">Agendar Cita</span>
+              </button>
+            </div>
+            
+            <div class="flex items-center justify-center sm:justify-start gap-2 mt-3 text-secondary-button dark:text-gray-400">
+              <div class="flex text-yellow-500">
+                <span *ngFor="let estrella of estrellas" class="material-symbols-outlined">
+                  {{ estrella ? 'star' : 'star_border' }}
+                </span>
+                <span *ngIf="tieneMediaEstrella" class="material-symbols-outlined">star_half</span>
+              </div>
+              <p class="text-sm">{{ medico.calificacion }} ({{ medico.total_reviews || 0 }} reseñas)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="mt-8">
+        <div class="border-b border-gray-200 dark:border-gray-700">
+          <nav aria-label="Tabs" class="flex space-x-8">
+            <button
+              (click)="cambiarTab('informacion')"
+              [class.border-primary]="tabActiva === 'informacion'"
+              [class.text-primary]="tabActiva === 'informacion'"
+              [class.border-transparent]="tabActiva !== 'informacion'"
+              [class.text-secondary-button]="tabActiva !== 'informacion'"
+              class="whitespace-nowrap pb-4 px-1 border-b-2 font-bold text-base hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+            >
+              Información General
+            </button>
+            <button
+              (click)="cambiarTab('horarios')"
+              [class.border-primary]="tabActiva === 'horarios'"
+              [class.text-primary]="tabActiva === 'horarios'"
+              [class.border-transparent]="tabActiva !== 'horarios'"
+              [class.text-secondary-button]="tabActiva !== 'horarios'"
+              class="whitespace-nowrap pb-4 px-1 border-b-2 font-bold text-base hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+            >
+              Horarios de Atención
+            </button>
+            <button
+              (click)="cambiarTab('resenas')"
+              [class.border-primary]="tabActiva === 'resenas'"
+              [class.text-primary]="tabActiva === 'resenas'"
+              [class.border-transparent]="tabActiva !== 'resenas'"
+              [class.text-secondary-button]="tabActiva !== 'resenas'"
+              class="whitespace-nowrap pb-4 px-1 border-b-2 font-bold text-base hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+            >
+              Reseñas
+            </button>
+          </nav>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="py-6">
+          <!-- Información General -->
+          <div *ngIf="tabActiva === 'informacion'" class="space-y-8">
+            <div>
+              <h2 class="text-2xl font-bold text-text-light dark:text-text-dark mb-4">Biografía</h2>
+              <p class="text-secondary-button dark:text-gray-400 leading-relaxed">
+                {{ medico.biografia || 'Información no disponible' }}
+              </p>
+            </div>
+
+            <div class="bg-card-light dark:bg-card-dark p-6 rounded-xl shadow-sm">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="border-t border-gray-200 dark:border-gray-700 pt-4 md:border-0 md:pt-0 md:border-r md:pr-6">
+                  <p class="text-sm font-medium text-secondary-button dark:text-gray-400">Experiencia</p>
+                  <p class="text-lg font-semibold text-text-light dark:text-text-dark mt-1">
+                    {{ medico.anios_experiencia }} años
+                  </p>
+                </div>
+                <div class="border-t border-gray-200 dark:border-gray-700 pt-4 md:border-0 md:pt-0 md:border-r md:px-6">
+                  <p class="text-sm font-medium text-secondary-button dark:text-gray-400">Número de Colegiatura</p>
+                  <p class="text-lg font-semibold text-text-light dark:text-text-dark mt-1">
+                    {{ medico.numero_colegiatura }}
+                  </p>
+                </div>
+                <div class="border-t border-gray-200 dark:border-gray-700 pt-4 md:border-0 md:pt-0 md:pl-6">
+                  <p class="text-sm font-medium text-secondary-button dark:text-gray-400">Costo de Consulta</p>
+                  <p class="text-lg font-semibold text-text-light dark:text-text-dark mt-1">
+                    ${{ medico.costo_consulta }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h2 class="text-2xl font-bold text-text-light dark:text-text-dark mb-4">Certificaciones</h2>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div 
+                  *ngFor="let cert of certificacionesFormateadas"
+                  class="bg-card-light dark:bg-card-dark p-4 rounded-lg border border-gray-200 dark:border-gray-700"
+                >
+                  <h3 class="font-bold text-text-light dark:text-text-dark">{{ cert.nombre }}</h3>
+                  <p class="text-sm text-secondary-button dark:text-gray-400 mt-1">{{ cert.institucion }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Horarios -->
+          <div *ngIf="tabActiva === 'horarios'" class="space-y-6">
+            <h2 class="text-2xl font-bold text-text-light dark:text-text-dark mb-4">Horarios de Atención</h2>
+            <div class="bg-card-light dark:bg-card-dark p-6 rounded-xl shadow-sm">
+              <p class="text-center text-secondary-button dark:text-gray-400 py-8">
+                Los horarios disponibles se mostrarán en el proceso de agendamiento de cita.
+              </p>
+              <div class="text-center">
+                <button 
+                  (click)="agendarCita()"
+                  class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-red-700 transition-colors font-semibold"
+                >
+                  Ver horarios disponibles
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reseñas -->
+          <div *ngIf="tabActiva === 'resenas'" class="space-y-6">
+            <h2 class="text-2xl font-bold text-text-light dark:text-text-dark mb-4">Reseñas de Pacientes</h2>
+            <div class="space-y-6">
+              <div 
+                *ngFor="let resena of resenasFormateadas"
+                class="bg-card-light dark:bg-card-dark p-5 rounded-xl shadow-sm"
+              >
+                <div class="flex items-start">
+                  <div class="flex-1">
+                    <div class="flex items-center justify-between">
+                      <p class="font-bold text-text-light dark:text-text-dark">{{ resena.nombre_paciente }}</p>
+                      <p class="text-sm text-secondary-button dark:text-gray-400">{{ resena.fecha }}</p>
+                    </div>
+                    <div class="flex text-yellow-500 my-1">
+                      <span 
+                        *ngFor="let i of [1,2,3,4,5]"
+                        class="material-symbols-outlined text-base"
+                      >
+                        {{ i <= resena.calificacion ? 'star' : 'star_border' }}
+                      </span>
+                    </div>
+                    <p class="text-secondary-button dark:text-gray-400">{{ resena.comentario }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-span-12 lg:col-span-4 space-y-8">
+      <!-- Información de Contacto -->
+      <div class="bg-card-light dark:bg-card-dark p-6 rounded-xl shadow-sm">
+        <h3 class="text-xl font-bold text-text-light dark:text-text-dark mb-4">Información de Contacto</h3>
+        <div class="space-y-3 text-secondary-button dark:text-gray-400">
+          <div class="flex items-center" *ngIf="medico.telefono">
+            <span class="material-symbols-outlined mr-3">call</span>
+            <span>{{ medico.telefono }}</span>
+          </div>
+          <div class="flex items-center" *ngIf="medico.email">
+            <span class="material-symbols-outlined mr-3">mail</span>
+            <span>{{ medico.email }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Agendar Cita Rápida -->
+      <div class="bg-card-light dark:bg-card-dark p-6 rounded-xl shadow-sm">
+        <h3 class="text-xl font-bold text-text-light dark:text-text-dark mb-4">Agendar Cita Rápida</h3>
+        <form (ngSubmit)="confirmarCitaRapida()" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-secondary-button dark:text-gray-400 mb-1" for="date">
+              Fecha
+            </label>
+            <input 
+              [(ngModel)]="citaForm.fecha"
+              name="fecha"
+              class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark shadow-sm focus:border-primary focus:ring-primary"
+              id="date"
+              type="date"
+              required
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-secondary-button dark:text-gray-400 mb-1" for="time">
+              Hora
+            </label>
+            <select 
+              [(ngModel)]="citaForm.hora"
+              name="hora"
+              class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark shadow-sm focus:border-primary focus:ring-primary"
+              id="time"
+              required
+            >
+              <option value="">Seleccione una hora</option>
+              <option *ngFor="let hora of horariosDisponibles" [value]="hora">{{ hora }}</option>
+            </select>
+          </div>
+          <button 
+            type="submit"
+            class="w-full flex justify-center py-3 px-4 rounded-lg shadow-sm text-sm font-bold text-white bg-primary hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
+          >
+            Confirmar Cita
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

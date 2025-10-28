@@ -63,6 +63,7 @@ Rails.application.routes.draw do
         member do
           get 'citas'
           get 'estadisticas'
+          get 'estadisticas_valoraciones', to: 'valoraciones#estadisticas'
         end
         
         # ✅ HORARIOS NESTED (única definición)
@@ -75,7 +76,13 @@ Rails.application.routes.draw do
             post :activar
           end
         end
+        
+        # ✅ VALORACIONES NESTED
+        resources :valoraciones, only: [:index, :create]
       end
+      
+      # ✅ VALORACIONES (operaciones individuales)
+      resources :valoraciones, only: [:show, :update, :destroy]
 
       # =====================================================
       # ESPECIALIDADES
@@ -99,6 +106,8 @@ Rails.application.routes.draw do
           get 'proximas'
           get 'pendientes'
           get 'historial'
+          get 'contadores'
+          get 'mis-citas'
         end
         member do
           put 'confirmar'

@@ -66,7 +66,6 @@ export class LoginComponent implements OnInit {
 
     this.authService.login(email, password).subscribe({
       next: (response) => {
-        console.log('Login exitoso:', response);
         const user = response.data.user;
         
         // Si hay una URL de retorno, ir ahí; si no, ir al dashboard
@@ -77,7 +76,6 @@ export class LoginComponent implements OnInit {
         }
       },
       error: (error) => {
-        console.error('Error en login:', error);
         this.errorMessage = error.message || 'Email o contraseña incorrectos';
         this.isLoading = false;
       },
@@ -103,7 +101,6 @@ export class LoginComponent implements OnInit {
         break;
       default:
         // Si el rol no es reconocido, ir a una página de error o logout
-        console.error('Rol desconocido:', user.rol);
         this.authService.logout();
         this.errorMessage = 'Rol de usuario no válido. Contacta al administrador.';
     }
