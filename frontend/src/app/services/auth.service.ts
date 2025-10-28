@@ -214,20 +214,23 @@ export class AuthService {
    * Manejo de errores
    */
   private handleError(error: any): Observable<never> {
-    console.error('Error en AuthService:', error);
+    let errorMessage = 'Ocurrió un error';
     
-    let errorMessage = 'Ha ocurrido un error';
-    
-    if (error.error) {
-      if (error.error.error) {
-        errorMessage = error.error.error;
-      } else if (error.error.message) {
-        errorMessage = error.error.message;
-      }
-    } else if (error.message) {
-      errorMessage = error.message;
+    if (error.error instanceof ErrorEvent) {
+      // Error del lado del cliente
+      errorMessage = error.error.message;
+    } else if (error.error?.message) {
+      // Error del backend con mensaje
+      errorMessage = error.error.message;
+    } else if (error.status === 0) {
+      // Error de conexión
+      errorMessage = 'No se pudo conectar con el servidor';
+    } else {
+      // Otro error del servidor
+      errorMessage = `Error: ${error.message}`;
     }
-    
-    return throwError(() => new Error(errorMessage));
+
+    console.error('Error en petición:', errorMessage);
+    return throwError(() => ({ message: errorMessage, status: error.status }));
   }
 }

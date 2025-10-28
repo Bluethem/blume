@@ -2,6 +2,6 @@ export const environment = {
   production: false,
   apiUrl: 'http://localhost:3000/api/v1',
   appName: 'Blume',
-  tokenKey: 'blume_token',
-  userKey: 'blume_user'
+  tokenKey: 'token',
+  userKey: 'user'
 };

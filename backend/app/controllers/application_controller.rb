@@ -55,19 +55,24 @@ class ApplicationController < ActionController::API
   end
 
   def paginate(collection)
-    page = pagination_params[:page].to_i
-    per_page = [pagination_params[:per_page].to_i, 100].min
-    
-    collection.page(page).per(per_page)
+    page = (params[:page] || 1).to_i
+    per_page = (params[:per_page] || 10).to_i
+    per_page = 100 if per_page > 100 # Límite máximo
+
+    # Usar offset y limit de ActiveRecord
+    collection.offset((page - 1) * per_page).limit(per_page)
   end
 
   def pagination_meta(collection)
+    page = (params[:page] || 1).to_i
+    per_page = (params[:per_page] || 10).to_i
+    total = collection.is_a?(ActiveRecord::Relation) ? collection.count : collection.size
+    
     {
-      current_page: collection.current_page,
-      next_page: collection.next_page,
-      prev_page: collection.prev_page,
-      total_pages: collection.total_pages,
-      total_count: collection.total_count
+      page: page,
+      per_page: per_page,
+      total: total,
+      total_pages: (total.to_f / per_page).ceil
     }
   end
 end

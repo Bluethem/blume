@@ -1,3 +1,4 @@
+
 module Api
   module V1
     class PacienteDashboardController < ApplicationController
@@ -15,6 +16,10 @@ module Api
           medicos_disponibles: medicos_disponibles,
           notificaciones_recientes: notificaciones_recientes
         })
+      rescue => e
+        Rails.logger.error("Dashboard error: #{e.message}")
+        Rails.logger.error(e.backtrace.join("\n"))
+        render_error('Error al cargar el dashboard', status: :internal_server_error)
       end
 
       # GET /api/v1/paciente/dashboard/estadisticas
@@ -23,10 +28,10 @@ module Api
         
         render_success({
           total_citas: paciente.citas.count,
-          citas_completadas: paciente.citas.completada.count,
+          citas_completadas: paciente.citas.where(estado: :completada).count,
           citas_pendientes: paciente.citas.where(estado: [:pendiente, :confirmada]).count,
-          citas_canceladas: paciente.citas.cancelada.count,
-          proximas_citas: paciente.citas.proximas.count,
+          citas_canceladas: paciente.citas.where(estado: :cancelada).count,
+          proximas_citas: paciente.citas.where('fecha_hora_inicio > ?', Time.current).count,
           ultima_cita: ultima_cita(paciente),
           medicos_visitados: medicos_visitados(paciente)
         })
@@ -43,7 +48,7 @@ module Api
       def paciente_info(paciente)
         {
           id: paciente.id,
-          nombre_completo: paciente.nombre_completo,
+          nombre_completo: paciente.usuario.nombre_completo,
           edad: paciente.edad,
           genero: paciente.genero,
           email: paciente.usuario.email,
@@ -77,14 +82,14 @@ module Api
           costo: cita.costo,
           medico: {
             id: cita.medico.id,
-            nombre_completo: cita.medico.nombre_profesional,
+            nombre_completo: cita.medico.usuario.nombre_completo,
             especialidad: cita.medico.especialidad_principal,
-            foto_url: nil, # Agregar si tienen fotos
+            foto_url: nil,
             telefono: cita.medico.usuario.telefono,
             direccion: cita.medico.usuario.direccion
           },
           dias_restantes: dias_restantes(cita.fecha_hora_inicio),
-          puede_cancelar: cita.puede_cancelarse?
+          puede_cancelar: puede_cancelarse?(cita)
         }
       end
 
@@ -93,53 +98,54 @@ module Api
           total_citas: paciente.citas.count,
           citas_pendientes: paciente.citas.where(estado: [:pendiente, :confirmada])
             .where('fecha_hora_inicio > ?', Time.current).count,
-          citas_completadas: paciente.citas.completada.count,
-          citas_canceladas: paciente.citas.cancelada.count
+          citas_completadas: paciente.citas.where(estado: :completada).count,
+          citas_canceladas: paciente.citas.where(estado: :cancelada).count
         }
       end
 
       def medicos_disponibles
-        # Obtener médicos activos con sus datos
-        medicos = Medico.where(activo: true)
-          .includes(:usuario, :certificaciones)
+        medicos = Medico.includes(:usuario, :certificaciones)
+          .joins(:usuario)
+          .where(usuarios: { activo: true })
           .limit(6)
-          .order('RANDOM()') # Orden aleatorio para variedad
+          .order('RANDOM()')
 
         medicos.map do |medico|
           {
             id: medico.id,
-            nombre_completo: medico.nombre_profesional,
+            nombre_completo: medico.usuario.nombre_completo,
             especialidad: medico.especialidad_principal,
-            anos_experiencia: medico.anios_experiencia,
-            costo_consulta: medico.costo_consulta,
+            anos_experiencia: medico.anios_experiencia || 0,
+            costo_consulta: medico.costo_consulta || 0,
             biografia: medico.biografia&.truncate(100),
-            calificacion: 4.5, # Calcular calificación real si implementas reviews
-            total_reviews: rand(10..50), # Temporal
-            foto_url: nil, # Agregar si tienen fotos
-            certificaciones: medico.certificaciones.map(&:nombre).take(2),
+            calificacion: 4.5,
+            total_reviews: rand(10..50),
+            foto_url: nil,
+            certificaciones: medico.certificaciones.pluck(:nombre).take(2),
             disponible_hoy: tiene_horario_disponible_hoy?(medico)
           }
         end
       end
 
       def notificaciones_recientes
-        current_user.notificaciones
+        notificaciones = current_user.notificaciones
           .where(leida: false)
           .order(created_at: :desc)
           .limit(5)
-          .map do |notif|
-            {
-              id: notif.id,
-              tipo: notif.tipo,
-              titulo: notif.titulo,
-              mensaje: notif.mensaje,
-              leida: notif.leida,
-              created_at: notif.created_at,
-              tiempo_relativo: tiempo_relativo(notif.created_at),
-              icono: icono_notificacion(notif.tipo),
-              color: color_notificacion(notif.tipo)
-            }
-          end
+
+        notificaciones.map do |notif|
+          {
+            id: notif.id,
+            tipo: notif.tipo,
+            titulo: notif.titulo,
+            mensaje: notif.mensaje,
+            leida: notif.leida,
+            created_at: notif.created_at,
+            tiempo_relativo: tiempo_relativo(notif.created_at),
+            icono: icono_notificacion(notif.tipo),
+            color: color_notificacion(notif.tipo)
+          }
+        end
       end
 
       def ultima_cita(paciente)
@@ -154,7 +160,7 @@ module Api
         {
           id: cita.id,
           fecha: cita.fecha_hora_inicio,
-          medico: cita.medico.nombre_profesional,
+          medico: cita.medico.usuario.nombre_completo,
           especialidad: cita.medico.especialidad_principal,
           diagnostico: cita.diagnostico
         }
@@ -162,16 +168,15 @@ module Api
 
       def medicos_visitados(paciente)
         paciente.citas
-          .completada
-          .includes(medico: :usuario)
-          .group(:medico_id)
+          .where(estado: :completada)
+          .select(:medico_id)
+          .distinct
           .count
-          .size
       end
 
       def tiene_horario_disponible_hoy?(medico)
         dia_semana = Date.current.wday
-        medico.horarios.where(dia_semana: dia_semana, activo: true).exists?
+        medico.horario_medicos.where(dia_semana: dia_semana, activo: true).exists?
       end
 
       def estado_label(estado)
@@ -181,11 +186,15 @@ module Api
           'cancelada' => 'Cancelada',
           'completada' => 'Completada',
           'no_asistio' => 'No asistió'
-        }[estado] || estado
+        }[estado] || estado.to_s.titleize
       end
 
       def dias_restantes(fecha)
         ((fecha.to_date - Date.current).to_i).abs
+      end
+
+      def puede_cancelarse?(cita)
+        cita.fecha_hora_inicio > 24.hours.from_now
       end
 
       def tiempo_relativo(time)
@@ -196,13 +205,13 @@ module Api
           'hace unos segundos'
         when 60..3599
           minutes = seconds / 60
-          "hace #{minutes} #{'minuto'.pluralize(minutes)}"
+          "hace #{minutes} #{minutes == 1 ? 'minuto' : 'minutos'}"
         when 3600..86399
           hours = seconds / 3600
-          "hace #{hours} #{'hora'.pluralize(hours)}"
+          "hace #{hours} #{hours == 1 ? 'hora' : 'horas'}"
         else
           days = seconds / 86400
-          "hace #{days} #{'día'.pluralize(days)}"
+          "hace #{days} #{days == 1 ? 'día' : 'días'}"
         end
       end
 

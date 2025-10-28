@@ -8,19 +8,32 @@ module Api
 
       # GET /api/v1/medicos
       def index
-        @medicos = Medico.includes(:usuario, :especialidades)
-                         .joins(:usuario)
-                         .where(usuarios: { activo: true })
-        
-        @medicos = filter_medicos(@medicos)
-        @medicos = @medicos.order(created_at: :desc)
+        @medicos = Medico.includes(:usuario, :certificaciones)
+                        .joins(:usuario)
+                        .where(usuarios: { activo: true })
 
-        paginated_medicos = paginate(@medicos)
+        # Aplicar filtros si existen
+        @medicos = filter_medicos(@medicos) if params[:q].present? || params[:especialidad].present?
 
-        render_success({
-          medicos: paginated_medicos.map { |m| medico_response(m) },
-          meta: pagination_meta(paginated_medicos)
-        })
+        # Obtener el total ANTES de paginar
+        total_count = @medicos.count
+
+        # Paginar manualmente
+        page = (params[:page] || 1).to_i
+        per_page = (params[:per_page] || 10).to_i
+        per_page = 100 if per_page > 100
+
+        @medicos_paginados = @medicos.offset((page - 1) * per_page).limit(per_page)
+
+        render_success(
+          @medicos_paginados.map { |m| medico_response(m, for_card: true) },
+          meta: {
+            page: page,
+            per_page: per_page,
+            total: total_count,
+            total_pages: (total_count.to_f / per_page).ceil
+          }
+        )
       end
 
       # GET /api/v1/medicos/:id
@@ -180,7 +193,6 @@ module Api
           citas_completadas: @medico.citas.where(estado: :completada).count,
           citas_pendientes: @medico.citas.where(estado: :pendiente).count,
           citas_canceladas: @medico.citas.where(estado: :cancelada).count,
-          calificacion_promedio: @medico.calificacion_promedio,
           pacientes_unicos: @medico.citas.select(:paciente_id).distinct.count,
           ingresos_totales: @medico.citas.where(estado: :completada).sum(:costo)
         }
@@ -207,10 +219,9 @@ module Api
       def medico_params
         params.require(:medico).permit(
           :numero_colegiatura,
-          :anos_experiencia,
-          :tarifa_consulta,
+          :anios_experiencia,
+          :costo_consulta,
           :biografia,
-          :calificacion_promedio
         )
       end
 
@@ -226,12 +237,8 @@ module Api
                            .where(especialidades: { id: params[:especialidad_id] })
         end
 
-        if params[:calificacion_min].present?
-          medicos = medicos.where('calificacion_promedio >= ?', params[:calificacion_min])
-        end
-
         if params[:tarifa_max].present?
-          medicos = medicos.where('tarifa_consulta <= ?', params[:tarifa_max])
+          medicos = medicos.where('costo_consulta <= ?', params[:tarifa_max])
         end
 
         medicos
@@ -254,9 +261,8 @@ module Api
           email: medico.email,
           telefono: medico.telefono,
           numero_colegiatura: medico.numero_colegiatura,
-          anos_experiencia: medico.anos_experiencia,
-          calificacion_promedio: medico.calificacion_promedio,
-          tarifa_consulta: medico.tarifa_consulta,
+          anos_experiencia: medico.anios_experiencia,
+          costo_consulta: medico.costo_consulta,
           especialidades: medico.especialidades.map { |e| { id: e.id, nombre: e.nombre } }
         }
 
@@ -389,9 +395,8 @@ module Api
           email: medico.email,
           telefono: medico.telefono,
           numero_colegiatura: medico.numero_colegiatura,
-          anos_experiencia: medico.anos_experiencia,
-          calificacion_promedio: medico.calificacion_promedio || 4.5,
-          tarifa_consulta: medico.tarifa_consulta,
+          anos_experiencia: medico.anios_experiencia,
+          costo_consulta: medico.costo_consulta,
           especialidades: medico.especialidades.map { |e| { id: e.id, nombre: e.nombre } }
         }
 
@@ -399,10 +404,9 @@ module Api
         if for_card
           response.merge!({
             especialidad: medico.especialidades.first&.nombre || 'General',
-            anos_experiencia: medico.anos_experiencia,
-            costo_consulta: medico.tarifa_consulta,
+            anos_experiencia: medico.anios_experiencia,
+            costo_consulta: medico.costo_consulta,
             biografia: medico.biografia&.truncate(150),
-            calificacion: medico.calificacion_promedio || 4.5,
             total_reviews: rand(10..100), # Temporal - implementar reviews reales
             foto_url: nil,
             disponible_hoy: tiene_horario_hoy?(medico)
@@ -479,25 +483,19 @@ module Api
                            .where(especialidades: { id: params[:especialidad_id] })
         end
 
-        if params[:calificacion_min].present?
-          medicos = medicos.where('calificacion_promedio >= ?', params[:calificacion_min])
-        end
-
         if params[:tarifa_max].present?
-          medicos = medicos.where('tarifa_consulta <= ?', params[:tarifa_max])
+          medicos = medicos.where('costo_consulta <= ?', params[:tarifa_max])
         end
 
         # Ordenamiento
         orden = params[:orden] || 'nombre'
         medicos = case orden
         when 'experiencia'
-          medicos.order(anos_experiencia: :desc)
+          medicos.order(anios_experiencia: :desc)
         when 'precio_asc'
-          medicos.order(tarifa_consulta: :asc)
+          medicos.order(costo_consulta: :asc)
         when 'precio_desc'
-          medicos.order(tarifa_consulta: :desc)
-        when 'calificacion'
-          medicos.order(calificacion_promedio: :desc)
+          medicos.order(costo_consulta: :desc)
         else
           medicos.joins(:usuario).order('usuarios.nombre ASC')
         end

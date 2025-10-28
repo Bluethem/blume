@@ -1,7 +1,7 @@
 module Api
   module V1
     class AuthController < ApplicationController
-      skip_before_action :authenticate_request!, only: [:login, :register]
+      skip_before_action :authenticate_request!, only: [:login, :register, :forgot_password, :reset_password, :validate_reset_token]
 
       # POST /api/v1/auth/login
       def login
@@ -31,13 +31,13 @@ module Api
         ActiveRecord::Base.transaction do
           # Crear usuario
           user = Usuario.new(register_params)
-          user.rol = :paciente # ← Usar símbolo directamente
+          user.rol = :paciente
           
           if user.save
             # Crear perfil según el rol
             profile = create_user_profile(user)
             
-            if profile.persisted?
+            if profile&.persisted?
               token = JsonWebToken.encode(user_id: user.id)
               
               render_success(
@@ -49,8 +49,7 @@ module Api
                 status: :created
               )
             else
-              raise ActiveRecord::Rollback
-              render_error('Error al crear el perfil', errors: profile.errors.full_messages)
+              raise ActiveRecord::Rollback, "Profile creation failed"
             end
           else
             render_error('Error al crear el usuario', errors: user.errors.full_messages)
@@ -82,13 +81,105 @@ module Api
       # PUT /api/v1/auth/change_password
       def change_password
         if current_user.authenticate(password_params[:current_password])
-          if current_user.update(password: password_params[:new_password])
+          if current_user.update(password: password_params[:new_password], password_confirmation: password_params[:new_password_confirmation])
             render_success(nil, message: 'Contraseña actualizada exitosamente')
           else
             render_error('Error al actualizar la contraseña', errors: current_user.errors.full_messages)
           end
         else
           render_error('Contraseña actual incorrecta', status: :unauthorized)
+        end
+      end
+
+      # POST /api/v1/auth/forgot_password
+      def forgot_password
+        email = params[:email]
+        
+        if email.blank?
+          return render_error('El email es requerido', status: :bad_request)
+        end
+        
+        usuario = Usuario.find_by(email: email.downcase.strip)
+        
+        if usuario
+          # Generar token
+          usuario.generate_password_reset_token
+          
+          # TODO: Enviar email con el token
+          # UserMailer.password_reset(usuario).deliver_later
+          
+          # Por ahora, imprimir el token en consola para testing
+          Rails.logger.info("\n" + "="*80)
+          Rails.logger.info("TOKEN DE RESET DE CONTRASEÑA")
+          Rails.logger.info("Usuario: #{usuario.email}")
+          Rails.logger.info("Token: #{usuario.reset_password_token}")
+          Rails.logger.info("URL: http://localhost:4200/reset-password?token=#{usuario.reset_password_token}")
+          Rails.logger.info("Expira: #{usuario.reset_password_sent_at + 2.hours}")
+          Rails.logger.info("="*80 + "\n")
+        end
+        
+        # Por seguridad, siempre devolver éxito aunque el email no exista
+        render_success(
+          nil,
+          message: 'Si el correo está registrado, recibirás un enlace de recuperación'
+        )
+      end
+      
+      # GET /api/v1/auth/validate_reset_token?token=XXXX
+      def validate_reset_token
+        token = params[:token]
+        
+        if token.blank?
+          return render_error('Token no proporcionado', status: :bad_request)
+        end
+        
+        usuario = Usuario.find_by(reset_password_token: token)
+        
+        if usuario.nil?
+          return render_error('Token inválido', status: :unprocessable_entity)
+        end
+        
+        if usuario.password_reset_token_expired?
+          return render_error('El token ha expirado. Solicita uno nuevo.', status: :unprocessable_entity)
+        end
+        
+        render_success(
+          { email: usuario.email },
+          message: 'Token válido'
+        )
+      end
+      
+      # POST /api/v1/auth/reset_password
+      def reset_password
+        token = params[:token]
+        new_password = params[:password]
+        password_confirmation = params[:password_confirmation]
+        
+        # Validar que los parámetros estén presentes
+        if token.blank? || new_password.blank? || password_confirmation.blank?
+          return render_error('Todos los campos son requeridos', status: :bad_request)
+        end
+        
+        # Buscar usuario por token
+        usuario = Usuario.find_by(reset_password_token: token)
+        
+        if usuario.nil?
+          return render_error('Token inválido', status: :unprocessable_entity)
+        end
+        
+        # Verificar que el token no haya expirado
+        if usuario.password_reset_token_expired?
+          return render_error('El token ha expirado. Solicita uno nuevo.', status: :unprocessable_entity)
+        end
+        
+        # Actualizar contraseña
+        if usuario.update(password: new_password, password_confirmation: password_confirmation)
+          # Limpiar token de reset
+          usuario.clear_password_reset_token
+          
+          render_success(nil, message: 'Contraseña actualizada exitosamente')
+        else
+          render_error('Error al actualizar contraseña', errors: usuario.errors.full_messages)
         end
       end
 
@@ -144,6 +235,9 @@ module Api
           # Para administradores no se crea perfil adicional
           OpenStruct.new(persisted?: true)
         end
+      rescue => e
+        Rails.logger.error("Error creating profile: #{e.message}")
+        nil
       end
 
       def user_response(user)
@@ -190,139 +284,6 @@ module Api
         end
 
         response
-      end
-
-      def forgot_password
-        email = params[:email]      
-        if email.blank?
-          return render json: { 
-            success: false, 
-            error: 'El email es requerido' 
-          }, status: :bad_request
-        end
-        
-        usuario = Usuario.find_by(email: email.downcase.strip)
-        
-        if usuario
-          # Generar token
-          usuario.generate_password_reset_token
-          
-          # TODO: Enviar email con el token
-          # UserMailer.password_reset(usuario).deliver_later
-          
-          # Por ahora, imprimir el token en consola para testing
-          puts "\n" + "="*80
-          puts "TOKEN DE RESET DE CONTRASEÑA"
-          puts "Usuario: #{usuario.email}"
-          puts "Token: #{usuario.reset_password_token}"
-          puts "URL: http://localhost:4200/reset-password?token=#{usuario.reset_password_token}"
-          puts "Expira: #{usuario.reset_password_sent_at + 2.hours}"
-          puts "="*80 + "\n"
-        end
-        
-        # Por seguridad, siempre devolver éxito aunque el email no exista
-        # Esto previene que atacantes descubran qué emails están registrados
-        render json: { 
-          success: true, 
-          message: 'Si el correo está registrado, recibirás un enlace de recuperación' 
-        }, status: :ok
-      end
-      
-      # GET /api/v1/auth/validate_reset_token?token=XXXX
-      def validate_reset_token
-        token = params[:token]
-        
-        if token.blank?
-          return render json: { 
-            success: false, 
-            error: 'Token no proporcionado' 
-          }, status: :bad_request
-        end
-        
-        usuario = Usuario.find_by(reset_password_token: token)
-        
-        if usuario.nil?
-          return render json: { 
-            success: false, 
-            error: 'Token inválido' 
-          }, status: :unprocessable_entity
-        end
-        
-        if usuario.password_reset_token_expired?
-          return render json: { 
-            success: false, 
-            error: 'El token ha expirado. Solicita uno nuevo.' 
-          }, status: :unprocessable_entity
-        end
-        
-        render json: { 
-          success: true, 
-          message: 'Token válido',
-          data: {
-            email: usuario.email
-          }
-        }, status: :ok
-      end
-      
-      # POST /api/v1/auth/reset_password
-      def reset_password
-        token = params[:token]
-        new_password = params[:password]
-        password_confirmation = params[:password_confirmation]
-        
-        # Validar que los parámetros estén presentes
-        if token.blank? || new_password.blank? || password_confirmation.blank?
-          return render json: { 
-            success: false, 
-            error: 'Todos los campos son requeridos' 
-          }, status: :bad_request
-        end
-        
-        # Buscar usuario por token
-        usuario = Usuario.find_by(reset_password_token: token)
-        
-        if usuario.nil?
-          return render json: { 
-            success: false, 
-            error: 'Token inválido' 
-          }, status: :unprocessable_entity
-        end
-        
-        # Verificar que el token no haya expirado
-        if usuario.password_reset_token_expired?
-          return render json: { 
-            success: false, 
-            error: 'El token ha expirado. Solicita uno nuevo.' 
-          }, status: :unprocessable_entity
-        end
-        
-        # Verificar que las contraseñas coincidan
-        if new_password != password_confirmation
-          return render json: { 
-            success: false, 
-            error: 'Las contraseñas no coinciden' 
-          }, status: :unprocessable_entity
-        end
-        
-        # Actualizar contraseña
-        if usuario.update(
-          password: new_password, 
-          password_confirmation: password_confirmation
-        )
-          # Limpiar token de reset
-          usuario.clear_password_reset_token
-          
-          render json: { 
-            success: true, 
-            message: 'Contraseña actualizada exitosamente' 
-          }, status: :ok
-        else
-          render json: { 
-            success: false, 
-            error: 'Error al actualizar contraseña',
-            details: usuario.errors.full_messages 
-          }, status: :unprocessable_entity
-        end
       end
     end
   end

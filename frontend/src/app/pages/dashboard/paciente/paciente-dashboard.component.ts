@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { PacienteDashboardService } from '../../../services/paciente-dashboard.service';
 import { DashboardData, Cita, Medico, Notificacion } from '../../../models/dashboard.models';
+import { environment } from '../../../../environments/environment'
 
 @Component({
   selector: 'app-paciente-dashboard',
@@ -18,7 +19,7 @@ export class PacienteDashboardComponent implements OnInit {
   private router = inject(Router);
 
   // Estado de carga
-  isLoading = true;
+  isLoading = false;
   errorMessage = '';
 
   // Datos del dashboard
@@ -48,15 +49,37 @@ export class PacienteDashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    console.log('🎯 Dashboard ngOnInit ejecutado');
+    console.log('Usuario:', this.currentUser);
+    console.log('Token:', this.authService.getToken()?.substring(0, 30));
     this.cargarDashboard();
   }
 
   cargarDashboard(): void {
+    console.log('🚀 INICIO cargarDashboard()');
+    console.log('isLoading:', this.isLoading);
+    
+    // Evitar cargar si ya está cargando
+    if (this.isLoading) {
+      console.warn('⚠️ Ya está cargando, saliendo...');
+      return;
+    }
+
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.dashboardService.getDashboard().subscribe({
+    console.log('🔍 Cargando dashboard...');
+    console.log('Token:', this.authService.getToken()?.substring(0, 20) + '...');
+    console.log('API URL completa:', `${environment.apiUrl}/paciente/dashboard`);
+
+    console.log('📡 Llamando a getDashboard()...');
+    
+    const observable = this.dashboardService.getDashboard();
+    console.log('📡 Observable creado:', observable);
+    
+    observable.subscribe({
       next: (response) => {
+        console.log('✅ NEXT - Dashboard cargado:', response);
         if (response.success && response.data) {
           this.dashboardData = response.data;
           this.proximaCita = response.data.proxima_cita;
@@ -66,11 +89,27 @@ export class PacienteDashboardComponent implements OnInit {
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error cargando dashboard:', error);
-        this.errorMessage = 'Error al cargar el dashboard. Por favor, intenta de nuevo.';
+        console.error('❌ ERROR en subscribe:', error);
+        console.error('Status:', error.status);
+        console.error('Message:', error.message);
+        
+        // NO reintentar automáticamente
+        if (error.status === 401) {
+          this.errorMessage = 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.';
+        } else if (error.status === 0) {
+          this.errorMessage = 'No se pudo conectar con el servidor. Verifica que esté corriendo.';
+        } else {
+          this.errorMessage = error.message || 'Error al cargar el dashboard.';
+        }
+        
         this.isLoading = false;
+      },
+      complete: () => {
+        console.log('🏁 COMPLETE - Observable completado');
       }
     });
+    
+    console.log('📡 Subscribe ejecutado');
   }
 
   // Métodos de navegación

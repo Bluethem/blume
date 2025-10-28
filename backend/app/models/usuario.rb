@@ -1,22 +1,6 @@
-# == Schema Information
-#
-# Table name: usuarios
-#
-#  id              :uuid             not null, primary key
-#  email           :string           not null
-#  password_digest :string           not null
-#  nombre          :string           not null
-#  apellido        :string           not null
-#  telefono        :string
-#  direccion       :text
-#  rol             :integer          default("paciente"), not null
-#  activo          :boolean          default(TRUE), not null
-#  created_at      :datetime         not null
-#  updated_at      :datetime         not null
-#
-
 class Usuario < ApplicationRecord
   self.table_name = 'usuarios'
+  
   # Encriptación de contraseña
   has_secure_password
 
@@ -37,7 +21,8 @@ class Usuario < ApplicationRecord
   validates :apellido, presence: true, length: { minimum: 2, maximum: 100 }
   validates :telefono, length: { maximum: 20 }, allow_blank: true
   validates :rol, presence: true
-  validates :password, length: { minimum: 6 }, if: :password_digest_changed?
+  validates :password, length: { minimum: 6, message: "debe tener al menos 6 caracteres" }, 
+            if: -> { new_record? || password.present? }
 
   # Callbacks
   before_save :normalize_email
@@ -62,6 +47,11 @@ class Usuario < ApplicationRecord
   def es_administrador?
     rol == 'administrador'
   end
+  
+  # Alias para consistencia con el código existente
+  alias paciente? es_paciente?
+  alias medico? es_medico?
+  alias administrador? es_administrador?
 
   def activar!
     update(activo: true)
@@ -69,12 +59,6 @@ class Usuario < ApplicationRecord
 
   def desactivar!
     update(activo: false)
-  end
-
-  private
-
-  def normalize_email
-    self.email = email.downcase.strip if email.present?
   end
 
   # Generar token de reset de contraseña
@@ -95,5 +79,11 @@ class Usuario < ApplicationRecord
     self.reset_password_token = nil
     self.reset_password_sent_at = nil
     save(validate: false)
+  end
+
+  private
+
+  def normalize_email
+    self.email = email.downcase.strip if email.present?
   end
 end

@@ -22,19 +22,25 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   // Enviar la petición y manejar errores
   return next(authReq).pipe(
     catchError((error) => {
-      // Si es error 401 (no autorizado), redirigir al login
+      // Si es error 401 (no autorizado), redirigir al login UNA SOLA VEZ
       if (error.status === 401) {
+        // Limpiar localStorage
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        router.navigate(['/login']);
+        
+        // Solo redirigir si NO estamos ya en login
+        const currentUrl = router.url;
+        if (!currentUrl.includes('/login')) {
+          router.navigate(['/login']);
+        }
       }
       
-      // Si es error 403 (prohibido), mostrar mensaje o redirigir
+      // Si es error 403 (prohibido), mostrar mensaje
       if (error.status === 403) {
         console.error('Acceso prohibido. No tienes permisos.');
       }
 
-      // Propagar el error
+      // Propagar el error SIN reintentar
       return throwError(() => error);
     })
   );

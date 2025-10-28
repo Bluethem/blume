@@ -67,7 +67,6 @@ export const routes: Routes = [
     ]
   },
 
-  /*
   // ==================== RUTAS DE PACIENTE ====================
   {
     path: 'paciente',
@@ -76,10 +75,13 @@ export const routes: Routes = [
     children: [
       // Mis Citas
       {
-        path: 'citas',
-        loadComponent: () => import('./pages/paciente/citas/paciente-citas.component')
-          .then(m => m.PacienteCitasComponent)
-      },
+        path: 'agendar-cita',
+        canActivate: [authGuard, roleGuard],
+        data: { role: 'paciente' },
+        loadComponent: () => import('./pages/paciente/citas/agendar-cita/agendar-cita.component')
+          .then(m => m.AgendarCitaComponent)
+      }
+      /*
       // Detalle de Cita
       {
         path: 'citas/:id',
@@ -92,9 +94,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/paciente/perfil/perfil-paciente.component')
           .then(m => m.PerfilPacienteComponent)
       }
+          */
     ]
   },
-
+  /*
   // ==================== RUTAS DE MÉDICOS (COMPARTIDAS) ====================
   {
     path: 'medicos',

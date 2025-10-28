@@ -1,0 +1,77 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.material-symbols-outlined {
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+}
+
+/* Animación para el stepper */
+.border-b-brand-primary {
+  border-bottom-color: #ea2a33;
+  color: #1b0e0e;
+}
+
+/* Animación para las cards de médicos */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.grid > div {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Hover states mejorados */
+.hover\:border-brand-primary:hover {
+  border-color: #ea2a33;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(234, 42, 51, 0.2);
+}
+
+/* Slots de horario */
+button[type="button"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Animación del spinner */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Transiciones suaves */
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+/* Mejoras para dark mode */
+@media (prefers-color-scheme: dark) {
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+  }
+}
+
+/* Responsive mejoras */
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

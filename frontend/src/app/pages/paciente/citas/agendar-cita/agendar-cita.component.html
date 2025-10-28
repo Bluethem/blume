@@ -1,0 +1,355 @@
+<div class="relative flex h-auto min-h-screen w-full flex-col">
+  <div class="layout-container flex h-full grow flex-col">
+    <!-- Header -->
+    <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#f3e7e8] px-10 py-3 bg-white dark:bg-background-dark dark:border-b-gray-800">
+      <div class="flex items-center gap-4 text-[#1b0e0e] dark:text-white">
+        <div class="size-6 text-primary">
+          <svg fill="currentColor" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <path clip-rule="evenodd" d="M24 18.4228L42 11.475V34.3663C42 34.7796 41.7457 35.1504 41.3601 35.2992L24 42V18.4228Z" fill="currentColor" fill-rule="evenodd"></path>
+            <path clip-rule="evenodd" d="M24 8.18819L33.4123 11.574L24 15.2071L14.5877 11.574L24 8.18819ZM9 15.8487L21 20.4805V37.6263L9 32.9945V15.8487ZM27 37.6263V20.4805L39 15.8487V32.9945L27 37.6263ZM25.354 2.29885C24.4788 1.98402 23.5212 1.98402 22.646 2.29885L4.98454 8.65208C3.7939 9.08038 3 10.2097 3 11.475V34.3663C3 36.0196 4.01719 37.5026 5.55962 38.098L22.9197 44.7987C23.6149 45.0671 24.3851 45.0671 25.0803 44.7987L42.4404 38.098C43.9828 37.5026 45 36.0196 45 34.3663V11.475C45 10.2097 44.2061 9.08038 43.0155 8.65208L25.354 2.29885Z" fill="currentColor" fill-rule="evenodd"></path>
+          </svg>
+        </div>
+        <h2 class="text-[#1b0e0e] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Blume</h2>
+      </div>
+      <div class="flex flex-1 justify-end gap-8">
+        <div class="flex items-center gap-9">
+          <a class="text-[#1b0e0e] dark:text-white text-sm font-medium leading-normal" routerLink="/dashboard/paciente">Dashboard</a>
+          <a class="text-[#1b0e0e] dark:text-white text-sm font-medium leading-normal" routerLink="/paciente/citas">Mis Citas</a>
+          <a class="text-[#1b0e0e] dark:text-white text-sm font-medium leading-normal" routerLink="/paciente/perfil">Perfil</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="px-4 md:px-10 lg:px-20 xl:px-40 flex flex-1 justify-center py-5 bg-brand-background dark:bg-background-dark">
+      <div class="layout-content-container flex flex-col w-full max-w-5xl flex-1">
+        <!-- Título -->
+        <div class="flex flex-wrap justify-between gap-3 p-4">
+          <div class="flex min-w-72 flex-col gap-3">
+            <p class="text-brand-text-primary dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">Agendar Cita</p>
+            <p class="text-brand-text-secondary dark:text-gray-400 text-base font-normal leading-normal">Sigue los pasos a continuación para agendar tu cita.</p>
+          </div>
+        </div>
+
+        <!-- Stepper -->
+        <div class="pb-3 sticky top-0 bg-brand-background dark:bg-background-dark z-10">
+          <div class="flex border-b border-[#e7d0d1] dark:border-gray-700 px-4 justify-between">
+            <div 
+              class="flex flex-col items-center justify-center border-b-[3px] pb-[13px] pt-4 flex-1 cursor-pointer"
+              [class.border-b-brand-primary]="currentStep >= 0"
+              [class.border-b-transparent]="currentStep < 0"
+              [class.text-brand-text-primary]="currentStep >= 0"
+              [class.text-brand-text-secondary]="currentStep < 0"
+              (click)="currentStep = 0">
+              <p class="text-sm font-bold leading-normal tracking-[0.015em]">1. Seleccionar Médico</p>
+            </div>
+            <div 
+              class="flex flex-col items-center justify-center border-b-[3px] pb-[13px] pt-4 flex-1"
+              [class.border-b-brand-primary]="currentStep >= 1"
+              [class.border-b-transparent]="currentStep < 1"
+              [class.text-brand-text-primary]="currentStep >= 1"
+              [class.text-brand-text-secondary]="currentStep < 1">
+              <p class="text-sm font-bold leading-normal tracking-[0.015em]">2. Fecha y Hora</p>
+            </div>
+            <div 
+              class="flex flex-col items-center justify-center border-b-[3px] pb-[13px] pt-4 flex-1"
+              [class.border-b-brand-primary]="currentStep >= 2"
+              [class.border-b-transparent]="currentStep < 2"
+              [class.text-brand-text-primary]="currentStep >= 2"
+              [class.text-brand-text-secondary]="currentStep < 2">
+              <p class="text-sm font-bold leading-normal tracking-[0.015em]">3. Información</p>
+            </div>
+            <div 
+              class="flex flex-col items-center justify-center border-b-[3px] pb-[13px] pt-4 flex-1"
+              [class.border-b-brand-primary]="currentStep >= 3"
+              [class.border-b-transparent]="currentStep < 3"
+              [class.text-brand-text-primary]="currentStep >= 3"
+              [class.text-brand-text-secondary]="currentStep < 3">
+              <p class="text-sm font-bold leading-normal tracking-[0.015em]">4. Confirmación</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="mx-4 mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+          <div class="flex items-center gap-2 text-red-800 dark:text-red-400">
+            <span class="material-symbols-outlined">error</span>
+            <p class="font-medium">{{ errorMessage }}</p>
+          </div>
+        </div>
+
+        <!-- PASO 1: Seleccionar Médico -->
+        <div *ngIf="currentStep === 0" class="p-4 bg-brand-card dark:bg-gray-800 rounded-lg shadow-md mt-4">
+          <h3 class="text-xl font-bold text-brand-text-primary dark:text-white mb-4">Selecciona un profesional</h3>
+          
+          <!-- Búsqueda -->
+          <form [formGroup]="searchForm">
+            <div class="px-4 py-3">
+              <label class="flex flex-col min-w-40 h-12 w-full">
+                <div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+                  <div class="text-brand-text-secondary dark:text-gray-400 flex border-none bg-[#f3e7e8] dark:bg-gray-700 items-center justify-center pl-4 rounded-l-lg border-r-0">
+                    <span class="material-symbols-outlined">search</span>
+                  </div>
+                  <input 
+                    formControlName="search"
+                    class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-lg text-brand-text-primary dark:text-white focus:outline-0 focus:ring-2 focus:ring-brand-primary border-none bg-[#f3e7e8] dark:bg-gray-700 focus:border-none h-full placeholder:text-brand-text-secondary dark:placeholder:text-gray-400 px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal" 
+                    placeholder="Buscar por nombre o especialidad..."
+                  />
+                </div>
+              </label>
+            </div>
+          </form>
+
+          <!-- Loading -->
+          <div *ngIf="isLoading" class="flex justify-center items-center py-12">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+
+          <!-- Grid de Médicos -->
+          <div *ngIf="!isLoading" class="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-6 p-4">
+            <div 
+              *ngFor="let medico of medicosFiltrados"
+              (click)="seleccionarMedico(medico)"
+              class="flex flex-col gap-4 text-center pb-3 p-4 rounded-xl bg-white dark:bg-gray-900 shadow-sm border border-transparent hover:border-brand-primary hover:shadow-lg transition-all duration-300 cursor-pointer">
+              <div class="px-4">
+                <div class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-6xl text-gray-400">person</span>
+                </div>
+              </div>
+              <div>
+                <p class="text-brand-text-primary dark:text-white text-base font-bold leading-normal">{{ medico.nombre_completo }}</p>
+                <p class="text-brand-text-secondary dark:text-gray-400 text-sm font-normal leading-normal">{{ medico.especialidad }}</p>
+                <p class="text-brand-text-secondary dark:text-gray-400 text-xs mt-1">{{ medico.anos_experiencia }} años de experiencia</p>
+                <p class="text-primary font-bold text-sm mt-2">${{ medico.costo_consulta }} MXN</p>
+              </div>
+              <button 
+                type="button"
+                class="mt-2 flex w-full justify-center rounded-lg bg-primary/20 text-primary px-4 py-2 text-sm font-bold hover:bg-primary hover:text-white transition-colors">
+                Seleccionar
+              </button>
+            </div>
+          </div>
+
+          <!-- Mensaje si no hay resultados -->
+          <div *ngIf="!isLoading && medicosFiltrados.length === 0" class="text-center py-12">
+            <span class="material-symbols-outlined text-6xl text-gray-400 mb-4">search_off</span>
+            <p class="text-gray-500 dark:text-gray-400">No se encontraron médicos</p>
+          </div>
+        </div>
+
+        <!-- PASO 2: Seleccionar Fecha y Hora -->
+        <div *ngIf="currentStep === 1" class="p-4 bg-brand-card dark:bg-gray-800 rounded-lg shadow-md mt-4">
+          <div class="mb-6">
+            <h3 class="text-xl font-bold text-brand-text-primary dark:text-white mb-2">Selecciona fecha y hora</h3>
+            <div class="flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <div class="w-16 h-16 bg-gray-300 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                <span class="material-symbols-outlined text-3xl text-gray-500">person</span>
+              </div>
+              <div>
+                <p class="font-bold text-brand-text-primary dark:text-white">{{ medicoSeleccionado?.nombre_completo }}</p>
+                <p class="text-sm text-brand-text-secondary dark:text-gray-400">{{ medicoSeleccionado?.especialidad }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Selector de Fecha -->
+          <form [formGroup]="fechaForm">
+            <div class="mb-6">
+              <label class="block text-sm font-medium text-brand-text-primary dark:text-white mb-2">
+                Selecciona una fecha
+              </label>
+              <input 
+                type="date"
+                formControlName="fecha"
+                [min]="fechaMinima"
+                [max]="fechaMaxima"
+                class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-brand-text-primary dark:text-white focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
+            </div>
+          </form>
+
+          <!-- Loading Horarios -->
+          <div *ngIf="isLoadingHorarios" class="flex justify-center items-center py-12">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+
+          <!-- Horarios Disponibles -->
+          <div *ngIf="!isLoadingHorarios && horariosDisponibles" class="mb-6">
+            <label class="block text-sm font-medium text-brand-text-primary dark:text-white mb-2">
+              Horarios disponibles - {{ horariosDisponibles.dia_semana }}
+            </label>
+
+            <div *ngIf="horariosDisponibles.disponible" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+              <button
+                *ngFor="let slot of horariosDisponibles.horarios"
+                type="button"
+                (click)="seleccionarHorario(slot)"
+                [disabled]="!slot.disponible"
+                [class.bg-primary]="slotSeleccionado?.fecha_hora === slot.fecha_hora"
+                [class.text-white]="slotSeleccionado?.fecha_hora === slot.fecha_hora"
+                [class.bg-gray-100]="slotSeleccionado?.fecha_hora !== slot.fecha_hora && slot.disponible"
+                [class.hover:bg-primary]="slot.disponible"
+                [class.hover:text-white]="slot.disponible"
+                [class.bg-gray-200]="!slot.disponible"
+                [class.cursor-not-allowed]="!slot.disponible"
+                [class.opacity-50]="!slot.disponible"
+                class="px-4 py-3 rounded-lg font-medium text-sm transition-colors dark:bg-gray-700 dark:text-white dark:hover:bg-primary">
+                {{ slot.hora_display }}
+              </button>
+            </div>
+
+            <div *ngIf="!horariosDisponibles.disponible" class="text-center py-8">
+              <span class="material-symbols-outlined text-5xl text-gray-400 mb-2">event_busy</span>
+              <p class="text-gray-500 dark:text-gray-400">No hay horarios disponibles para esta fecha</p>
+            </div>
+          </div>
+
+          <!-- Navegación -->
+          <div class="flex justify-between mt-8">
+            <button 
+              type="button"
+              (click)="previousStep()"
+              class="flex items-center gap-2 px-6 py-3 rounded-lg border border-gray-300 dark:border-gray-600 text-brand-text-primary dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+              <span class="material-symbols-outlined">arrow_back</span>
+              <span>Anterior</span>
+            </button>
+            <button 
+              type="button"
+              (click)="nextStep()"
+              [disabled]="!slotSeleccionado"
+              class="flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              <span>Siguiente</span>
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- PASO 3: Información de la Cita -->
+        <div *ngIf="currentStep === 2" class="p-4 bg-brand-card dark:bg-gray-800 rounded-lg shadow-md mt-4">
+          <h3 class="text-xl font-bold text-brand-text-primary dark:text-white mb-4">Información de la cita</h3>
+
+          <form [formGroup]="motivoForm" class="space-y-6">
+            <!-- Motivo de Consulta -->
+            <div>
+              <label class="block text-sm font-medium text-brand-text-primary dark:text-white mb-2">
+                Motivo de consulta <span class="text-red-500">*</span>
+              </label>
+              <textarea
+                formControlName="motivo_consulta"
+                rows="4"
+                placeholder="Describe brevemente el motivo de tu consulta (mínimo 10 caracteres)"
+                class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-brand-text-primary dark:text-white placeholder:text-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+              ></textarea>
+              <p *ngIf="motivoForm.controls['motivo_consulta'].invalid && motivoForm.controls['motivo_consulta'].touched" 
+                 class="mt-1 text-sm text-red-500">
+                El motivo debe tener al menos 10 caracteres
+              </p>
+            </div>
+
+            <!-- Observaciones -->
+            <div>
+              <label class="block text-sm font-medium text-brand-text-primary dark:text-white mb-2">
+                Observaciones adicionales (opcional)
+              </label>
+              <textarea
+                formControlName="observaciones"
+                rows="3"
+                placeholder="Información adicional que consideres relevante"
+                class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-brand-text-primary dark:text-white placeholder:text-gray-400 focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+              ></textarea>
+            </div>
+          </form>
+
+          <!-- Navegación -->
+          <div class="flex justify-between mt-8">
+            <button 
+              type="button"
+              (click)="previousStep()"
+              class="flex items-center gap-2 px-6 py-3 rounded-lg border border-gray-300 dark:border-gray-600 text-brand-text-primary dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+              <span class="material-symbols-outlined">arrow_back</span>
+              <span>Anterior</span>
+            </button>
+            <button 
+              type="button"
+              (click)="nextStep()"
+              [disabled]="motivoForm.invalid"
+              class="flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              <span>Siguiente</span>
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- PASO 4: Confirmación -->
+        <div *ngIf="currentStep === 3" class="p-4 bg-brand-card dark:bg-gray-800 rounded-lg shadow-md mt-4">
+          <h3 class="text-xl font-bold text-brand-text-primary dark:text-white mb-4">Confirma tu cita</h3>
+
+          <div class="space-y-4 mb-8">
+            <!-- Médico -->
+            <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <p class="text-sm text-brand-text-secondary dark:text-gray-400 mb-1">Médico</p>
+              <p class="font-bold text-brand-text-primary dark:text-white">{{ medicoSeleccionado?.nombre_completo }}</p>
+              <p class="text-sm text-brand-text-secondary dark:text-gray-400">{{ medicoSeleccionado?.especialidad }}</p>
+            </div>
+
+            <!-- Fecha y Hora -->
+            <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <p class="text-sm text-brand-text-secondary dark:text-gray-400 mb-1">Fecha y hora</p>
+              <p class="font-bold text-brand-text-primary dark:text-white">{{ formatearFecha(slotSeleccionado?.fecha_hora || '') }}</p>
+              <p class="text-sm text-brand-text-secondary dark:text-gray-400">{{ slotSeleccionado?.hora_display }}</p>
+            </div>
+
+            <!-- Motivo -->
+            <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <p class="text-sm text-brand-text-secondary dark:text-gray-400 mb-1">Motivo de consulta</p>
+              <p class="text-brand-text-primary dark:text-white">{{ motivoForm.value.motivo_consulta }}</p>
+              <p *ngIf="motivoForm.value.observaciones" class="text-sm text-brand-text-secondary dark:text-gray-400 mt-2">
+                <strong>Observaciones:</strong> {{ motivoForm.value.observaciones }}
+              </p>
+            </div>
+
+            <!-- Costo -->
+            <div class="p-4 bg-primary/10 dark:bg-primary/20 rounded-lg">
+              <p class="text-sm text-brand-text-secondary dark:text-gray-400 mb-1">Costo de la consulta</p>
+              <p class="text-2xl font-bold text-primary">${{ medicoSeleccionado?.costo_consulta }} MXN</p>
+            </div>
+          </div>
+
+          <!-- Loading -->
+          <div *ngIf="isLoading" class="flex flex-col items-center justify-center py-8">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+            <p class="text-brand-text-secondary dark:text-gray-400">Agendando tu cita...</p>
+          </div>
+
+          <!-- Éxito -->
+          <div *ngIf="!isLoading && currentStep === 3 && !errorMessage" class="text-center py-8">
+            <div class="w-20 h-20 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span class="material-symbols-outlined text-5xl text-green-600 dark:text-green-400">check_circle</span>
+            </div>
+            <h3 class="text-2xl font-bold text-brand-text-primary dark:text-white mb-2">¡Cita agendada con éxito!</h3>
+            <p class="text-brand-text-secondary dark:text-gray-400 mb-4">Serás redirigido al dashboard en unos momentos...</p>
+          </div>
+
+          <!-- Navegación -->
+          <div *ngIf="!isLoading" class="flex justify-between mt-8">
+            <button 
+              type="button"
+              (click)="previousStep()"
+              class="flex items-center gap-2 px-6 py-3 rounded-lg border border-gray-300 dark:border-gray-600 text-brand-text-primary dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+              <span class="material-symbols-outlined">arrow_back</span>
+              <span>Anterior</span>
+            </button>
+            <button 
+              type="button"
+              (click)="confirmarCita()"
+              class="flex items-center gap-2 px-6 py-3 rounded-lg bg-green-600 text-white hover:bg-green-700 transition-colors">
+              <span class="material-symbols-outlined">check</span>
+              <span>Confirmar Cita</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
