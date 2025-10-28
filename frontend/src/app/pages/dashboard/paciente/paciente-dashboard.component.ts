@@ -4,7 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { PacienteDashboardService } from '../../../services/paciente-dashboard.service';
 import { DashboardData, Cita, Medico, Notificacion } from '../../../models/dashboard.models';
-import { environment } from '../../../../environments/environment'
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-paciente-dashboard',
@@ -165,33 +165,77 @@ export class PacienteDashboardComponent implements OnInit {
   }
 
   getEstadoColor(estado: string): string {
-    const colores: Record<string, string> = {
-      'pendiente': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
-      'confirmada': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-      'cancelada': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
-      'completada': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+    const colores: { [key: string]: string } = {
+      'pendiente': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200',
+      'confirmada': 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200',
+      'completada': 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200',
+      'cancelada': 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200',
+      'no_asistio': 'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-200'
     };
     return colores[estado] || 'bg-gray-100 text-gray-800';
   }
 
   generarEstrellas(calificacion: number): string[] {
-    const estrellas: string[] = [];
     const estrellasCompletas = Math.floor(calificacion);
-    const tieneMedia = calificacion % 1 !== 0;
-
+    const tieneMediaEstrella = calificacion % 1 >= 0.5;
+    const estrellas: string[] = [];
+    
     for (let i = 0; i < estrellasCompletas; i++) {
       estrellas.push('star');
     }
-
-    if (tieneMedia) {
+    
+    if (tieneMediaEstrella) {
       estrellas.push('star_half');
     }
-
-    while (estrellas.length < 5) {
+    
+    const estrellasVacias = 5 - Math.ceil(calificacion);
+    for (let i = 0; i < estrellasVacias; i++) {
       estrellas.push('star_outline');
     }
-
+    
     return estrellas;
   }
 
+  // ✅ AGREGADO: Método para obtener label del estado
+  getEstadoLabel(estado: string): string {
+    const labels: { [key: string]: string } = {
+      'pendiente': 'Pendiente',
+      'confirmada': 'Confirmada',
+      'completada': 'Completada',
+      'cancelada': 'Cancelada',
+      'no_asistio': 'No asistió'
+    };
+    return labels[estado] || estado;
+  }
+
+  // ✅ AGREGADO: Método para obtener icono de notificación
+  getNotificacionIcono(tipo: string): string {
+    switch(tipo) {
+      case 'cita_confirmada': return 'check_circle';
+      case 'cita_cancelada': return 'cancel';
+      case 'recordatorio': return 'notifications';
+      case 'cita_creada': return 'event';
+      default: return 'info';
+    }
+  }
+
+  // ✅ AGREGADO: Método para obtener tiempo relativo
+  getTiempoRelativo(fecha: string): string {
+    const ahora = new Date();
+    const fechaNotif = new Date(fecha);
+    const diffMs = ahora.getTime() - fechaNotif.getTime();
+    const diffMinutos = Math.floor(diffMs / 60000);
+    
+    if (diffMinutos < 1) return 'Hace un momento';
+    if (diffMinutos < 60) return `Hace ${diffMinutos} minuto${diffMinutos > 1 ? 's' : ''}`;
+    
+    const diffHoras = Math.floor(diffMinutos / 60);
+    if (diffHoras < 24) return `Hace ${diffHoras} hora${diffHoras > 1 ? 's' : ''}`;
+    
+    const diffDias = Math.floor(diffHoras / 24);
+    if (diffDias < 7) return `Hace ${diffDias} día${diffDias > 1 ? 's' : ''}`;
+    
+    const diffSemanas = Math.floor(diffDias / 7);
+    return `Hace ${diffSemanas} semana${diffSemanas > 1 ? 's' : ''}`;
+  }
 }

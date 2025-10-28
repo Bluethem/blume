@@ -25,12 +25,14 @@ export interface Cita {
   estado: 'pendiente' | 'confirmada' | 'completada' | 'cancelada' | 'no_asistio';
   motivo_consulta: string;
   costo: number;
+  estado_label?: string; // ✅ AGREGADO
   medico: {
     id: string;
     nombre_completo: string;
     nombre_profesional: string;
-    especialidad: string; // Nombre de la especialidad principal
+    especialidad: string;
     foto_url?: string;
+    direccion?: string; // ✅ AGREGADO
   };
 }
 
@@ -40,9 +42,9 @@ export interface Medico {
   nombre_profesional: string;
   numero_colegiatura: string;
   anios_experiencia: number;
-  costo_consulta: number; // ✅ CORREGIDO
+  costo_consulta: number;
   biografia?: string;
-  especialidad: string; // ✅ Para compatibilidad
+  especialidad: string;
   especialidad_principal?: {
     id: string;
     nombre: string;

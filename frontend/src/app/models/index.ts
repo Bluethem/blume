@@ -81,7 +81,7 @@ export interface Cita {
   medico_id: string;
   fecha_hora_inicio: string;
   fecha_hora_fin: string;
-  estado: 'pendiente' | 'confirmada' | 'completada' | 'cancelada' | 'no_asistio'; // ✅ AGREGADO: no_asistio
+  estado: 'pendiente' | 'confirmada' | 'completada' | 'cancelada' | 'no_asistio';
   motivo_consulta: string;
   observaciones?: string;
   diagnostico?: string;
@@ -91,7 +91,7 @@ export interface Cita {
   created_at: string;
   updated_at: string;
   
-  // ✅ RELACIONES (cuando se incluyen)
+  // ✅ RELACIONES
   paciente?: {
     id: string;
     nombre_completo: string;
@@ -103,8 +103,10 @@ export interface Cita {
     nombre_completo: string;
     nombre_profesional: string;
     numero_colegiatura: string;
-    especialidad?: string; // Nombre de la especialidad principal
-    especialidades?: string[]; // Array de nombres
+    especialidad?: string;
+    especialidades?: string[];
+    direccion?: string;  // ✅ AGREGADO
+    foto_url?: string;
   };
   
   // ✅ CAMPOS CALCULADOS
@@ -112,14 +114,14 @@ export interface Cita {
   puede_cancelarse?: boolean;
   puede_confirmarse?: boolean;
   puede_completarse?: boolean;
-  estado_label?: string; // Para mostrar en español
+  estado_label?: string;
 }
 
 export interface Notificacion {
   id: string;
   usuario_id: string;
   cita_id?: string;
-  tipo: 'cita_creada' | 'cita_confirmada' | 'cita_cancelada' | 'recordatorio'; // ✅ TIPOS ESPECÍFICOS
+  tipo: 'cita_creada' | 'cita_confirmada' | 'cita_cancelada' | 'recordatorio';
   titulo: string;
   mensaje: string;
   leida: boolean;
@@ -127,13 +129,13 @@ export interface Notificacion {
   created_at: string;
   updated_at: string;
   
-  // ✅ RELACIONES (opcionales)
   cita?: Cita;
   
   // ✅ CAMPOS CALCULADOS
-  icono?: string;
+  icono?: string;           // ✅ AGREGADO
   color?: string;
   hace_cuanto?: string;
+  tiempo_relativo?: string; // ✅ AGREGADO
   url?: string;
 }
 

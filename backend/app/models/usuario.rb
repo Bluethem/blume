@@ -25,11 +25,11 @@ class Usuario < ApplicationRecord
   has_secure_password
 
   # ✅ ENUM para roles (esto ya genera automáticamente los métodos es_paciente?, es_medico?, es_administrador?)
-  enum rol: {
+  enum :rol, {
     paciente: 0,
     medico: 1,
     administrador: 2  
-  }, _prefix: :es
+  }, prefix: :es
 
   # Asociaciones
   has_one :paciente, dependent: :destroy
@@ -61,10 +61,17 @@ class Usuario < ApplicationRecord
     "#{nombre} #{apellido}"
   end
   
-  # ✅ Alias para compatibilidad con código existente (opcional, pero útil)
-  alias_method :paciente?, :es_paciente?
-  alias_method :medico?, :es_medico?
-  alias_method :administrador?, :es_administrador?
+  def paciente?
+    es_paciente?
+  end
+
+  def medico?
+    es_medico?
+  end
+
+  def administrador?
+    es_administrador?
+  end
 
   def activar!
     update(activo: true)

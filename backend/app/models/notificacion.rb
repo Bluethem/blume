@@ -19,12 +19,12 @@ class Notificacion < ApplicationRecord
   self.table_name = 'notificaciones'
   
   # ✅ ENUM para tipos
-  enum tipo: {
+  enum :tipo, {
     cita_creada: 0,
     cita_confirmada: 1,
     cita_cancelada: 2,
     recordatorio: 3
-  }, _prefix: :tipo
+  }, prefix: :tipo
 
   # Asociaciones
   belongs_to :usuario

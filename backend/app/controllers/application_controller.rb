@@ -31,10 +31,11 @@ class ApplicationController < ActionController::API
   end
 
   # Métodos auxiliares para respuestas JSON
-  def render_success(data, message: nil, status: :ok)
+  def render_success(data, message: nil, status: :ok, meta: nil)
     response = { success: true }
     response[:message] = message if message
     response[:data] = data if data
+    response[:meta] = meta if meta
     
     render json: response, status: status
   end

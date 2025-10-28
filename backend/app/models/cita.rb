@@ -23,13 +23,13 @@ class Cita < ApplicationRecord
   self.table_name = 'citas'
   
   # ✅ ENUM para estados
-  enum estado: {
+  enum :estado, {
     pendiente: 0,
     confirmada: 1,
     cancelada: 2,
     completada: 3,
     no_asistio: 4
-  }, _prefix: :estado
+  }, prefix: :estado
 
   # Asociaciones
   belongs_to :paciente

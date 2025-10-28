@@ -118,24 +118,24 @@
           <div *ngIf="proximaCita" class="flex flex-col items-start justify-start rounded-xl shadow-sm bg-white dark:bg-gray-800 p-6 hover:shadow-md transition-shadow">
             <p class="text-gray-900 dark:text-white text-xl font-bold leading-tight tracking-[-0.015em] mb-4">Próxima Cita</p>
             <div class="flex flex-col sm:flex-row w-full items-start gap-4">
+              <div class="bg-gray-300 bg-center bg-no-repeat aspect-square bg-cover rounded-xl size-20"></div>
               <div class="flex-grow">
-                <div class="flex items-center gap-3 mb-3">
-                  <div class="bg-gray-300 bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12"></div>
+                <div class="flex items-start justify-between">
                   <div>
-                    <p class="font-bold text-gray-900 dark:text-white">{{ proximaCita.medico.nombre_completo }}</p>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ proximaCita.medico.especialidad }}</p>
+                    <p class="text-gray-900 dark:text-white text-base font-bold">{{ proximaCita.medico.nombre_profesional }}</p>
+                    <p class="text-gray-500 dark:text-gray-400 text-sm font-normal">{{ proximaCita.medico.especialidad }}</p>
                   </div>
                 </div>
-                <div class="flex flex-col gap-2 text-sm">
-                  <div class="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                <div class="flex items-center gap-4 mt-3 text-sm text-gray-600 dark:text-gray-300">
+                  <div class="flex items-center gap-1.5">
                     <span class="material-symbols-outlined text-base">calendar_today</span>
                     <span>{{ formatearFecha(proximaCita.fecha_hora_inicio) }}</span>
                   </div>
-                  <div class="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                  <div class="flex items-center gap-1.5">
                     <span class="material-symbols-outlined text-base">schedule</span>
                     <span>{{ formatearHora(proximaCita.fecha_hora_inicio) }}</span>
                   </div>
-                  <div class="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                  <div class="flex items-center gap-1.5">
                     <span class="material-symbols-outlined text-base">location_on</span>
                     <span>{{ proximaCita.medico.direccion || 'Consultorio médico' }}</span>
                   </div>
@@ -143,7 +143,7 @@
               </div>
               <div class="flex flex-col gap-2">
                 <span class="px-3 py-1 rounded-full text-xs font-medium" [ngClass]="getEstadoColor(proximaCita.estado)">
-                  {{ proximaCita.estado_label }}
+                  {{ proximaCita.estado_label || getEstadoLabel(proximaCita.estado) }}
                 </span>
                 <button (click)="verDetalleCita(proximaCita.id)" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium">
                   Ver Detalles
@@ -191,17 +191,18 @@
                 <div class="bg-gray-300 bg-center bg-no-repeat aspect-square bg-cover rounded-full size-16"></div>
                 <div class="flex-grow">
                   <p class="font-bold text-gray-900 dark:text-white">{{ medico.nombre_completo }}</p>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">{{ medico.especialidad }}, {{ medico.anos_experiencia }} años exp.</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">{{ medico.especialidad }}, {{ medico.anios_experiencia }} años exp.</p>
                 </div>
               </div>
               <div class="flex justify-between items-end mt-4">
                 <div>
                   <p class="text-sm text-gray-600 dark:text-gray-300">Costo: ${{ medico.costo_consulta }} MXN</p>
                   <div class="flex items-center text-yellow-500">
-                    <span *ngFor="let estrella of generarEstrellas(medico.calificacion)" class="material-symbols-outlined text-base">
-                      {{ estrella }}
+                    <span *ngFor="let star of generarEstrellas(medico.calificacion || 0)" 
+                          class="material-symbols-outlined text-yellow-500">
+                      {{ star }}
                     </span>
-                    <span class="ml-1 text-xs text-gray-500 dark:text-gray-400">({{ medico.calificacion }})</span>
+                    <span class="ml-1 text-xs text-gray-500 dark:text-gray-400">({{ medico.calificacion || 0 }})</span>
                   </div>
                 </div>
                 <button (click)="agendarCita(medico.id)" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-9 px-3 bg-primary/20 text-primary text-sm font-medium leading-normal hover:bg-primary/30 transition-colors">
@@ -231,19 +232,19 @@
               <div class="flex items-center justify-center size-8 rounded-full" [ngClass]="{
                 'bg-blue-100 dark:bg-blue-900/50': notif.tipo === 'cita_creada',
                 'bg-orange-100 dark:bg-orange-900/50': notif.tipo === 'recordatorio',
-                'bg-green-100 dark:bg-green-900/50': notif.tipo === 'confirmada',
-                'bg-red-100 dark:bg-red-900/50': notif.tipo === 'cancelada'
+                'bg-green-100 dark:bg-green-900/50': notif.tipo === 'cita_confirmada',
+                'bg-red-100 dark:bg-red-900/50': notif.tipo === 'cita_cancelada'
               }">
                 <span class="material-symbols-outlined text-xl" [ngClass]="{
                   'text-blue-600 dark:text-blue-400': notif.tipo === 'cita_creada',
                   'text-orange-600 dark:text-orange-400': notif.tipo === 'recordatorio',
-                  'text-green-600 dark:text-green-400': notif.tipo === 'confirmada',
-                  'text-red-600 dark:text-red-400': notif.tipo === 'cancelada'
-                }">{{ notif.icono }}</span>
+                  'text-green-600 dark:text-green-400': notif.tipo === 'cita_confirmada',
+                  'text-red-600 dark:text-red-400': notif.tipo === 'cita_cancelada'
+                }">{{ getNotificacionIcono(notif.tipo) }}</span>
               </div>
               <div class="flex-grow">
                 <p class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ notif.mensaje }}</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">{{ notif.tiempo_relativo }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">{{ getTiempoRelativo(notif.created_at) }}</p>
               </div>
               <div class="w-2.5 h-2.5 rounded-full mt-1.5" [ngClass]="notif.leida ? 'bg-transparent' : 'bg-primary'" [title]="notif.leida ? 'Leído' : 'No leído'"></div>
             </div>

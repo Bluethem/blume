@@ -18,13 +18,13 @@
 class Paciente < ApplicationRecord
   self.table_name = 'pacientes'
   # Enumeraciones
-  enum genero: {
+  enum :genero, {
     masculino: 0,
     femenino: 1,
     otro: 2
   }
   
-  enum tipo_documento: {
+  enum :tipo_documento, {
     dni: 0,
     pasaporte: 1,
     carnet_extranjeria: 2

@@ -214,6 +214,7 @@ export class RegisterComponent {
   }
 
   registerPaciente(): void {
+    // ✅ ESTRUCTURA CORREGIDA según RegisterRequest
     const registerData: RegisterRequest = {
       auth: {
         email: this.step1Form.value.email,
@@ -224,11 +225,15 @@ export class RegisterComponent {
         telefono: this.step1Form.value.telefono,
         direccion: this.step1Form.value.direccion
       },
-      fecha_nacimiento: this.step2Form.value.fecha_nacimiento,
-      genero: this.step2Form.value.genero,
-      tipo_documento: this.step2Form.value.tipo_documento,
-      numero_documento: this.step2Form.value.numero_documento,
-      rol: 'paciente'
+      // ✅ CORRECCIÓN: fecha_nacimiento y otros campos van dentro de "paciente"
+      paciente: {
+        fecha_nacimiento: this.step2Form.value.fecha_nacimiento,
+        genero: this.step2Form.value.genero,
+        tipo_documento: this.step2Form.value.tipo_documento,
+        numero_documento: this.step2Form.value.numero_documento,
+        grupo_sanguineo: this.step2Form.value.grupo_sanguineo,
+        alergias: this.step2Form.value.alergias
+      }
     };
 
     this.authService.register(registerData).subscribe({
