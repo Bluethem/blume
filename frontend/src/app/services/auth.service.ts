@@ -219,18 +219,50 @@ export class AuthService {
     if (error.error instanceof ErrorEvent) {
       // Error del lado del cliente
       errorMessage = error.error.message;
+    } else if (error.error?.error) {
+      // ✅ NUEVO: Error del backend en formato Rails
+      errorMessage = error.error.error;
+      
+      // Si hay detalles de errores, concatenarlos
+      if (error.error.errors && Array.isArray(error.error.errors)) {
+        errorMessage += ': ' + error.error.errors.join(', ');
+      }
     } else if (error.error?.message) {
       // Error del backend con mensaje
       errorMessage = error.error.message;
     } else if (error.status === 0) {
       // Error de conexión
-      errorMessage = 'No se pudo conectar con el servidor';
+      errorMessage = 'No se pudo conectar con el servidor. Verifica que esté corriendo en http://localhost:3000';
+    } else if (error.status === 401) {
+      // No autorizado
+      errorMessage = 'Sesión expirada o credenciales inválidas';
+    } else if (error.status === 403) {
+      // Prohibido
+      errorMessage = 'No tienes permisos para realizar esta acción';
+    } else if (error.status === 404) {
+      // No encontrado
+      errorMessage = 'Recurso no encontrado';
+    } else if (error.status === 422) {
+      // Error de validación
+      errorMessage = 'Error de validación en los datos enviados';
+      if (error.error?.errors) {
+        errorMessage += ': ' + error.error.errors.join(', ');
+      }
     } else {
       // Otro error del servidor
       errorMessage = `Error: ${error.message}`;
     }
 
-    console.error('Error en petición:', errorMessage);
-    return throwError(() => ({ message: errorMessage, status: error.status }));
+    console.error('Error en petición:', {
+      status: error.status,
+      message: errorMessage,
+      error: error.error
+    });
+    
+    return throwError(() => ({ 
+      message: errorMessage, 
+      status: error.status,
+      errors: error.error?.errors 
+    }));
   }
 }

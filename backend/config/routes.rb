@@ -1,4 +1,3 @@
-# config/routes.rb
 Rails.application.routes.draw do
   # Health check
   get "up" => "rails/health#show", as: :rails_health_check
@@ -6,7 +5,9 @@ Rails.application.routes.draw do
   # API v1
   namespace :api do
     namespace :v1 do
-      # Rutas de autenticación (sin namespace adicional)
+      # =====================================================
+      # AUTENTICACIÓN
+      # =====================================================
       post 'auth/register', to: 'auth#register'
       post 'auth/login', to: 'auth#login'
       get 'auth/me', to: 'auth#me'
@@ -17,7 +18,9 @@ Rails.application.routes.draw do
       post 'auth/reset_password', to: 'auth#reset_password'
       get 'auth/validate_reset_token', to: 'auth#validate_reset_token'
 
-      # Rutas específicas de paciente (SIN namespace)
+      # =====================================================
+      # DASHBOARD PACIENTE
+      # =====================================================
       get 'paciente/dashboard', to: 'paciente_dashboard#index'
       get 'paciente/dashboard/estadisticas', to: 'paciente_dashboard#estadisticas_detalladas'
       
@@ -29,7 +32,9 @@ Rails.application.routes.draw do
         end
       end
 
-      # Recursos principales
+      # =====================================================
+      # USUARIOS
+      # =====================================================
       resources :usuarios, except: [:new, :edit] do
         member do
           put 'activate'
@@ -37,42 +42,64 @@ Rails.application.routes.draw do
         end
       end
 
+      # =====================================================
+      # PACIENTES
+      # =====================================================
       resources :pacientes, except: [:new, :edit] do
         member do
           get 'historial_citas'
           get 'proximas_citas'
         end
-        resources :citas, only: [:index, :show, :create] do
+      end
+
+      # =====================================================
+      # MÉDICOS
+      # =====================================================
+      resources :medicos, except: [:new, :edit] do
+        collection do
+          get 'buscar'
+          get 'disponibles'
+        end
+        member do
+          get 'citas'
+          get 'estadisticas'
+        end
+        
+        # ✅ HORARIOS NESTED (única definición)
+        resources :horarios, controller: 'horario_medicos', except: [:show] do
+          collection do
+            get :disponibles
+            get :semana
+          end
           member do
-            put 'cancelar'
-            post 'reagendar'
+            post :activar
           end
         end
       end
 
-      resources :medicos, except: [:new, :edit] do
-        member do
-          get 'horarios'
-          get 'citas'
-          get 'estadisticas'
-          get 'horarios_disponibles'
-        end
-        collection do
-          get 'buscar'
-          get 'disponibles'
-          get 'especialidades'
-        end
-      end
-
+      # =====================================================
+      # ESPECIALIDADES
+      # =====================================================
       resources :especialidades, except: [:new, :edit] do
         member do
           get 'medicos'
         end
       end
 
+      # =====================================================
+      # CERTIFICACIONES
+      # =====================================================
       resources :certificaciones, except: [:new, :edit]
 
+      # =====================================================
+      # CITAS
+      # =====================================================
       resources :citas, except: [:new, :edit] do
+        collection do
+          get 'proximas'
+          get 'pendientes'
+          get 'historial'
+        end
         member do
           put 'confirmar'
           put 'cancelar'
@@ -80,39 +107,37 @@ Rails.application.routes.draw do
           put 'reagendar'
           post 'valorar'
         end
-        collection do
-          get 'proximas'
-          get 'pendientes'
-          get 'historial'
-        end
       end
 
+      # =====================================================
+      # RECETAS Y DIAGNÓSTICOS
+      # =====================================================
       resources :recetas, except: [:new, :edit]
-
+      
       resources :diagnosticos, except: [:new, :edit] do
         member do
           get 'historial'
         end
       end
 
+      # =====================================================
+      # NOTIFICACIONES
+      # =====================================================
       resources :notificaciones, except: [:new, :edit] do
-        member do
-          put 'marcar_leida'
-        end
         collection do
           put 'marcar_todas_leidas'
           delete 'eliminar_todas'
+          get 'no_leidas'
+        end
+        member do
+          put 'marcar_leida'
         end
       end
 
+      # =====================================================
+      # VALORACIONES
+      # =====================================================
       resources :valoraciones, except: [:new, :edit]
-
-      resources :horarios_disponibles, except: [:new, :edit], path: 'horarios' do
-        collection do
-          get 'por_medico/:medico_id', to: 'horarios_disponibles#por_medico'
-          get 'disponibles'
-        end
-      end
     end
   end
 

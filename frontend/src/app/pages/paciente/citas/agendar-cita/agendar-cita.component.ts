@@ -96,10 +96,14 @@ export class AgendarCitaComponent implements OnInit {
     }
 
     const queryLower = query.toLowerCase();
-    this.medicosFiltrados = this.medicos.filter(medico =>
-      medico.nombre_completo.toLowerCase().includes(queryLower) ||
-      medico.especialidad.toLowerCase().includes(queryLower)
-    );
+    this.medicosFiltrados = this.medicos.filter(medico => {
+      const nombreCompleto = medico.nombre_completo?.toLowerCase() || '';
+      // ✅ CORREGIDO: Buscar en especialidad_principal o especialidades
+      const especialidad = medico.especialidad_principal?.nombre?.toLowerCase() || 
+                          medico.especialidad?.toLowerCase() || '';
+      
+      return nombreCompleto.includes(queryLower) || especialidad.includes(queryLower);
+    });
   }
 
   seleccionarMedico(medico: Medico): void {
@@ -185,7 +189,7 @@ export class AgendarCitaComponent implements OnInit {
     const citaData: CrearCitaRequest = {
       cita: {
         medico_id: this.medicoSeleccionado.id,
-        fecha_hora_inicio: this.slotSeleccionado.fecha_hora,
+        fecha_hora_inicio: this.slotSeleccionado.fecha_hora_inicio, // ✅ CORREGIDO
         motivo_consulta: this.motivoForm.value.motivo_consulta,
         observaciones: this.motivoForm.value.observaciones
       }

@@ -1,11 +1,35 @@
+# app/models/usuario.rb
+# == Schema Information
+#
+# Table name: usuarios
+#
+#  id                      :uuid             not null, primary key
+#  email                   :string           not null, unique
+#  password_digest         :string           not null
+#  nombre                  :string           not null
+#  apellido                :string           not null
+#  telefono                :string
+#  direccion               :text
+#  rol                     :integer          default(0), not null
+#  activo                  :boolean          default(TRUE), not null
+#  reset_password_token    :string
+#  reset_password_sent_at  :datetime
+#  created_at              :datetime         not null
+#  updated_at              :datetime         not null
+#
+
 class Usuario < ApplicationRecord
   self.table_name = 'usuarios'
   
   # Encriptación de contraseña
   has_secure_password
 
-  # Enumeraciones
-  enum :rol, { paciente: 0, medico: 1, administrador: 2 }
+  # ✅ ENUM para roles (esto ya genera automáticamente los métodos es_paciente?, es_medico?, es_administrador?)
+  enum rol: {
+    paciente: 0,
+    medico: 1,
+    administrador: 2  
+  }, _prefix: :es
 
   # Asociaciones
   has_one :paciente, dependent: :destroy
@@ -30,28 +54,17 @@ class Usuario < ApplicationRecord
   # Scopes
   scope :activos, -> { where(activo: true) }
   scope :inactivos, -> { where(activo: false) }
+  scope :por_rol, ->(rol) { where(rol: rol) }
 
   # Métodos de instancia
   def nombre_completo
     "#{nombre} #{apellido}"
   end
-
-  def es_paciente?
-    rol == 'paciente'
-  end
-
-  def es_medico?
-    rol == 'medico'
-  end
-
-  def es_administrador?
-    rol == 'administrador'
-  end
   
-  # Alias para consistencia con el código existente
-  alias paciente? es_paciente?
-  alias medico? es_medico?
-  alias administrador? es_administrador?
+  # ✅ Alias para compatibilidad con código existente (opcional, pero útil)
+  alias_method :paciente?, :es_paciente?
+  alias_method :medico?, :es_medico?
+  alias_method :administrador?, :es_administrador?
 
   def activar!
     update(activo: true)

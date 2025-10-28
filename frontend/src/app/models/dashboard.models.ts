@@ -1,127 +1,71 @@
-
-export interface Paciente {
-  id: string;
-  nombre_completo: string;
-  edad: number;
-  genero: string;
-  email: string;
-  telefono: string;
-  direccion: string;
-  fecha_nacimiento: string;
-  tipo_documento: string;
-  numero_documento: string;
-  grupo_sanguineo?: string;
-  alergias?: string;
-}
-
-export interface Medico {
-  id: string;
-  nombre_completo: string;
-  especialidad: string;
-  anos_experiencia: number;
-  costo_consulta: number;
-  biografia?: string;
-  calificacion: number;
-  total_reviews: number;
-  foto_url?: string;
-  disponible_hoy?: boolean;
-  telefono?: string;
-  email?: string;
-  direccion?: string;
-  numero_colegiatura?: string;
-  certificaciones?: Certificacion[];
-  horarios_atencion?: HorarioAtencion[];
-  total_pacientes_atendidos?: number;
-  total_citas_completadas?: number;
+// src/app/models/dashboard.models.ts
+export interface DashboardData {
+  paciente: {
+    id: string;
+    nombre_completo: string;
+    email: string;
+    fecha_nacimiento: string;
+    edad: number;
+  };
+  estadisticas: {
+    total_citas: number;
+    citas_pendientes: number;
+    citas_completadas: number;
+    citas_canceladas: number;
+  };
+  proxima_cita: Cita | null;
+  medicos_disponibles: Medico[];
+  notificaciones_recientes: Notificacion[];
 }
 
 export interface Cita {
   id: string;
   fecha_hora_inicio: string;
   fecha_hora_fin: string;
-  estado: 'pendiente' | 'confirmada' | 'cancelada' | 'completada' | 'no_asistio';
-  estado_label: string;
+  estado: 'pendiente' | 'confirmada' | 'completada' | 'cancelada' | 'no_asistio';
   motivo_consulta: string;
-  observaciones?: string;
-  diagnostico?: string;
   costo: number;
-  puede_cancelar: boolean;
   medico: {
     id: string;
     nombre_completo: string;
-    especialidad: string;
+    nombre_profesional: string;
+    especialidad: string; // Nombre de la especialidad principal
     foto_url?: string;
-    telefono?: string;
-    direccion?: string;
   };
-  dias_restantes?: number;
-  duracion_minutos?: number;
-  motivo_cancelacion?: string;
-  created_at: string;
-  updated_at?: string;
 }
 
-export interface Estadisticas {
-  total_citas: number;
-  citas_pendientes: number;
-  citas_completadas: number;
-  citas_canceladas: number;
+export interface Medico {
+  id: string;
+  nombre_completo: string;
+  nombre_profesional: string;
+  numero_colegiatura: string;
+  anios_experiencia: number;
+  costo_consulta: number; // ✅ CORREGIDO
+  biografia?: string;
+  especialidad: string; // ✅ Para compatibilidad
+  especialidad_principal?: {
+    id: string;
+    nombre: string;
+  };
+  especialidades: Array<{
+    id: string;
+    nombre: string;
+  }>;
+  calificacion?: number;
+  foto_url?: string;
+  disponible_hoy?: boolean;
+  total_reviews?: number;
 }
 
 export interface Notificacion {
   id: string;
-  tipo: string;
+  tipo: 'cita_creada' | 'cita_confirmada' | 'cita_cancelada' | 'recordatorio';
   titulo: string;
   mensaje: string;
   leida: boolean;
   created_at: string;
-  tiempo_relativo: string;
-  icono: string;
-  color: string;
-  cita_id?: string;
-  fecha_leida?: string;
-}
-
-export interface Certificacion {
-  id: string;
-  nombre: string;
-  institucion: string;
-}
-
-export interface HorarioAtencion {
-  dia: string;
-  horarios: string[];
-}
-
-export interface HorarioDisponible {
-  fecha: string;
-  dia_semana: string;
-  disponible: boolean;
-  horarios: SlotHorario[];
-  duracion_cita?: number;
-}
-
-export interface SlotHorario {
-  fecha_hora: string;
-  hora_display: string;
-  disponible: boolean;
-}
-
-export interface DashboardData {
-  paciente: Paciente;
-  proxima_cita: Cita | null;
-  estadisticas: Estadisticas;
-  medicos_disponibles: Medico[];
-  notificaciones_recientes: Notificacion[];
-}
-
-export interface ApiResponse<T = any> {
-  success: boolean;
-  data: T;
-  message?: string;
-  errors?: string[];
-  total?: number;
-  page?: number;
-  per_page?: number;
-  total_pages?: number;
+  cita?: {
+    id: string;
+    fecha_hora_inicio: string;
+  };
 }

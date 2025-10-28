@@ -21,4 +21,8 @@ ActiveSupport::Inflector.inflections(:en) do |inflect|
   inflect.irregular 'cita', 'citas'
   inflect.irregular 'medico', 'medicos'
   inflect.irregular 'paciente', 'pacientes'
+  inflect.irregular 'especialidad', 'especialidades'
+  inflect.irregular 'certificacion', 'certificaciones'
+  inflect.irregular 'notificacion', 'notificaciones'
+  inflect.irregular 'horario_medico', 'horario_medicos'
 end

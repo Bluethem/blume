@@ -1,3 +1,4 @@
+# app/models/notificacion.rb
 # == Schema Information
 #
 # Table name: notificaciones
@@ -16,8 +17,14 @@
 
 class Notificacion < ApplicationRecord
   self.table_name = 'notificaciones'
-  # Enumeraciones
-  enum :tipo, { cita_creada: 0, cita_confirmada: 1, cita_cancelada: 2, recordatorio: 3 }
+  
+  # ✅ ENUM para tipos
+  enum tipo: {
+    cita_creada: 0,
+    cita_confirmada: 1,
+    cita_cancelada: 2,
+    recordatorio: 3
+  }, _prefix: :tipo
 
   # Asociaciones
   belongs_to :usuario
@@ -30,7 +37,8 @@ class Notificacion < ApplicationRecord
   validates :mensaje, presence: true, length: { minimum: 10 }
 
   # Callbacks
-  after_update :marcar_fecha_leida, if: :saved_change_to_leida?
+  # ❌ ELIMINAR - causa loop infinito
+  # after_update :marcar_fecha_leida, if: :saved_change_to_leida?
 
   # Scopes
   scope :no_leidas, -> { where(leida: false) }
@@ -38,21 +46,33 @@ class Notificacion < ApplicationRecord
   scope :recientes, -> { order(created_at: :desc) }
   scope :de_hoy, -> { where('created_at >= ?', Time.current.beginning_of_day) }
   scope :de_esta_semana, -> { where('created_at >= ?', Time.current.beginning_of_week) }
+  scope :del_mes_actual, -> { where('created_at >= ?', Time.current.beginning_of_month) }
   scope :por_tipo, ->(tipo) { where(tipo: tipo) }
+  scope :por_usuario, ->(usuario_id) { where(usuario_id: usuario_id) }
+  scope :con_cita, -> { where.not(cita_id: nil) }
+  scope :sin_cita, -> { where(cita_id: nil) }
 
-  # Métodos de clase
+  # Delegaciones
+  delegate :nombre_completo, to: :usuario, prefix: true, allow_nil: true
+
+  # ✅ Métodos de clase
   def self.enviar_recordatorios_citas
     # Este método se puede llamar desde un job diario
     # para enviar recordatorios 24 horas antes
     manana = 1.day.from_now
     
     citas_manana = Cita
+      .includes(:paciente, :medico)
       .where(estado: [:pendiente, :confirmada])
       .where(fecha_hora_inicio: manana.beginning_of_day..manana.end_of_day)
     
+    contador = 0
+    
     citas_manana.each do |cita|
       # Solo crear recordatorio si no existe uno reciente
-      unless cita.notificaciones.recordatorio.where('created_at > ?', 2.days.ago).exists?
+      next if cita.notificaciones.tipo_recordatorio.where('created_at > ?', 2.days.ago).exists?
+      
+      begin
         Notificacion.create!(
           usuario: cita.paciente.usuario,
           cita: cita,
@@ -60,16 +80,53 @@ class Notificacion < ApplicationRecord
           titulo: 'Recordatorio de cita',
           mensaje: "Recuerda tu cita mañana a las #{cita.fecha_hora_inicio.strftime('%H:%M')} con #{cita.medico.nombre_profesional}"
         )
+        contador += 1
+      rescue => e
+        Rails.logger.error("Error al crear recordatorio para cita #{cita.id}: #{e.message}")
       end
     end
+    
+    Rails.logger.info("Se enviaron #{contador} recordatorios de citas")
+    contador
+  end
+  
+  def self.marcar_todas_como_leidas(usuario_id)
+    no_leidas.where(usuario_id: usuario_id).update_all(
+      leida: true,
+      fecha_leida: Time.current
+    )
+  end
+  
+  def self.eliminar_antiguas(dias = 90)
+    # Eliminar notificaciones leídas de más de X días
+    where(leida: true)
+      .where('fecha_leida < ?', dias.days.ago)
+      .delete_all
+  end
+  
+  def self.estadisticas_usuario(usuario_id)
+    notificaciones = where(usuario_id: usuario_id)
+    
+    {
+      total: notificaciones.count,
+      no_leidas: notificaciones.no_leidas.count,
+      leidas: notificaciones.leidas.count,
+      por_tipo: notificaciones.group(:tipo).count,
+      hoy: notificaciones.de_hoy.count,
+      esta_semana: notificaciones.de_esta_semana.count
+    }
   end
 
-  # Métodos de instancia
+  # ✅ Métodos de instancia
   def marcar_como_leida!
+    return true if leida? # Ya está leída
+    
     update(leida: true, fecha_leida: Time.current)
   end
 
   def marcar_como_no_leida!
+    return true unless leida? # Ya está no leída
+    
     update(leida: false, fecha_leida: nil)
   end
 
@@ -87,9 +144,11 @@ class Notificacion < ApplicationRecord
     when 3600..86399
       horas = (tiempo / 3600).to_i
       "Hace #{horas} #{horas == 1 ? 'hora' : 'horas'}"
-    else
+    when 86400..604799 # Hasta 7 días
       dias = (tiempo / 86400).to_i
       "Hace #{dias} #{dias == 1 ? 'día' : 'días'}"
+    else
+      created_at.strftime('%d/%m/%Y')
     end
   end
 
@@ -107,14 +166,40 @@ class Notificacion < ApplicationRecord
       'info'
     end
   end
-
-  private
-
-  def marcar_fecha_leida
-    if leida? && fecha_leida.nil?
-      update_column(:fecha_leida, Time.current)
-    elsif !leida?
-      update_column(:fecha_leida, nil)
+  
+  def color
+    case tipo.to_sym
+    when :cita_creada
+      'blue'
+    when :cita_confirmada
+      'green'
+    when :cita_cancelada
+      'red'
+    when :recordatorio
+      'yellow'
+    else
+      'gray'
     end
+  end
+  
+  def url
+    return nil unless cita_id
+    
+    # Esto se puede ajustar según tus rutas del frontend
+    case usuario.rol.to_sym
+    when :paciente
+      "/paciente/citas/#{cita_id}"
+    when :medico
+      "/medico/citas/#{cita_id}"
+    when :administrador
+      "/admin/citas/#{cita_id}"
+    else
+      "/citas/#{cita_id}"
+    end
+  end
+  
+  def relacionada_con_cita_proxima?
+    return false unless cita
+    cita.fecha_hora_inicio > Time.current
   end
 end

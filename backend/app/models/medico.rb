@@ -5,7 +5,6 @@
 #  id                     :uuid             not null, primary key
 #  usuario_id             :uuid             not null
 #  numero_colegiatura     :string           not null
-#  especialidad_principal :string           not null
 #  anios_experiencia      :integer
 #  biografia              :text
 #  costo_consulta         :decimal(10, 2)
@@ -16,6 +15,7 @@
 
 class Medico < ApplicationRecord
   self.table_name = 'medicos'
+  
   # Asociaciones
   belongs_to :usuario
   has_many :medico_certificaciones, dependent: :destroy
@@ -23,15 +23,19 @@ class Medico < ApplicationRecord
   has_many :horario_medicos, dependent: :destroy
   has_many :citas, dependent: :destroy
   has_many :pacientes, through: :citas
+  has_many :medico_especialidades, dependent: :destroy
+  has_many :especialidades, through: :medico_especialidades
 
   # Validaciones
   validates :usuario_id, presence: true, uniqueness: true
   validates :numero_colegiatura, presence: true, 
                                  uniqueness: true,
                                  format: { with: /\A[A-Z]{3}-\d{5}\z/, message: 'debe tener el formato CMP-12345' }
-  validates :especialidad_principal, presence: true, length: { minimum: 3, maximum: 100 }
   validates :anios_experiencia, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
   validates :costo_consulta, numericality: { greater_than: 0 }, allow_nil: true
+  
+  # ✅ Validar que tenga especialidad principal
+  validate :debe_tener_especialidad_principal, on: :update
 
   # Delegaciones
   delegate :nombre, :apellido, :email, :telefono, :direccion, :nombre_completo, to: :usuario
@@ -39,20 +43,62 @@ class Medico < ApplicationRecord
   # Scopes
   scope :activos, -> { where(activo: true) }
   scope :inactivos, -> { where(activo: false) }
-  scope :por_especialidad, ->(especialidad) { where(especialidad_principal: especialidad) }
   scope :con_experiencia_minima, ->(anios) { where('anios_experiencia >= ?', anios) }
+  scope :por_especialidad, ->(especialidad_id) {
+    joins(:especialidades).where(especialidades: { id: especialidad_id })
+  }
+  scope :por_nombre_especialidad, ->(nombre) {
+    joins(:especialidades).where('especialidades.nombre ILIKE ?', "%#{nombre}%")
+  }
 
   # Métodos de instancia
   def nombre_profesional
     "Dr(a). #{nombre_completo}"
   end
 
+  def especialidad_principal
+    medico_especialidades.find_by(es_principal: true)&.especialidad
+  end
+
+  def especialidades_secundarias
+    especialidades.where(medico_especialidades: { es_principal: false })
+  end
+
+  def agregar_especialidad(especialidad_id, es_principal: false)
+    # Si se marca como principal, desmarcar las demás
+    if es_principal
+      medico_especialidades.update_all(es_principal: false)
+    end
+    
+    medico_especialidades.find_or_create_by(especialidad_id: especialidad_id) do |me|
+      me.es_principal = es_principal
+    end
+  end
+  
+  def cambiar_especialidad_principal(especialidad_id)
+    transaction do
+      medico_especialidades.update_all(es_principal: false)
+      medico_especialidad = medico_especialidades.find_or_initialize_by(especialidad_id: especialidad_id)
+      medico_especialidad.es_principal = true
+      medico_especialidad.save!
+    end
+  end
+
   def tiene_disponibilidad?(dia_semana)
-    horario_medicos.activos.exists?(dia_semana: dia_semana)
+    horario_medicos.where(activo: true).exists?(dia_semana: dia_semana)
+  end
+  
+  def horarios_activos
+    horario_medicos.where(activo: true).order(:dia_semana, :hora_inicio)
   end
 
   def horarios_del_dia(dia_semana)
-    horario_medicos.activos.where(dia_semana: dia_semana).order(:hora_inicio)
+    horario_medicos.where(activo: true, dia_semana: dia_semana).order(:hora_inicio)
+  end
+  
+  def horarios_fecha(fecha)
+    dia_semana = fecha.wday
+    horario_medicos.where(activo: true, dia_semana: dia_semana)
   end
 
   def proximas_citas
@@ -70,21 +116,17 @@ class Medico < ApplicationRecord
   end
 
   def disponible_en_horario?(fecha_hora, duracion_minutos = 30)
-    # Verificar que el médico esté activo
     return false unless activo
 
-    # Verificar que el día de la semana tenga horario configurado
     dia_semana = fecha_hora.wday
     hora = fecha_hora.strftime('%H:%M')
     
-    horario = horario_medicos.activos.find_by(dia_semana: dia_semana)
+    horario = horario_medicos.where(activo: true).find_by(dia_semana: dia_semana)
     return false unless horario
 
-    # Verificar que la hora esté dentro del rango del horario
     return false if hora < horario.hora_inicio.strftime('%H:%M')
     return false if hora >= horario.hora_fin.strftime('%H:%M')
 
-    # Verificar que no haya citas superpuestas
     fecha_fin = fecha_hora + duracion_minutos.minutes
     
     !citas.where(estado: [:pendiente, :confirmada])
@@ -93,7 +135,7 @@ class Medico < ApplicationRecord
   end
 
   def total_citas_completadas
-    citas.completada.count
+    citas.where(estado: :completada).count
   end
 
   def activar!
@@ -102,5 +144,13 @@ class Medico < ApplicationRecord
 
   def desactivar!
     update(activo: false)
+  end
+  
+  private
+  
+  def debe_tener_especialidad_principal
+    if persisted? && (especialidades.none? || medico_especialidades.where(es_principal: true).none?)
+      errors.add(:base, 'debe tener al menos una especialidad principal')
+    end
   end
 end

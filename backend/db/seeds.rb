@@ -16,6 +16,7 @@ puts "Iniciando seed de datos..."
 # =====================================================
 # 1. CREAR USUARIOS ADMINISTRADORES
 # =====================================================
+
 puts "\n Creando administradores..."
 
 admin1 = Usuario.create!(
@@ -52,184 +53,228 @@ end
 
 puts "#{certificaciones_creadas.count} certificaciones creadas"
 
+puts "\n🏥 Creando especialidades médicas..."
+
+especialidades_data = [
+  { nombre: 'Cardiología', descripcion: 'Especialidad médica que se encarga del estudio, diagnóstico y tratamiento de las enfermedades del corazón y del aparato circulatorio' },
+  { nombre: 'Pediatría', descripcion: 'Rama de la medicina que se especializa en la salud y las enfermedades de los niños' },
+  { nombre: 'Dermatología', descripcion: 'Especialidad médica encargada del estudio de la estructura y función de la piel' },
+  { nombre: 'Oftalmología', descripcion: 'Especialidad médica que estudia las enfermedades de ojo y su tratamiento' },
+  { nombre: 'Neurología', descripcion: 'Especialidad médica que trata los trastornos del sistema nervioso' },
+  { nombre: 'Traumatología', descripcion: 'Rama de la medicina que se dedica al estudio de las lesiones del aparato locomotor' },
+  { nombre: 'Ginecología', descripcion: 'Especialidad médica que trata las enfermedades del sistema reproductor femenino' },
+  { nombre: 'Psiquiatría', descripcion: 'Especialidad médica dedicada al estudio, prevención, diagnóstico y tratamiento de enfermedades mentales' }
+]
+
+especialidades_creadas = []
+
+especialidades_data.each do |data|
+  especialidad = Especialidad.find_or_create_by!(nombre: data[:nombre]) do |e|
+    e.descripcion = data[:descripcion]
+  end
+  especialidades_creadas << especialidad
+  puts "✅ Especialidad: #{especialidad.nombre}"
+end
+
 # =====================================================
-# 3. CREAR MÉDICOS
+# CREAR MÉDICOS
 # =====================================================
-puts "\n Creando médicos..."
+puts "\n👨‍⚕️ Creando médicos..."
 
 medicos_data = [
   {
     usuario: {
-      email: 'dr.garcia@hospital.com',
+      email: 'dra.garcia@hospital.com',
       password: 'password123',
       password_confirmation: 'password123',
-      nombre: 'Juan',
-      apellido: 'García Pérez',
-      telefono: '987123456',
-      direccion: 'Av. Médica 456, Lima',
+      nombre: 'María',
+      apellido: 'García López',
+      telefono: '987654321',
+      direccion: 'Consultorio Médico, Av. Salud 456, Lima',
       rol: :medico
     },
     medico: {
       numero_colegiatura: 'CMP-12345',
-      especialidad_principal: 'Cardiología',
-      anios_experiencia: 15,
-      biografia: 'Cardiólogo con 15 años de experiencia en el diagnóstico y tratamiento de enfermedades cardiovasculares.',
+      anios_experiencia: 10,
+      biografia: 'Médico especialista con amplia experiencia en el tratamiento de enfermedades cardiovasculares.',
       costo_consulta: 150.00,
       activo: true
-    },
-    certificaciones: ['Medicina General', 'Cardiología']
-  },
-  {
-    usuario: {
-      email: 'dra.martinez@hospital.com',
-      password: 'password123',
-      password_confirmation: 'password123',
-      nombre: 'María',
-      apellido: 'Martínez López',
-      telefono: '987234567',
-      direccion: 'Av. Salud 789, Lima',
-      rol: :medico
-    },
-    medico: {
-      numero_colegiatura: 'CMP-23456',
-      especialidad_principal: 'Pediatría',
-      anios_experiencia: 10,
-      biografia: 'Pediatra especializada en el cuidado integral de niños y adolescentes.',
-      costo_consulta: 120.00,
-      activo: true
-    },
-    certificaciones: ['Medicina General', 'Pediatría']
+    }
   },
   {
     usuario: {
       email: 'dr.rodriguez@hospital.com',
       password: 'password123',
       password_confirmation: 'password123',
-      nombre: 'Roberto',
-      apellido: 'Rodríguez Sánchez',
-      telefono: '987345678',
-      direccion: 'Jr. Médicos 321, Lima',
+      nombre: 'Carlos',
+      apellido: 'Rodríguez Pérez',
+      telefono: '987654322',
+      direccion: 'Consultorio Médico, Av. Los Médicos 789, Lima',
+      rol: :medico
+    },
+    medico: {
+      numero_colegiatura: 'CMP-23456',
+      anios_experiencia: 8,
+      biografia: 'Especialista en el cuidado y tratamiento de pacientes pediátricos.',
+      costo_consulta: 120.00,
+      activo: true
+    }
+  },
+  {
+    usuario: {
+      email: 'dra.martinez@hospital.com',
+      password: 'password123',
+      password_confirmation: 'password123',
+      nombre: 'Ana',
+      apellido: 'Martínez Ruiz',
+      telefono: '987654323',
+      direccion: 'Consultorio Médico, Jr. Las Flores 321, Lima',
       rol: :medico
     },
     medico: {
       numero_colegiatura: 'CMP-34567',
-      especialidad_principal: 'Traumatología',
       anios_experiencia: 12,
-      biografia: 'Traumatólogo con amplia experiencia en cirugía ortopédica y tratamiento de lesiones deportivas.',
+      biografia: 'Dermatóloga con experiencia en tratamientos estéticos y médicos.',
       costo_consulta: 180.00,
       activo: true
-    },
-    certificaciones: ['Medicina General', 'Traumatología']
+    }
   },
   {
     usuario: {
-      email: 'dra.flores@hospital.com',
+      email: 'dr.fernandez@hospital.com',
       password: 'password123',
       password_confirmation: 'password123',
-      nombre: 'Ana',
-      apellido: 'Flores Castillo',
-      telefono: '987456789',
-      direccion: 'Av. Principal 654, Lima',
+      nombre: 'Luis',
+      apellido: 'Fernández Torres',
+      telefono: '987654324',
+      direccion: 'Consultorio Médico, Av. Principal 654, Lima',
       rol: :medico
     },
     medico: {
       numero_colegiatura: 'CMP-45678',
-      especialidad_principal: 'Dermatología',
-      anios_experiencia: 8,
-      biografia: 'Dermatóloga especializada en tratamientos estéticos y enfermedades de la piel.',
-      costo_consulta: 140.00,
+      anios_experiencia: 15,
+      biografia: 'Oftalmólogo especializado en cirugía refractiva.',
+      costo_consulta: 200.00,
       activo: true
-    },
-    certificaciones: ['Medicina General', 'Dermatología']
+    }
   },
   {
     usuario: {
-      email: 'dra.torres@hospital.com',
+      email: 'dra.lopez@hospital.com',
       password: 'password123',
       password_confirmation: 'password123',
       nombre: 'Patricia',
-      apellido: 'Torres Vega',
-      telefono: '987567890',
-      direccion: 'Av. Las Flores 987, Lima',
+      apellido: 'López Gómez',
+      telefono: '987654325',
+      direccion: 'Consultorio Médico, Av. Los Pinos 987, Lima',
       rol: :medico
     },
     medico: {
       numero_colegiatura: 'CMP-56789',
-      especialidad_principal: 'Ginecología',
-      anios_experiencia: 14,
-      biografia: 'Ginecóloga con amplia experiencia en salud reproductiva y control prenatal.',
+      anios_experiencia: 9,
+      biografia: 'Neuróloga especializada en enfermedades neurodegenerativas.',
+      costo_consulta: 170.00,
+      activo: true
+    }
+  },
+  {
+    usuario: {
+      email: 'dr.sanchez@hospital.com',
+      password: 'password123',
+      password_confirmation: 'password123',
+      nombre: 'Jorge',
+      apellido: 'Sánchez Vega',
+      telefono: '987654326',
+      direccion: 'Consultorio Médico, Jr. Los Olivos 147, Lima',
+      rol: :medico
+    },
+    medico: {
+      numero_colegiatura: 'CMP-67890',
+      anios_experiencia: 11,
+      biografia: 'Traumatólogo con experiencia en cirugía ortopédica y deportiva.',
       costo_consulta: 160.00,
       activo: true
-    },
-    certificaciones: ['Medicina General', 'Ginecología']
+    }
   }
 ]
 
 medicos_creados = []
 
-medicos_data.each do |data|
-  usuario = Usuario.create!(data[:usuario])
-  medico = Medico.create!(data[:medico].merge(usuario: usuario))
-  
-  # Asignar certificaciones
-  data[:certificaciones].each do |cert_nombre|
-    certificacion = certificaciones_creadas.find { |c| c.nombre == cert_nombre }
-    if certificacion
+# ✅ CORRECCIÓN: Usar each_with_index en lugar de each
+medicos_data.each_with_index do |data, index|
+  begin
+    usuario = Usuario.create!(data[:usuario])
+    medico = Medico.create!(data[:medico].merge(usuario: usuario))
+    
+    # ✅ Asignar especialidad principal (rotar entre las disponibles)
+    especialidad_index = index % especialidades_creadas.length
+    medico.agregar_especialidad(especialidades_creadas[especialidad_index].id, es_principal: true)
+    
+    # ✅ (Opcional) Asignar especialidad secundaria a médicos pares
+    if index.even? && especialidades_creadas.length > 1
+      especialidad_secundaria_index = (index + 1) % especialidades_creadas.length
+      medico.agregar_especialidad(especialidades_creadas[especialidad_secundaria_index].id, es_principal: false)
+    end
+    
+    # ✅ ASIGNAR CERTIFICACIONES (si quieres agregarlas manualmente)
+    # Por ahora las asignamos aleatoriamente
+    certificaciones_a_asignar = certificaciones_creadas.sample(rand(1..3))
+    certificaciones_a_asignar.each do |certificacion|
       MedicoCertificacion.create!(
         medico: medico,
         certificacion: certificacion,
-        fecha_obtencion: rand(5..15).years.ago,
-        numero_certificado: "CERT-#{SecureRandom.hex(4).upcase}"
+        fecha_obtencion: rand(1..10).years.ago.to_date
       )
     end
-  end
-  
-  medicos_creados << medico
-  puts " Médico creado: Dr(a). #{usuario.nombre} #{usuario.apellido} - #{medico.especialidad_principal}"
-end
-
-# =====================================================
-# 4. CREAR HORARIOS PARA LOS MÉDICOS
-# =====================================================
-puts "\n Creando horarios de atención..."
-
-medicos_creados.each do |medico|
-  # Lunes a Viernes: 9:00 AM - 1:00 PM
-  (1..5).each do |dia|
+    
+    medicos_creados << medico
+    puts "✅ Médico creado: #{usuario.nombre} #{usuario.apellido} - #{medico.especialidad_principal.nombre}"
+    
+    # Crear horarios para este médico
+    # Lunes a Viernes: 9:00 AM - 1:00 PM
+    (1..5).each do |dia|
+      HorarioMedico.create!(
+        medico: medico,
+        dia_semana: dia,
+        hora_inicio: '09:00',
+        hora_fin: '13:00',
+        duracion_cita_minutos: 30,
+        activo: true
+      )
+    end
+    
+    # Lunes a Viernes: 3:00 PM - 7:00 PM
+    (1..5).each do |dia|
+      HorarioMedico.create!(
+        medico: medico,
+        dia_semana: dia,
+        hora_inicio: '15:00',
+        hora_fin: '19:00',
+        duracion_cita_minutos: 30,
+        activo: true
+      )
+    end
+    
+    # Sábados: 9:00 AM - 1:00 PM
     HorarioMedico.create!(
       medico: medico,
-      dia_semana: dia,
+      dia_semana: 6,
       hora_inicio: '09:00',
       hora_fin: '13:00',
       duracion_cita_minutos: 30,
       activo: true
     )
+    
+    puts "  ✅ Horarios creados para Dr(a). #{medico.usuario.nombre} #{medico.usuario.apellido}"
+    
+  rescue => e
+    puts "❌ Error al crear médico: #{e.message}"
+    puts "   Detalles: #{e.class}"
+    puts "   Backtrace: #{e.backtrace.first(3).join("\n   ")}"
   end
-  
-  # Lunes a Viernes: 3:00 PM - 7:00 PM
-  (1..5).each do |dia|
-    HorarioMedico.create!(
-      medico: medico,
-      dia_semana: dia,
-      hora_inicio: '15:00',
-      hora_fin: '19:00',
-      duracion_cita_minutos: 30,
-      activo: true
-    )
-  end
-  
-  # Sábados: 9:00 AM - 1:00 PM
-  HorarioMedico.create!(
-    medico: medico,
-    dia_semana: 6,
-    hora_inicio: '09:00',
-    hora_fin: '13:00',
-    duracion_cita_minutos: 30,
-    activo: true
-  )
-  
-  puts " Horarios creados para Dr(a). #{medico.usuario.nombre} #{medico.usuario.apellido}"
 end
+
+puts "\n✅ #{medicos_creados.length} médicos creados exitosamente"
 
 # =====================================================
 # 5. CREAR PACIENTES

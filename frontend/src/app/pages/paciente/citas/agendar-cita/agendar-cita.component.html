@@ -118,8 +118,8 @@
               </div>
               <div>
                 <p class="text-brand-text-primary dark:text-white text-base font-bold leading-normal">{{ medico.nombre_completo }}</p>
-                <p class="text-brand-text-secondary dark:text-gray-400 text-sm font-normal leading-normal">{{ medico.especialidad }}</p>
-                <p class="text-brand-text-secondary dark:text-gray-400 text-xs mt-1">{{ medico.anos_experiencia }} años de experiencia</p>
+                <p>{{ medico.especialidad_principal?.nombre || medico.especialidad || 'General' }}</p>
+                <p class="text-brand-text-secondary dark:text-gray-400 text-xs mt-1">{{ medico.anios_experiencia }} años de experiencia</p>
                 <p class="text-primary font-bold text-sm mt-2">${{ medico.costo_consulta }} MXN</p>
               </div>
               <button 
@@ -180,21 +180,13 @@
             </label>
 
             <div *ngIf="horariosDisponibles.disponible" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-              <button
-                *ngFor="let slot of horariosDisponibles.horarios"
-                type="button"
+              <button 
+                *ngFor="let slot of horariosDisponibles?.slots" 
                 (click)="seleccionarHorario(slot)"
                 [disabled]="!slot.disponible"
-                [class.bg-primary]="slotSeleccionado?.fecha_hora === slot.fecha_hora"
-                [class.text-white]="slotSeleccionado?.fecha_hora === slot.fecha_hora"
-                [class.bg-gray-100]="slotSeleccionado?.fecha_hora !== slot.fecha_hora && slot.disponible"
-                [class.hover:bg-primary]="slot.disponible"
-                [class.hover:text-white]="slot.disponible"
-                [class.bg-gray-200]="!slot.disponible"
-                [class.cursor-not-allowed]="!slot.disponible"
-                [class.opacity-50]="!slot.disponible"
-                class="px-4 py-3 rounded-lg font-medium text-sm transition-colors dark:bg-gray-700 dark:text-white dark:hover:bg-primary">
-                {{ slot.hora_display }}
+                [class.selected]="slotSeleccionado?.fecha_hora_inicio === slot.fecha_hora_inicio"
+                class="slot-button">
+                {{ slot.hora_inicio }} - {{ slot.hora_fin }}
               </button>
             </div>
 
@@ -295,7 +287,7 @@
             <!-- Fecha y Hora -->
             <div class="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
               <p class="text-sm text-brand-text-secondary dark:text-gray-400 mb-1">Fecha y hora</p>
-              <p class="font-bold text-brand-text-primary dark:text-white">{{ formatearFecha(slotSeleccionado?.fecha_hora || '') }}</p>
+              <p class="font-bold text-brand-text-primary dark:text-white"> {{ formatearFecha(slotSeleccionado?.fecha_hora_inicio || '') }} </p>
               <p class="text-sm text-brand-text-secondary dark:text-gray-400">{{ slotSeleccionado?.hora_display }}</p>
             </div>
 

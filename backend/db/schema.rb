@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_10_27_212924) do
+ActiveRecord::Schema[8.1].define(version: 2025_10_28_042414) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -47,6 +47,14 @@ ActiveRecord::Schema[8.1].define(version: 2025_10_27_212924) do
     t.check_constraint "fecha_hora_fin > fecha_hora_inicio", name: "check_fecha_fin_mayor_inicio"
   end
 
+  create_table "especialidades", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "descripcion"
+    t.string "nombre", null: false
+    t.datetime "updated_at", null: false
+    t.index ["nombre"], name: "index_especialidades_on_nombre", unique: true
+  end
+
   create_table "horario_medicos", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.boolean "activo", default: true, null: false
     t.datetime "created_at", null: false
@@ -76,17 +84,26 @@ ActiveRecord::Schema[8.1].define(version: 2025_10_27_212924) do
     t.index ["medico_id"], name: "index_medico_certificaciones_on_medico_id"
   end
 
+  create_table "medico_especialidades", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.boolean "es_principal", default: false, null: false
+    t.uuid "especialidad_id", null: false
+    t.uuid "medico_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["especialidad_id"], name: "index_medico_especialidades_on_especialidad_id"
+    t.index ["medico_id", "especialidad_id"], name: "index_medico_especialidades_unique", unique: true
+    t.index ["medico_id"], name: "index_medico_especialidades_on_medico_id"
+  end
+
   create_table "medicos", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.boolean "activo", default: true, null: false
     t.integer "anios_experiencia"
     t.text "biografia"
     t.decimal "costo_consulta", precision: 10, scale: 2
     t.datetime "created_at", null: false
-    t.string "especialidad_principal", null: false
     t.string "numero_colegiatura", null: false
     t.datetime "updated_at", null: false
     t.uuid "usuario_id", null: false
-    t.index ["especialidad_principal"], name: "index_medicos_on_especialidad_principal"
     t.index ["numero_colegiatura"], name: "index_medicos_on_numero_colegiatura", unique: true
     t.index ["usuario_id"], name: "index_medicos_on_usuario_id", unique: true
   end
@@ -147,6 +164,8 @@ ActiveRecord::Schema[8.1].define(version: 2025_10_27_212924) do
   add_foreign_key "horario_medicos", "medicos"
   add_foreign_key "medico_certificaciones", "certificaciones"
   add_foreign_key "medico_certificaciones", "medicos"
+  add_foreign_key "medico_especialidades", "especialidades"
+  add_foreign_key "medico_especialidades", "medicos"
   add_foreign_key "medicos", "usuarios"
   add_foreign_key "notificaciones", "citas"
   add_foreign_key "notificaciones", "usuarios"

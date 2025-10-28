@@ -8,12 +8,12 @@ module Api
 
       # GET /api/v1/medicos
       def index
-        @medicos = Medico.includes(:usuario, :certificaciones)
+        @medicos = Medico.includes(:usuario, :certificaciones, :especialidades)
                         .joins(:usuario)
                         .where(usuarios: { activo: true })
 
         # Aplicar filtros si existen
-        @medicos = filter_medicos(@medicos) if params[:q].present? || params[:especialidad].present?
+        @medicos = filter_medicos(@medicos) if params[:q].present? || params[:especialidad_id].present? || params[:tarifa_max].present?
 
         # Obtener el total ANTES de paginar
         total_count = @medicos.count
@@ -52,15 +52,17 @@ module Api
           
           if usuario.save
             # Crear perfil de médico
-            @medico = Medico.new(medico_params)
+            @medico = Medico.new(medico_params.except(:especialidad_ids))
             @medico.usuario_id = usuario.id
             
             if @medico.save
               # Asignar especialidades
-              asignar_especialidades(@medico, params[:especialidad_ids])
+              if params[:medico][:especialidad_ids].present?
+                asignar_especialidades(@medico, params[:medico][:especialidad_ids])
+              end
               
               render_success(
-                medico_response(@medico),
+                medico_response(@medico, detailed: true),
                 message: 'Médico creado exitosamente',
                 status: :created
               )
@@ -79,14 +81,18 @@ module Api
 
       # PUT /api/v1/medicos/:id
       def update
-        if @medico.update(medico_params)
+        if @medico.update(medico_params.except(:especialidad_ids))
           # Actualizar especialidades si se proporcionaron
-          if params[:especialidad_ids].present?
-            asignar_especialidades(@medico, params[:especialidad_ids])
+          if params[:medico][:especialidad_ids].present?
+            asignar_especialidades(@medico, params[:medico][:especialidad_ids])
+          end
+
+          if params[:usuario].present?
+            @medico.usuario.update(usuario_params)
           end
           
           render_success(
-            medico_response(@medico),
+            medico_response(@medico, detailed: true),
             message: 'Médico actualizado exitosamente'
           )
         else
@@ -113,10 +119,12 @@ module Api
         end
 
         @medicos = Medico.joins(:usuario)
-                         .where('usuarios.nombre ILIKE ? OR usuarios.apellido ILIKE ? OR medicos.numero_colegiatura ILIKE ?',
-                                "%#{query}%", "%#{query}%", "%#{query}%")
+                         .left_joins(:especialidades)
+                         .where('usuarios.nombre ILIKE ? OR usuarios.apellido ILIKE ? OR medicos.numero_colegiatura ILIKE ? OR especialidades.nombre ILIKE ?',
+                                "%#{query}%", "%#{query}%", "%#{query}%", "%#{query}%")
                          .where(usuarios: { activo: true })
                          .includes(:especialidades, :usuario)
+                         .distinct
                          .limit(20)
 
         render_success(@medicos.map { |m| medico_response(m) })
@@ -129,7 +137,7 @@ module Api
 
         @medicos = Medico.joins(:usuario)
                          .where(usuarios: { activo: true })
-                         .includes(:horarios_disponibles, :especialidades)
+                         .includes(:horario_medicos, :especialidades)
 
         # Filtrar por especialidad si se proporciona
         if especialidad_id.present?
@@ -140,8 +148,8 @@ module Api
         # Filtrar por disponibilidad en la fecha
         dia_semana = fecha.wday
         @medicos = @medicos.where(
-          id: HorarioDisponible.where(dia_semana: dia_semana, activo: true)
-                                .select(:medico_id)
+          id: HorarioMedico.where(dia_semana: dia_semana, activo: true)
+                           .select(:medico_id)
         )
 
         render_success(@medicos.map { |m| medico_response(m, include_horarios: true) })
@@ -149,7 +157,7 @@ module Api
 
       # GET /api/v1/medicos/:id/horarios
       def horarios
-        horarios = @medico.horarios_disponibles.where(activo: true).order(:dia_semana, :hora_inicio)
+        horarios = @medico.horario_medicos.where(activo: true).order(:dia_semana, :hora_inicio)
         
         render_success(horarios.map { |h| horario_response(h) })
       end
@@ -198,10 +206,15 @@ module Api
         }
 
         # Estadísticas por mes (últimos 6 meses)
-        stats[:citas_por_mes] = @medico.citas
-                                       .where('fecha_hora_inicio >= ?', 6.months.ago)
-                                       .group_by_month(:fecha_hora_inicio)
-                                       .count
+        if @medico.citas.any?
+          stats[:citas_por_mes] = @medico.citas
+                                         .where('fecha_hora_inicio >= ?', 6.months.ago)
+                                         .group("DATE_TRUNC('month', fecha_hora_inicio)")
+                                         .count
+                                         .transform_keys { |k| k.strftime('%Y-%m') }
+        else
+          stats[:citas_por_mes] = {}
+        end
 
         render_success(stats)
       end
@@ -209,7 +222,13 @@ module Api
       private
 
       def set_medico
-        @medico = Medico.find(params[:id])
+        @medico = Medico.includes(:usuario, :especialidades).find(params[:id])
+      end
+
+      def authorize_medico_access
+        unless current_user.es_administrador? || (current_user.es_medico? && current_user.medico.id == @medico.id)
+          render_error('No autorizado', status: :forbidden)
+        end
       end
 
       def usuario_params
@@ -220,78 +239,59 @@ module Api
         params.require(:medico).permit(
           :numero_colegiatura,
           :anios_experiencia,
-          :costo_consulta,
           :biografia,
+          :costo_consulta,
+          :activo,
+          especialidad_ids: []
         )
       end
 
-      def authorize_medico_access
-        unless current_user.es_administrador? || (current_user.es_medico? && current_user.medico.id == @medico.id)
-          render_error('No tienes permiso para modificar este médico', status: :forbidden)
-        end
-      end
-
       def filter_medicos(medicos)
-        if params[:especialidad_id].present?
-          medicos = medicos.joins(:especialidades)
-                           .where(especialidades: { id: params[:especialidad_id] })
+        # Búsqueda por texto en nombre, apellido y especialidades
+        if params[:q].present?
+          busqueda = params[:q].downcase
+          medicos = medicos.joins(:usuario)
+                           .left_joins(:especialidades)
+                           .where(
+                             'LOWER(usuarios.nombre) LIKE ? OR LOWER(usuarios.apellido) LIKE ? OR LOWER(especialidades.nombre) LIKE ?',
+                             "%#{busqueda}%", "%#{busqueda}%", "%#{busqueda}%"
+                           ).distinct
         end
 
+        # Filtro por especialidad
+        if params[:especialidad_id].present?
+          medicos = medicos.por_especialidad(params[:especialidad_id])
+        end
+
+        # Filtro por tarifa máxima
         if params[:tarifa_max].present?
           medicos = medicos.where('costo_consulta <= ?', params[:tarifa_max])
         end
 
+        # Ordenamiento
+        orden = params[:orden] || 'nombre'
+        medicos = case orden
+        when 'experiencia'
+          medicos.order(anios_experiencia: :desc)
+        when 'precio_asc'
+          medicos.order(costo_consulta: :asc)
+        when 'precio_desc'
+          medicos.order(costo_consulta: :desc)
+        else
+          medicos.joins(:usuario).order('usuarios.nombre ASC')
+        end
+
         medicos
-      end
-
-      def asignar_especialidades(medico, especialidad_ids)
-        return unless especialidad_ids.is_a?(Array)
-        
-        medico.especialidades.clear
-        especialidad_ids.each do |esp_id|
-          especialidad = Especialidad.find_by(id: esp_id)
-          medico.especialidades << especialidad if especialidad
-        end
-      end
-
-      def medico_response(medico, detailed: false, include_horarios: false)
-        response = {
-          id: medico.id,
-          nombre_completo: medico.nombre_completo,
-          email: medico.email,
-          telefono: medico.telefono,
-          numero_colegiatura: medico.numero_colegiatura,
-          anos_experiencia: medico.anios_experiencia,
-          costo_consulta: medico.costo_consulta,
-          especialidades: medico.especialidades.map { |e| { id: e.id, nombre: e.nombre } }
-        }
-
-        if detailed
-          response.merge!({
-            direccion: medico.direccion,
-            biografia: medico.biografia,
-            total_citas: medico.citas.count,
-            pacientes_atendidos: medico.citas.select(:paciente_id).distinct.count,
-            created_at: medico.created_at
-          })
-        end
-
-        if include_horarios
-          response[:horarios_disponibles] = medico.horarios_disponibles
-                                                   .where(activo: true)
-                                                   .order(:dia_semana, :hora_inicio)
-                                                   .map { |h| horario_response(h) }
-        end
-
-        response
       end
 
       def horario_response(horario)
         {
           id: horario.id,
           dia_semana: horario.dia_semana,
+          nombre_dia: HorarioMedico.dias_semana_hash[horario.dia_semana],
           hora_inicio: horario.hora_inicio.strftime('%H:%M'),
           hora_fin: horario.hora_fin.strftime('%H:%M'),
+          duracion_cita_minutos: horario.duracion_cita_minutos,
           activo: horario.activo
         }
       end
@@ -308,106 +308,38 @@ module Api
         }
       end
 
-      def horarios_disponibles
-        fecha = params[:fecha] ? Date.parse(params[:fecha]) : Date.current
-        
-        # Obtener horarios del médico para ese día
-        dia_semana = fecha.wday
-        horarios = @medico.horarios_disponibles.where(dia_semana: dia_semana, activo: true)
-
-        if horarios.empty?
-          return render_success({
-            fecha: fecha,
-            dia_semana: I18n.l(fecha, format: '%A'),
-            disponible: false,
-            horarios: []
-          })
-        end
-
-        # Obtener citas ya agendadas para ese día
-        citas_ocupadas = @medico.citas
-          .where('DATE(fecha_hora_inicio) = ?', fecha)
-          .where(estado: [:pendiente, :confirmada])
-          .pluck(:fecha_hora_inicio)
-
-        # Generar slots disponibles
-        slots_disponibles = []
-        
-        horarios.each do |horario|
-          hora_actual = combinar_fecha_hora(fecha, horario.hora_inicio)
-          hora_fin = combinar_fecha_hora(fecha, horario.hora_fin)
-          duracion = 30.minutes # Puedes hacer esto configurable por médico
-
-          while hora_actual < hora_fin
-            # Verificar que no esté ocupado y que sea futuro
-            unless citas_ocupadas.include?(hora_actual) || hora_actual < Time.current
-              slots_disponibles << {
-                fecha_hora: hora_actual,
-                hora_display: hora_actual.strftime('%I:%M %p'),
-                disponible: true
-              }
-            end
-            hora_actual += duracion
-          end
-        end
-
-        render_success({
-          fecha: fecha,
-          dia_semana: I18n.l(fecha, format: '%A'),
-          disponible: slots_disponibles.any?,
-          horarios: slots_disponibles,
-          duracion_cita: 30
-        })
-      end
-
-      # NUEVO MÉTODO: GET /api/v1/medicos/especialidades
-      # Para obtener lista de especialidades con cantidad de médicos
-      def especialidades
-        especialidades = Especialidad.all.map do |esp|
-          medicos_count = Medico.joins(:especialidades)
-                                .where(especialidades: { id: esp.id })
-                                .where(usuarios: { activo: true })
-                                .count
-          {
-            id: esp.id,
-            nombre: esp.nombre,
-            descripcion: esp.descripcion,
-            total_medicos: medicos_count
-          }
-        end.select { |e| e[:total_medicos] > 0 }
-         .sort_by { |e| e[:nombre] }
-
-        render_success(especialidades)
-      end
-
-      private
-
-      # NUEVO HELPER: Combinar fecha con hora
-      def combinar_fecha_hora(fecha, hora)
-        Time.zone.parse("#{fecha} #{hora}")
-      end
-
-      # MEJORAR método medico_response para incluir datos del dashboard
       def medico_response(medico, detailed: false, include_horarios: false, for_card: false)
+        especialidad_principal = medico.especialidad_principal
+        
         response = {
           id: medico.id,
           nombre_completo: medico.nombre_completo,
+          nombre_profesional: medico.nombre_profesional,
           email: medico.email,
           telefono: medico.telefono,
           numero_colegiatura: medico.numero_colegiatura,
-          anos_experiencia: medico.anios_experiencia,
+          anios_experiencia: medico.anios_experiencia,
           costo_consulta: medico.costo_consulta,
-          especialidades: medico.especialidades.map { |e| { id: e.id, nombre: e.nombre } }
+          activo: medico.usuario.activo,
+          especialidad_principal: especialidad_principal ? {
+            id: especialidad_principal.id,
+            nombre: especialidad_principal.nombre
+          } : nil,
+          especialidades: medico.especialidades.map do |e|
+            {
+              id: e.id,
+              nombre: e.nombre,
+              es_principal: medico.medico_especialidades.find_by(especialidad_id: e.id)&.es_principal || false
+            }
+          end
         }
 
         # Para cards del dashboard
         if for_card
           response.merge!({
-            especialidad: medico.especialidades.first&.nombre || 'General',
-            anos_experiencia: medico.anios_experiencia,
-            costo_consulta: medico.costo_consulta,
+            especialidad: especialidad_principal&.nombre || 'General',
             biografia: medico.biografia&.truncate(150),
-            total_reviews: rand(10..100), # Temporal - implementar reviews reales
+            total_reviews: 0, # Implementar reviews reales después
             foto_url: nil,
             disponible_hoy: tiene_horario_hoy?(medico)
           })
@@ -432,7 +364,7 @@ module Api
         end
 
         if include_horarios
-          response[:horarios_disponibles] = medico.horarios_disponibles
+          response[:horarios_disponibles] = medico.horario_medicos
                                                    .where(activo: true)
                                                    .order(:dia_semana, :hora_inicio)
                                                    .map { |h| horario_response(h) }
@@ -441,9 +373,8 @@ module Api
         response
       end
 
-      # NUEVO HELPER: Agrupar horarios por día
       def agrupar_horarios(medico)
-        medico.horarios_disponibles.where(activo: true).group_by(&:dia_semana).map do |dia, horarios|
+        medico.horario_medicos.where(activo: true).group_by(&:dia_semana).map do |dia, horarios|
           {
             dia: dia_semana_texto(dia),
             horarios: horarios.map { |h| "#{h.hora_inicio.strftime('%I:%M %p')} - #{h.hora_fin.strftime('%I:%M %p')}" }
@@ -451,56 +382,30 @@ module Api
         end
       end
 
-      # NUEVO HELPER: Verificar si tiene horario hoy
       def tiene_horario_hoy?(medico)
         dia_hoy = Date.current.wday
-        medico.horarios_disponibles.where(dia_semana: dia_hoy, activo: true).exists?
+        medico.horario_medicos.where(dia_semana: dia_hoy, activo: true).exists?
       end
 
-      # NUEVO HELPER: Convertir número de día a texto
       def dia_semana_texto(dia)
         dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
         dias[dia]
       end
 
-      # MODIFICAR filtro para buscar por nombre y especialidad
-      def filter_medicos(medicos)
-        # Búsqueda por texto
-        if params[:q].present?
-          busqueda = params[:q].downcase
-          medicos = medicos.joins(:usuario).where(
-            'LOWER(usuarios.nombre) LIKE ? OR LOWER(usuarios.apellido) LIKE ? OR LOWER(medicos.especialidad_principal) LIKE ?',
-            "%#{busqueda}%", "%#{busqueda}%", "%#{busqueda}%"
-          )
+      def asignar_especialidades(medico, especialidad_ids)
+        return unless especialidad_ids.present?
+        
+        # Limpiar especialidades actuales
+        medico.medico_especialidades.destroy_all
+        
+        # Asignar nuevas especialidades
+        especialidad_ids.each_with_index do |esp_id, index|
+          medico.agregar_especialidad(esp_id, es_principal: index == 0)
         end
+      end
 
-        if params[:especialidad].present?
-          medicos = medicos.where(especialidad_principal: params[:especialidad])
-        end
-
-        if params[:especialidad_id].present?
-          medicos = medicos.joins(:especialidades)
-                           .where(especialidades: { id: params[:especialidad_id] })
-        end
-
-        if params[:tarifa_max].present?
-          medicos = medicos.where('costo_consulta <= ?', params[:tarifa_max])
-        end
-
-        # Ordenamiento
-        orden = params[:orden] || 'nombre'
-        medicos = case orden
-        when 'experiencia'
-          medicos.order(anios_experiencia: :desc)
-        when 'precio_asc'
-          medicos.order(costo_consulta: :asc)
-        when 'precio_desc'
-          medicos.order(costo_consulta: :desc)
-        else
-          medicos.joins(:usuario).order('usuarios.nombre ASC')
-        end
-
-        medicos
+      def combinar_fecha_hora(fecha, hora)
+        Time.zone.parse("#{fecha} #{hora}")
       end
     end
   end
