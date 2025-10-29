@@ -3,78 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment.development';
-
-export interface Medico {
-  id: string;
-  nombre_completo: string;
-  nombre_profesional: string;
-  email: string;
-  telefono: string;
-  numero_colegiatura: string;
-  anios_experiencia: number;
-  costo_consulta: number; // ✅ CORREGIDO
-  biografia?: string;
-  activo: boolean;
-  
-  // ✅ NUEVO: Especialidades
-  especialidad?: string; // Nombre de la especialidad principal (para compatibilidad)
-  especialidad_principal?: {
-    id: string;
-    nombre: string;
-  };
-  especialidades: Array<{
-    id: string;
-    nombre: string;
-    es_principal: boolean;
-  }>;
-  
-  // Campos adicionales
-  calificacion?: number;
-  foto_url?: string;
-  certificaciones?: string[];
-  disponible_hoy?: boolean;
-  total_reviews?: number;
-}
-
-export interface HorarioDisponible {
-  fecha: string;
-  dia_semana: string;
-  dia_numero: number;
-  disponible: boolean;
-  total_slots?: number;
-  slots_disponibles?: number;
-  slots_ocupados?: number;
-  slots: SlotHorario[];
-  duracion_cita?: number;
-  mensaje?: string;
-  medico?: {
-    id: string;
-    nombre_completo: string;
-    nombre_profesional: string;
-  };
-}
-
-export interface SlotHorario {
-  hora_inicio: string;
-  hora_fin: string;
-  fecha_hora_inicio: string; // ✅ CORREGIDO: ahora es fecha_hora_inicio
-  fecha_hora_fin: string;
-  disponible: boolean;
-  duracion_minutos: number;
-  hora_display?: string; // opcional para compatibilidad
-}
-
-export interface ApiResponse<T = any> {
-  success: boolean;
-  data: T;
-  message?: string;
-  meta?: {
-    page?: number;
-    per_page?: number;
-    total?: number;
-    total_pages?: number;
-  };
-}
+import { Medico, HorariosDisponibles, ApiResponse } from '../models';
 
 @Injectable({
   providedIn: 'root'
@@ -118,8 +47,8 @@ export class MedicosService {
    * ✅ CORREGIDO: Obtener horarios disponibles de un médico
    * Endpoint correcto: GET /api/v1/medicos/:medico_id/horarios/disponibles?fecha=YYYY-MM-DD
    */
-  getHorariosDisponibles(medicoId: string, fecha: string): Observable<ApiResponse<HorarioDisponible>> {
-    return this.http.get<ApiResponse<HorarioDisponible>>(
+  getHorariosDisponibles(medicoId: string, fecha: string): Observable<ApiResponse<HorariosDisponibles>> {
+    return this.http.get<ApiResponse<HorariosDisponibles>>(
       `${this.apiUrl}/${medicoId}/horarios/disponibles`, // ✅ CORREGIDO
       { params: { fecha } }
     );

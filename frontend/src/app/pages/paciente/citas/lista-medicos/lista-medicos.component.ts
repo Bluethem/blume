@@ -80,7 +80,7 @@ export class ListaMedicosComponent implements OnInit {
 
         this.medicosService.getMedicos(params).subscribe({
             next: (response) => {
-            if (response.success) {
+            if (response.success && response.data) {
                 this.medicos = response.data;
                 
                 if (response.meta) {
@@ -145,13 +145,11 @@ export class ListaMedicosComponent implements OnInit {
 
   // Navegación a detalle
   verDetalleMedico(medico: Medico): void {
-    this.router.navigate(['/paciente/medicos', medico.id]);
+    this.router.navigate(['/paciente/citas/medicos', medico.id]);
   }
 
   agendarCita(medico: Medico): void {
-    this.router.navigate(['/paciente/citas/nueva'], {
-      queryParams: { medico_id: medico.id }
-    });
+    this.router.navigate(['/paciente/citas/medicos', medico.id, 'agendar']);
   }
 
   calcularHasta(): number {

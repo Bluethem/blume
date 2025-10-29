@@ -1,0 +1,367 @@
+<!-- Loading State -->
+<div *ngIf="isLoading" class="flex justify-center items-center min-h-screen">
+  <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+</div>
+
+<!-- Error Message -->
+<div *ngIf="errorMessage && !isLoading && !medicoSeleccionado" class="flex items-center justify-center min-h-screen bg-background-light dark:bg-background-dark p-6">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 max-w-md w-full">
+    <div class="flex items-center gap-3 text-red-600 dark:text-red-400 mb-4">
+      <span class="material-symbols-outlined text-3xl">error</span>
+      <h3 class="text-xl font-bold">Error</h3>
+    </div>
+    <p class="text-gray-600 dark:text-gray-300 mb-6">{{ errorMessage }}</p>
+    <button 
+      (click)="router.navigate(['/paciente/citas/medicos'])"
+      class="w-full bg-primary text-white py-3 rounded-lg hover:bg-red-700 transition-colors"
+    >
+      Volver a Médicos
+    </button>
+  </div>
+</div>
+
+<!-- Main Content -->
+<main *ngIf="!isLoading && medicoSeleccionado" class="px-4 md:px-10 lg:px-20 xl:px-40 flex flex-1 justify-center py-5 bg-background-light dark:bg-background-dark min-h-screen">
+  <div class="layout-content-container flex flex-col w-full max-w-5xl flex-1">
+    
+    <!-- Header -->
+    <div class="flex flex-wrap justify-between gap-3 p-4">
+      <div class="flex min-w-72 flex-col gap-3">
+        <p class="text-gray-900 dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">Agendar Cita</p>
+        <p class="text-gray-600 dark:text-gray-400 text-base font-normal leading-normal">Sigue los pasos a continuación para agendar tu cita.</p>
+      </div>
+    </div>
+
+    <!-- Stepper -->
+    <div class="pb-3 sticky top-0 bg-background-light dark:bg-background-dark z-10">
+      <div class="flex border-b border-gray-200 dark:border-gray-700 px-4 justify-between">
+        
+        <!-- Paso 1: Médico Seleccionado (completado) -->
+        <div class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-gray-600 dark:text-gray-400 pb-[13px] pt-4 flex-1 gap-1">
+          <span class="material-symbols-outlined text-green-600">check_circle</span>
+          <p class="text-gray-600 dark:text-gray-400 text-sm font-bold leading-normal tracking-[0.015em]">1. Médico Seleccionado</p>
+        </div>
+        
+        <!-- Paso 2: Fecha y Hora -->
+        <div 
+          class="flex flex-col items-center justify-center border-b-[3px] pb-[13px] pt-4 flex-1"
+          [class.border-b-primary]="currentStep >= 1"
+          [class.border-b-transparent]="currentStep < 1"
+          [class.text-gray-900]="currentStep >= 1"
+          [class.text-gray-600]="currentStep < 1"
+          [class.dark:text-white]="currentStep >= 1"
+          [class.dark:text-gray-400]="currentStep < 1">
+          <p class="text-sm font-bold leading-normal tracking-[0.015em]">2. Fecha y Hora</p>
+        </div>
+        
+        <!-- Paso 3: Información -->
+        <div 
+          class="flex flex-col items-center justify-center border-b-[3px] pb-[13px] pt-4 flex-1"
+          [class.border-b-primary]="currentStep >= 2"
+          [class.border-b-transparent]="currentStep < 2"
+          [class.text-gray-900]="currentStep >= 2"
+          [class.text-gray-600]="currentStep < 2"
+          [class.dark:text-white]="currentStep >= 2"
+          [class.dark:text-gray-400]="currentStep < 2">
+          <p class="text-sm font-bold leading-normal tracking-[0.015em]">3. Información</p>
+        </div>
+        
+        <!-- Paso 4: Confirmación -->
+        <div 
+          class="flex flex-col items-center justify-center border-b-[3px] pb-[13px] pt-4 flex-1"
+          [class.border-b-primary]="currentStep >= 3"
+          [class.border-b-transparent]="currentStep < 3"
+          [class.text-gray-900]="currentStep >= 3"
+          [class.text-gray-600]="currentStep < 3"
+          [class.dark:text-white]="currentStep >= 3"
+          [class.dark:text-gray-400]="currentStep < 3">
+          <p class="text-sm font-bold leading-normal tracking-[0.015em]">4. Confirmación</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content Card -->
+    <div class="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md mt-4">
+      
+      <!-- Información del Médico Seleccionado -->
+      <div class="p-4 border-b border-gray-200 dark:border-gray-700 mb-6">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Profesional Seleccionado</h3>
+        <div class="flex items-center gap-4">
+          <div 
+            class="w-16 h-16 bg-center bg-no-repeat bg-cover rounded-full"
+            [style.background-image]="'url(' + (medicoSeleccionado.foto_url || 'https://ui-avatars.com/api/?name=' + medicoSeleccionado.nombre_completo) + ')'">
+          </div>
+          <div class="flex-1">
+            <p class="text-gray-900 dark:text-white text-lg font-bold leading-normal">
+              {{ medicoSeleccionado.nombre_profesional }}
+            </p>
+            <p class="text-gray-600 dark:text-gray-400 text-base font-normal leading-normal">
+              {{ medicoSeleccionado.especialidad || medicoSeleccionado.especialidad_principal?.nombre }}
+            </p>
+          </div>
+          <button 
+            (click)="cambiarMedico()"
+            class="flex items-center justify-center h-10 px-4 rounded-lg border border-gray-300 text-gray-600 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-sm font-bold">
+            <span class="truncate">Cambiar Médico</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Paso 1: Fecha y Hora -->
+      <div *ngIf="currentStep === 1">
+        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4 px-4">Selecciona Fecha y Hora</h3>
+        
+        <div class="grid md:grid-cols-2 gap-8 p-4">
+          
+          <!-- Calendario -->
+          <div class="flex flex-col items-center">
+            <div class="flex justify-between w-full items-center mb-4">
+              <button 
+                (click)="mesAnterior()"
+                class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+                <span class="material-symbols-outlined">chevron_left</span>
+              </button>
+              <h4 class="font-bold text-lg capitalize">{{ nombreMesActual }}</h4>
+              <button 
+                (click)="mesSiguiente()"
+                class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+                <span class="material-symbols-outlined">chevron_right</span>
+              </button>
+            </div>
+            
+            <div class="grid grid-cols-7 gap-1 w-full text-center text-sm">
+              <div class="text-gray-600 dark:text-gray-400">Lu</div>
+              <div class="text-gray-600 dark:text-gray-400">Ma</div>
+              <div class="text-gray-600 dark:text-gray-400">Mi</div>
+              <div class="text-gray-600 dark:text-gray-400">Ju</div>
+              <div class="text-gray-600 dark:text-gray-400">Vi</div>
+              <div class="text-gray-600 dark:text-gray-400">Sa</div>
+              <div class="text-gray-600 dark:text-gray-400">Do</div>
+              
+              <div 
+                *ngFor="let diaInfo of diasCalendario"
+                (click)="seleccionarFecha(diaInfo)"
+                class="py-2 rounded-full relative"
+                [class.text-gray-400]="diaInfo.esOtroMes || diaInfo.esPasado"
+                [class.cursor-pointer]="!diaInfo.esOtroMes && !diaInfo.esPasado"
+                [class.hover:bg-gray-100]="!diaInfo.esOtroMes && !diaInfo.esPasado"
+                [class.dark:hover:bg-gray-700]="!diaInfo.esOtroMes && !diaInfo.esPasado"
+                [class.bg-primary]="esFechaSeleccionada(diaInfo)"
+                [class.text-white]="esFechaSeleccionada(diaInfo)"
+                [class.cursor-not-allowed]="diaInfo.esPasado">
+                {{ diaInfo.dia }}
+                <span 
+                  *ngIf="diaInfo.tieneDisponibilidad && !esFechaSeleccionada(diaInfo)"
+                  class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-green-500 rounded-full">
+                </span>
+                <span 
+                  *ngIf="diaInfo.tieneDisponibilidad && esFechaSeleccionada(diaInfo)"
+                  class="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full">
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Horarios Disponibles -->
+          <div class="flex flex-col">
+            <h4 class="font-bold text-lg mb-4 text-center md:text-left">Horarios Disponibles</h4>
+            
+            <div *ngIf="!fechaSeleccionada" class="text-center text-gray-500 dark:text-gray-400 py-8">
+              Selecciona una fecha para ver los horarios disponibles
+            </div>
+
+            <div *ngIf="isLoadingHorarios" class="flex justify-center py-8">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+
+            <div *ngIf="fechaSeleccionada && !isLoadingHorarios && horariosDisponibles" class="space-y-4">
+              
+              <!-- Mañana -->
+              <div *ngIf="horariosManana.length > 0">
+                <p class="font-semibold text-gray-600 dark:text-gray-400 mb-2">Mañana</p>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  <button 
+                    *ngFor="let slot of horariosManana"
+                    (click)="seleccionarHorario(slot)"
+                    [disabled]="!slot.disponible"
+                    class="p-3 rounded-lg border text-center transition-colors"
+                    [class.border-gray-300]="slotSeleccionado !== slot && slot.disponible"
+                    [class.hover:bg-primary/10]="slotSeleccionado !== slot && slot.disponible"
+                    [class.hover:border-primary]="slotSeleccionado !== slot && slot.disponible"
+                    [class.bg-primary]="slotSeleccionado === slot"
+                    [class.text-white]="slotSeleccionado === slot"
+                    [class.border-primary]="slotSeleccionado === slot"
+                    [class.bg-gray-100]="!slot.disponible"
+                    [class.text-gray-400]="!slot.disponible"
+                    [class.cursor-not-allowed]="!slot.disponible"
+                    [class.dark:border-gray-600]="slotSeleccionado !== slot && slot.disponible"
+                    [class.dark:bg-gray-700]="!slot.disponible">
+                    {{ formatearHora(slot.fecha_hora_inicio) }}
+                  </button>
+                </div>
+              </div>
+
+              <!-- Tarde -->
+              <div *ngIf="horariosTarde.length > 0">
+                <p class="font-semibold text-gray-600 dark:text-gray-400 mb-2">Tarde</p>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  <button 
+                    *ngFor="let slot of horariosTarde"
+                    (click)="seleccionarHorario(slot)"
+                    [disabled]="!slot.disponible"
+                    class="p-3 rounded-lg border text-center transition-colors"
+                    [class.border-gray-300]="slotSeleccionado !== slot && slot.disponible"
+                    [class.hover:bg-primary/10]="slotSeleccionado !== slot && slot.disponible"
+                    [class.hover:border-primary]="slotSeleccionado !== slot && slot.disponible"
+                    [class.bg-primary]="slotSeleccionado === slot"
+                    [class.text-white]="slotSeleccionado === slot"
+                    [class.border-primary]="slotSeleccionado === slot"
+                    [class.bg-gray-100]="!slot.disponible"
+                    [class.text-gray-400]="!slot.disponible"
+                    [class.cursor-not-allowed]="!slot.disponible"
+                    [class.dark:border-gray-600]="slotSeleccionado !== slot && slot.disponible"
+                    [class.dark:bg-gray-700]="!slot.disponible">
+                    {{ formatearHora(slot.fecha_hora_inicio) }}
+                  </button>
+                </div>
+              </div>
+
+              <div *ngIf="horariosManana.length === 0 && horariosTarde.length === 0" class="text-center text-gray-500 dark:text-gray-400 py-4">
+                No hay horarios disponibles para esta fecha
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paso 2: Información de la Cita -->
+      <div *ngIf="currentStep === 2">
+        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-6 px-4">Información de la Cita</h3>
+        
+        <form [formGroup]="motivoForm" class="space-y-6 px-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Motivo de la Consulta *
+            </label>
+            <textarea 
+              formControlName="motivo_consulta"
+              rows="4"
+              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              placeholder="Describe brevemente el motivo de tu consulta (mínimo 10 caracteres)">
+            </textarea>
+            <p 
+              *ngIf="motivoForm.get('motivo_consulta')?.invalid && motivoForm.get('motivo_consulta')?.touched"
+              class="text-red-500 text-sm mt-1">
+              El motivo debe tener al menos 10 caracteres
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Observaciones Adicionales (Opcional)
+            </label>
+            <textarea 
+              formControlName="observaciones"
+              rows="3"
+              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary dark:bg-gray-700 dark:text-white"
+              placeholder="Información adicional que consideres importante">
+            </textarea>
+          </div>
+
+          <!-- Resumen de la Cita -->
+          <div *ngIf="medicoSeleccionado" class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6 mt-6">
+            <h4 class="font-bold text-gray-900 dark:text-white mb-4">Resumen de tu Cita</h4>
+            <div class="space-y-3 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-600 dark:text-gray-400">Médico:</span>
+                <span class="font-semibold text-gray-900 dark:text-white">{{ medicoSeleccionado.nombre_profesional }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600 dark:text-gray-400">Especialidad:</span>
+                <span class="font-semibold text-gray-900 dark:text-white">{{ medicoSeleccionado.especialidad || medicoSeleccionado.especialidad_principal?.nombre }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600 dark:text-gray-400">Fecha:</span>
+                <span class="font-semibold text-gray-900 dark:text-white">{{ fechaSeleccionada | date: 'dd/MM/yyyy' }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600 dark:text-gray-400">Hora:</span>
+                <span class="font-semibold text-gray-900 dark:text-white">{{ formatearHora(slotSeleccionado?.fecha_hora_inicio || '') }}</span>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Paso 3: Confirmación -->
+      <div *ngIf="currentStep === 3">
+        <div class="text-center py-8">
+          <div class="mb-6">
+            <span class="material-symbols-outlined text-green-500 text-6xl">check_circle</span>
+          </div>
+          <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">¡Cita Agendada Exitosamente!</h3>
+          <p class="text-gray-600 dark:text-gray-400 mb-6">Tu cita ha sido confirmada. Recibirás un correo con los detalles.</p>
+          
+          <div *ngIf="medicoSeleccionado" class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6 max-w-md mx-auto">
+            <h4 class="font-bold text-gray-900 dark:text-white mb-4">Detalles de la Cita</h4>
+            <div class="space-y-3 text-sm text-left">
+              <div class="flex justify-between">
+                <span class="text-gray-600 dark:text-gray-400">Médico:</span>
+                <span class="font-semibold text-gray-900 dark:text-white">{{ medicoSeleccionado.nombre_profesional }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600 dark:text-gray-400">Especialidad:</span>
+                <span class="font-semibold text-gray-900 dark:text-white">{{ medicoSeleccionado.especialidad || medicoSeleccionado.especialidad_principal?.nombre }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600 dark:text-gray-400">Fecha:</span>
+                <span class="font-semibold text-gray-900 dark:text-white">{{ fechaSeleccionada | date: 'dd/MM/yyyy' }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600 dark:text-gray-400">Hora:</span>
+                <span class="font-semibold text-gray-900 dark:text-white">{{ formatearHora(slotSeleccionado?.fecha_hora_inicio || '') }}</span>
+              </div>
+            </div>
+          </div>
+
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-6">
+            Serás redirigido a Mis Citas en unos segundos...
+          </p>
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="errorMessage && currentStep < 3" class="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg mt-4">
+        <p class="text-red-600 dark:text-red-400">{{ errorMessage }}</p>
+      </div>
+
+      <!-- Navigation Buttons -->
+      <div class="flex justify-between p-4 mt-6 border-t border-gray-200 dark:border-gray-700">
+        <button 
+          (click)="previousStep()"
+          [disabled]="isLoading"
+          class="flex min-w-[120px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-transparent text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-base font-bold leading-normal tracking-[0.015em] disabled:opacity-50 disabled:cursor-not-allowed">
+          <span class="truncate">Volver</span>
+        </button>
+
+        <button 
+          *ngIf="currentStep < 2"
+          (click)="nextStep()"
+          [disabled]="isLoading"
+          class="flex min-w-[120px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          <span class="truncate">Siguiente</span>
+          <span class="material-symbols-outlined ml-2">arrow_forward</span>
+        </button>
+
+        <button 
+          *ngIf="currentStep === 2"
+          (click)="confirmarCita()"
+          [disabled]="isLoading || motivoForm.invalid"
+          class="flex min-w-[120px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-primary text-white text-base font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          <span *ngIf="!isLoading" class="truncate">Confirmar Cita</span>
+          <span *ngIf="isLoading" class="truncate">Confirmando...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</main>

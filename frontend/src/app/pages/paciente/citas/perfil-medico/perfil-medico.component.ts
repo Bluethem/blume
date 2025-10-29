@@ -2,10 +2,9 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Medico } from '../../../../services/medicos.service';
 import { MedicosService } from '../../../../services/medicos.service';
 import { ValoracionesService } from '../../../../services/valoraciones.service';
-import { Valoracion, EstadisticasValoraciones } from '../../../../models';
+import { Medico, Valoracion, EstadisticasValoraciones } from '../../../../models';
 
 interface Certificacion {
   nombre: string;
@@ -71,7 +70,7 @@ export class PerfilMedicoComponent implements OnInit {
 
     this.medicosService.getMedico(id).subscribe({
       next: (response) => {
-        if (response.success) {
+        if (response.success && response.data) {
           this.medico = response.data;
         } else {
           this.error = 'No se pudo cargar la información del médico';
@@ -91,9 +90,7 @@ export class PerfilMedicoComponent implements OnInit {
 
   agendarCita(): void {
     if (this.medico) {
-      this.router.navigate(['/paciente/citas/nueva'], {
-        queryParams: { medico_id: this.medico.id }
-      });
+      this.router.navigate(['/paciente/citas/medicos', this.medico.id, 'agendar']);
     }
   }
 

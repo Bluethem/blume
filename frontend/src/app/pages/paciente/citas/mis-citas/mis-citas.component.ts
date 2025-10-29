@@ -161,7 +161,7 @@ export class MisCitasComponent implements OnInit {
   }
 
   nuevaCita(): void {
-    this.router.navigate(['/paciente/medicos']);
+    this.router.navigate(['/paciente/citas/nueva']);
   }
 
   // Paginación

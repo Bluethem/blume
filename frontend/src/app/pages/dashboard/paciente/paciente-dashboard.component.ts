@@ -85,38 +85,43 @@ export class PacienteDashboardComponent implements OnInit {
     });
   }
 
-  // Métodos de navegación
+  // ==================== MÉTODOS DE NAVEGACIÓN ====================
+  
   navegarACitas(): void {
-    this.router.navigate(['/paciente/citas']);
+    this.router.navigate(['/paciente/citas/mis-citas']);
   }
 
   navegarAMedicos(): void {
-    this.router.navigate(['/medicos']);
+    this.router.navigate(['/paciente/citas/medicos']);
   }
 
   navegarANotificaciones(): void {
-    this.router.navigate(['/notificaciones']);
+    this.router.navigate(['/paciente/notificaciones']);
   }
 
   navegarAPerfil(): void {
-    this.router.navigate(['/paciente/perfil']);
+    this.router.navigate(['/paciente/mi-perfil']);
   }
 
-  // Métodos de acciones
+  // ==================== MÉTODOS DE ACCIONES ====================
+  
   agendarCita(medicoId: string): void {
-    this.router.navigate(['/medicos', medicoId, 'agendar']);
+    this.router.navigate(['/paciente/citas/medicos', medicoId, 'agendar']);
   }
 
   verDetalleMedico(medicoId: string): void {
-    this.router.navigate(['/medicos', medicoId]);
+    this.router.navigate(['/paciente/citas/medicos', medicoId]);
   }
 
   verDetalleCita(citaId: string): void {
-    this.router.navigate(['/paciente/citas', citaId]);
+    this.router.navigate(['/paciente/citas/detalle', citaId]);
   }
 
   cerrarSesion(): void {
-    this.authService.logout();
+    if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+      this.authService.logout();
+      this.router.navigate(['/login']);
+    }
   }
 
   // Métodos helper

@@ -55,12 +55,17 @@ export const routes: Routes = [
           .then(m => m.ListaMedicosComponent)
       },
       {
+        path: 'citas/medicos/:id/agendar',
+        loadComponent: () => import('./pages/paciente/citas/agendar-cita-medico/agendar-cita-medico.component')
+          .then(m => m.AgendarCitaMedicoComponent)
+      },
+      {
         path: 'citas/medicos/:id',
         loadComponent: () => import('./pages/paciente/citas/perfil-medico/perfil-medico.component')
           .then(m => m.PerfilMedicoComponent)
       },
       {
-        path: 'citas/medicos/:id/agendar',
+        path: 'citas/nueva',
         loadComponent: () => import('./pages/paciente/citas/agendar-cita/agendar-cita.component')
           .then(m => m.AgendarCitaComponent)
       },
@@ -78,13 +83,12 @@ export const routes: Routes = [
         path: 'mi-perfil',
         loadComponent: () => import('./pages/paciente/mi-perfil/mi-perfil.component')
           .then(m => m.MiPerfilComponent)
+      },
+      {
+        path: 'notificaciones',
+        loadComponent: () => import('./pages/paciente/notificaciones/notificaciones.component')
+          .then(m => m.NotificacionesComponent)
       }
-      // TODO: Implementar componente de notificaciones
-      // {
-      //   path: 'notificaciones',
-      //   loadComponent: () => import('./pages/paciente/notificaciones/notificaciones.component')
-      //     .then(m => m.NotificacionesComponent)
-      // }
     ]
   }
   /*

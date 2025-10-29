@@ -1,9 +1,10 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { MedicosService, Medico, HorarioDisponible, SlotHorario } from '../../../../services/medicos.service';
-import { CitasService, CrearCitaRequest } from '../../../../services/citas.service';
+import { Router, ActivatedRoute } from '@angular/router';
+import { MedicosService } from '../../../../services/medicos.service';
+import { CitasService } from '../../../../services/citas.service';
+import { Medico, HorariosDisponibles, SlotHorario, ApiResponse } from '../../../../models';
 
 @Component({
   selector: 'app-agendar-cita',
@@ -17,6 +18,7 @@ export class AgendarCitaComponent implements OnInit {
   private medicosService = inject(MedicosService);
   private citasService = inject(CitasService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   // Estado del wizard
   currentStep = 0;
@@ -26,7 +28,7 @@ export class AgendarCitaComponent implements OnInit {
   medicos: Medico[] = [];
   medicosFiltrados: Medico[] = [];
   medicoSeleccionado: Medico | null = null;
-  horariosDisponibles: HorarioDisponible | null = null;
+  horariosDisponibles: HorariosDisponibles | null = null;
   slotSeleccionado: SlotHorario | null = null;
 
   // Formularios
@@ -56,7 +58,15 @@ export class AgendarCitaComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.cargarMedicos();
+    // Verificar si viene médico por query params
+    this.route.queryParams.subscribe(params => {
+      const medicoId = params['medico_id'];
+      if (medicoId) {
+        this.cargarMedicoPreseleccionado(medicoId);
+      } else {
+        this.cargarMedicos();
+      }
+    });
 
     // Escuchar cambios en el search
     this.searchForm.get('search')?.valueChanges.subscribe(value => {
@@ -71,17 +81,36 @@ export class AgendarCitaComponent implements OnInit {
     });
   }
 
+  cargarMedicoPreseleccionado(medicoId: string): void {
+    this.isLoading = true;
+    this.medicosService.getMedico(medicoId).subscribe({
+      next: (response: ApiResponse<Medico>) => {
+        if (response.success && response.data) {
+          this.medicoSeleccionado = response.data;
+          this.currentStep = 1; // Saltar al paso de fecha
+        }
+        this.isLoading = false;
+      },
+      error: (error: any) => {
+        console.error('Error cargando médico:', error);
+        this.errorMessage = 'Error al cargar médico';
+        this.isLoading = false;
+        this.cargarMedicos(); // Cargar lista si falla
+      }
+    });
+  }
+
   cargarMedicos(): void {
     this.isLoading = true;
-    this.medicosService.getMedicos({ per_page: 20 }).subscribe({
-      next: (response) => {
-        if (response.success) {
+    this.medicosService.getMedicos({ per_page: 50 }).subscribe({
+      next: (response: ApiResponse<Medico[]>) => {
+        if (response.success && response.data) {
           this.medicos = response.data;
           this.medicosFiltrados = response.data;
         }
         this.isLoading = false;
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error cargando médicos:', error);
         this.errorMessage = 'Error al cargar los médicos';
         this.isLoading = false;
@@ -98,7 +127,6 @@ export class AgendarCitaComponent implements OnInit {
     const queryLower = query.toLowerCase();
     this.medicosFiltrados = this.medicos.filter(medico => {
       const nombreCompleto = medico.nombre_completo?.toLowerCase() || '';
-      // ✅ CORREGIDO: Buscar en especialidad_principal o especialidades
       const especialidad = medico.especialidad_principal?.nombre?.toLowerCase() || 
                           medico.especialidad?.toLowerCase() || '';
       
@@ -116,13 +144,13 @@ export class AgendarCitaComponent implements OnInit {
 
     this.isLoadingHorarios = true;
     this.medicosService.getHorariosDisponibles(this.medicoSeleccionado.id, fecha).subscribe({
-      next: (response) => {
-        if (response.success) {
+      next: (response: ApiResponse<HorariosDisponibles>) => {
+        if (response.success && response.data) {
           this.horariosDisponibles = response.data;
         }
         this.isLoadingHorarios = false;
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error cargando horarios:', error);
         this.errorMessage = 'Error al cargar horarios disponibles';
         this.isLoadingHorarios = false;
@@ -186,7 +214,7 @@ export class AgendarCitaComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
 
-    const citaData: CrearCitaRequest = {
+    const citaData = {
       cita: {
         medico_id: this.medicoSeleccionado.id,
         fecha_hora_inicio: this.slotSeleccionado.fecha_hora_inicio,
@@ -197,15 +225,15 @@ export class AgendarCitaComponent implements OnInit {
     };
 
     this.citasService.crearCita(citaData).subscribe({
-      next: (response) => {
+      next: (response: ApiResponse<any>) => {
         if (response.success) {
           this.nextStep(); // Ir a confirmación
           setTimeout(() => {
-            this.router.navigate(['/dashboard/paciente']);
+            this.router.navigate(['/paciente/citas/mis-citas']);
           }, 3000);
         }
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error creando cita:', error);
         this.errorMessage = error.message || 'Error al agendar la cita';
         this.isLoading = false;
@@ -219,6 +247,14 @@ export class AgendarCitaComponent implements OnInit {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
+    });
+  }
+
+  formatearHora(fechaHora: string): string {
+    return new Date(fechaHora).toLocaleTimeString('es-ES', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
     });
   }
 

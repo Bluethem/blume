@@ -1,37 +1,5 @@
 <div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
   <div class="layout-container flex h-full grow flex-col">
-    
-    <!-- Header -->
-    <header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-[#f3e7e8] dark:border-[#3a2626] px-10 py-3">
-      <div class="flex items-center gap-4">
-        <span class="material-symbols-outlined text-primary text-3xl">local_florist</span>
-        <h2 class="text-[#1b0e0e] dark:text-[#fcf8f8] text-lg font-bold leading-tight tracking-[-0.015em]">Blume</h2>
-      </div>
-      <div class="flex flex-1 justify-end items-center gap-8">
-        <nav class="hidden md:flex items-center gap-9">
-          <a class="text-[#1b0e0e] dark:text-[#fcf8f8] text-sm font-medium leading-normal cursor-pointer" routerLink="/paciente/dashboard">Home</a>
-          <a class="text-[#1b0e0e] dark:text-[#fcf8f8] text-sm font-medium leading-normal cursor-pointer" routerLink="/paciente/citas/mis-citas">Appointments</a>
-          <a class="text-[#1b0e0e] dark:text-[#fcf8f8] text-sm font-medium leading-normal cursor-pointer" routerLink="/paciente/mensajes">Messages</a>
-          <a class="text-primary text-sm font-bold leading-normal" routerLink="/paciente/mi-perfil">Profile</a>
-        </nav>
-        <div class="flex items-center gap-2">
-          <button 
-            (click)="router.navigate(['/paciente/medicos'])"
-            class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em]"
-          >
-            <span class="truncate">Book Appointment</span>
-          </button>
-          <button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 bg-primary/20 text-[#1b0e0e] dark:text-white dark:bg-primary/30 gap-2 text-sm font-bold leading-normal tracking-[0.015em] min-w-0 px-2.5">
-            <span class="material-symbols-outlined text-lg">notifications</span>
-          </button>
-        </div>
-        <div 
-          class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 cursor-pointer"
-          [style.background-image]="'url(' + fotoUrl + ')'"
-        ></div>
-      </div>
-    </header>
-
     <!-- Loading State -->
     <div *ngIf="loading" class="flex justify-center items-center py-20">
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>

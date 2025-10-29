@@ -1,0 +1,192 @@
+<div class="px-4 md:px-10 lg:px-20 flex flex-1 justify-center py-5">
+  <div class="layout-content-container flex flex-col max-w-[960px] flex-1 w-full">
+    
+    <!-- Header -->
+    <div class="flex flex-wrap justify-between gap-4 p-4">
+      <div class="flex min-w-72 flex-col gap-2">
+        <h1 class="text-4xl font-black leading-tight tracking-tighter text-gray-900 dark:text-white">
+          Notificaciones
+        </h1>
+        <p *ngIf="notificacionesNoLeidas > 0" class="text-sm text-gray-600 dark:text-gray-400">
+          Tienes {{ notificacionesNoLeidas }} notificación{{notificacionesNoLeidas !== 1 ? 'es' : ''}} sin leer
+        </p>
+      </div>
+      
+      <button 
+        *ngIf="notificacionesNoLeidas > 0"
+        (click)="marcarTodasComoLeidas()"
+        class="flex min-w-[84px] items-center justify-center gap-2 overflow-hidden rounded-lg h-10 px-4 bg-primary/20 text-primary text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/30 transition-colors">
+        <span class="material-symbols-outlined text-lg">done_all</span>
+        <span class="truncate">Marcar todas como leídas</span>
+      </button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="flex px-4 py-3">
+      <div class="flex h-10 w-full items-center justify-center rounded-lg bg-gray-200 dark:bg-gray-800 p-1">
+        
+        <label 
+          class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 transition-all text-sm font-medium leading-normal"
+          [class.bg-background-light]="filtroActivo === 'todas'"
+          [class.dark:bg-background-dark]="filtroActivo === 'todas'"
+          [class.shadow-md]="filtroActivo === 'todas'"
+          [class.text-primary]="filtroActivo === 'todas'"
+          [class.text-gray-600]="filtroActivo !== 'todas'"
+          [class.dark:text-gray-400]="filtroActivo !== 'todas'">
+          <span class="truncate">Todas</span>
+          <input 
+            [checked]="filtroActivo === 'todas'"
+            (change)="cambiarFiltro('todas')"
+            class="invisible w-0" 
+            name="notification_filter" 
+            type="radio" 
+            value="Todas"/>
+        </label>
+
+        <label 
+          class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 transition-all text-sm font-medium leading-normal"
+          [class.bg-background-light]="filtroActivo === 'no_leidas'"
+          [class.dark:bg-background-dark]="filtroActivo === 'no_leidas'"
+          [class.shadow-md]="filtroActivo === 'no_leidas'"
+          [class.text-primary]="filtroActivo === 'no_leidas'"
+          [class.text-gray-600]="filtroActivo !== 'no_leidas'"
+          [class.dark:text-gray-400]="filtroActivo !== 'no_leidas'">
+          <span class="truncate">No leídas</span>
+          <input 
+            [checked]="filtroActivo === 'no_leidas'"
+            (change)="cambiarFiltro('no_leidas')"
+            class="invisible w-0" 
+            name="notification_filter" 
+            type="radio" 
+            value="No leídas"/>
+        </label>
+
+        <label 
+          class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 transition-all text-sm font-medium leading-normal"
+          [class.bg-background-light]="filtroActivo === 'leidas'"
+          [class.dark:bg-background-dark]="filtroActivo === 'leidas'"
+          [class.shadow-md]="filtroActivo === 'leidas'"
+          [class.text-primary]="filtroActivo === 'leidas'"
+          [class.text-gray-600]="filtroActivo !== 'leidas'"
+          [class.dark:text-gray-400]="filtroActivo !== 'leidas'">
+          <span class="truncate">Leídas</span>
+          <input 
+            [checked]="filtroActivo === 'leidas'"
+            (change)="cambiarFiltro('leidas')"
+            class="invisible w-0" 
+            name="notification_filter" 
+            type="radio" 
+            value="Leídas"/>
+        </label>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="flex justify-center items-center py-20">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+    </div>
+
+    <!-- Lista de Notificaciones -->
+    <div *ngIf="!loading" class="flex flex-col gap-2 mt-4">
+      
+      <!-- Notification Item -->
+      <div 
+        *ngFor="let notificacion of notificacionesFiltradas"
+        class="flex gap-4 px-4 py-3 justify-between items-center rounded-lg group relative transition-colors"
+        [class.bg-white]="!notificacion.leida"
+        [class.dark:bg-gray-800/50]="!notificacion.leida"
+        [class.border-l-4]="!notificacion.leida"
+        [class.border-primary]="!notificacion.leida"
+        [class.bg-background-light]="notificacion.leida"
+        [class.dark:bg-background-dark]="notificacion.leida"
+        [class.border-l-4]="notificacion.leida"
+        [class.border-transparent]="notificacion.leida">
+        
+        <div class="flex items-start gap-4 flex-1">
+          <!-- Icono -->
+          <div 
+            class="flex items-center justify-center rounded-lg shrink-0 size-12"
+            [class.bg-primary/20]="!notificacion.leida"
+            [class.text-gray-900]="!notificacion.leida"
+            [class.dark:text-white]="!notificacion.leida"
+            [class.bg-gray-200]="notificacion.leida"
+            [class.dark:bg-gray-700]="notificacion.leida"
+            [class.text-gray-600]="notificacion.leida"
+            [class.dark:text-gray-400]="notificacion.leida">
+            <span class="material-symbols-outlined">{{ getIcono(notificacion.tipo) }}</span>
+          </div>
+
+          <!-- Contenido -->
+          <div class="flex flex-1 flex-col justify-center">
+            <p 
+              class="text-base leading-normal"
+              [class.font-bold]="!notificacion.leida"
+              [class.text-gray-900]="!notificacion.leida"
+              [class.dark:text-white]="!notificacion.leida"
+              [class.font-medium]="notificacion.leida"
+              [class.text-gray-700]="notificacion.leida"
+              [class.dark:text-gray-300]="notificacion.leida">
+              {{ notificacion.titulo }}
+            </p>
+            <p class="text-gray-600 dark:text-gray-400 text-sm font-normal leading-normal">
+              {{ notificacion.mensaje }}
+            </p>
+            <p class="text-gray-600 dark:text-gray-400 text-xs font-normal leading-normal mt-1">
+              {{ notificacion.tiempo_relativo || notificacion.hace_cuanto }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Botón Ver Cita -->
+        <div class="flex items-center gap-2">
+          <a 
+            *ngIf="notificacion.cita_id"
+            (click)="verCita(notificacion)"
+            class="text-primary text-sm font-medium leading-normal hover:underline cursor-pointer">
+            Ver cita
+          </a>
+          
+          <!-- Botones de acción (hover) -->
+          <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <!-- Marcar como leída/no leída -->
+            <button 
+              *ngIf="!notificacion.leida"
+              (click)="marcarComoLeida(notificacion)"
+              title="Marcar como leída"
+              class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400">
+              <span class="material-symbols-outlined text-base">drafts</span>
+            </button>
+            <button 
+              *ngIf="notificacion.leida"
+              (click)="marcarComoNoLeida(notificacion)"
+              title="Marcar como no leída"
+              class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400">
+              <span class="material-symbols-outlined text-base">mark_email_unread</span>
+            </button>
+            
+            <!-- Eliminar -->
+            <button 
+              (click)="eliminarNotificacion(notificacion)"
+              title="Eliminar"
+              class="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400">
+              <span class="material-symbols-outlined text-base">delete</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!hayNotificaciones" class="flex flex-col items-center justify-center text-center p-16 bg-gray-100 dark:bg-gray-800/30 rounded-lg mt-8">
+        <span class="material-symbols-outlined text-6xl text-gray-400 dark:text-gray-500">
+          {{ filtroActivo === 'todas' ? 'notifications_off' : filtroActivo === 'no_leidas' ? 'mark_email_read' : 'inbox' }}
+        </span>
+        <h3 class="mt-4 text-xl font-semibold text-gray-900 dark:text-white">
+          {{ filtroActivo === 'todas' ? '¡Todo al día!' : filtroActivo === 'no_leidas' ? '¡Todo leído!' : 'No hay notificaciones leídas' }}
+        </h3>
+        <p class="mt-1 text-gray-600 dark:text-gray-400">
+          {{ filtroActivo === 'todas' ? 'No tienes notificaciones nuevas.' : filtroActivo === 'no_leidas' ? 'No tienes notificaciones sin leer.' : 'Marca algunas notificaciones como leídas para verlas aquí.' }}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

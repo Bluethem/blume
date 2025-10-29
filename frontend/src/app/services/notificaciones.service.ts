@@ -53,6 +53,18 @@ export class NotificacionesService {
   }
 
   /**
+   * Marcar notificación como no leída
+   */
+  marcarNoLeida(id: string): Observable<ApiResponse> {
+    return this.http.put<ApiResponse>(`${this.apiUrl}/${id}/marcar_no_leida`, {}).pipe(
+      tap(() => {
+        const current = this.noLeidasSubject.value;
+        this.noLeidasSubject.next(current + 1);
+      })
+    );
+  }
+
+  /**
    * Marcar todas las notificaciones como leídas
    */
   marcarTodasLeidas(): Observable<ApiResponse> {
@@ -61,6 +73,13 @@ export class NotificacionesService {
         this.noLeidasSubject.next(0);
       })
     );
+  }
+
+  /**
+   * Eliminar notificación
+   */
+  eliminarNotificacion(id: string): Observable<ApiResponse> {
+    return this.http.delete<ApiResponse>(`${this.apiUrl}/${id}`);
   }
 
   /**
