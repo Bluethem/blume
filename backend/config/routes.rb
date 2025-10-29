@@ -19,6 +19,13 @@ Rails.application.routes.draw do
       get 'auth/validate_reset_token', to: 'auth#validate_reset_token'
 
       # =====================================================
+      # PERFIL
+      # =====================================================
+      get 'perfil', to: 'perfil#show'
+      put 'perfil', to: 'perfil#update'
+      post 'perfil/upload_foto', to: 'perfil#upload_foto'
+
+      # =====================================================
       # DASHBOARD PACIENTE
       # =====================================================
       get 'paciente/dashboard', to: 'paciente_dashboard#index'

@@ -33,7 +33,7 @@ export const roleGuard: CanActivateFn = (
 function redirectToDashboard(role: string, router: Router): UrlTree {
   switch (role) {
     case 'paciente':
-      return router.createUrlTree(['/dashboard/paciente']);
+      return router.createUrlTree(['/paciente/dashboard']);
     case 'medico':
       return router.createUrlTree(['/dashboard/medico']);
     case 'administrador':

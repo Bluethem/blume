@@ -91,7 +91,7 @@ export class LoginComponent implements OnInit {
   private redirectToDashboard(user: any): void {
     switch (user.rol) {
       case 'paciente':
-        this.router.navigate(['/dashboard/paciente']);
+        this.router.navigate(['/paciente/dashboard']);
         break;
       case 'medico':
         this.router.navigate(['/dashboard/medico']);

@@ -572,7 +572,7 @@ puts "\n" + "="*60
 puts "¡SEED COMPLETADO EXITOSAMENTE!"
 puts "="*60
 puts "Resumen de datos creados:"
-puts "   - Administradores: #{Usuario.administrador.count}"
+puts "   - Administradores: #{Usuario.es_administrador.count}"
 puts "   - Médicos: #{Medico.count}"
 puts "   - Pacientes: #{Paciente.count}"
 puts "   - Certificaciones: #{Certificacion.count}"

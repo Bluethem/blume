@@ -1,0 +1,133 @@
+<div class="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+  <div class="flex flex-col gap-8">
+    <!-- Page Heading & Actions -->
+    <div class="flex flex-col md:flex-row flex-wrap justify-between items-start md:items-center gap-4">
+      <div class="flex items-center gap-4">
+        <button 
+          (click)="volver()" 
+          class="flex items-center justify-center h-10 w-10 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+        >
+          <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <p class="text-4xl font-black leading-tight tracking-[-0.033em]">Mi Historial Médico</p>
+      </div>
+      <button 
+        (click)="descargarResumen()"
+        class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] w-full md:w-auto hover:bg-primary/90 transition-colors"
+      >
+        <span class="material-symbols-outlined">download</span>
+        <span class="truncate">Descargar Resumen</span>
+      </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+      <p class="text-sm font-medium text-gray-600 dark:text-gray-400 shrink-0">Filtrar por fecha:</p>
+      <div class="flex gap-2 overflow-x-auto w-full pb-2">
+        <button 
+          (click)="cambiarFiltro('todos')"
+          [class.bg-primary/20]="filtroActivo === 'todos'"
+          [class.text-primary]="filtroActivo === 'todos'"
+          [class.border-primary]="filtroActivo === 'todos'"
+          class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg pl-4 pr-4 border transition-colors"
+          [class.bg-card-light]="filtroActivo !== 'todos'"
+          [class.dark:bg-card-dark]="filtroActivo !== 'todos'"
+          [class.border-gray-300]="filtroActivo !== 'todos'"
+          [class.dark:border-gray-700]="filtroActivo !== 'todos'"
+          [class.text-gray-600]="filtroActivo !== 'todos'"
+          [class.dark:text-gray-400]="filtroActivo !== 'todos'"
+        >
+          <p class="text-sm font-medium leading-normal">Todos</p>
+        </button>
+        <button 
+          (click)="cambiarFiltro('6meses')"
+          [class.bg-primary/20]="filtroActivo === '6meses'"
+          [class.text-primary]="filtroActivo === '6meses'"
+          [class.border-primary]="filtroActivo === '6meses'"
+          class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg pl-4 pr-4 border transition-colors"
+          [class.bg-card-light]="filtroActivo !== '6meses'"
+          [class.dark:bg-card-dark]="filtroActivo !== '6meses'"
+          [class.border-gray-300]="filtroActivo !== '6meses'"
+          [class.dark:border-gray-700]="filtroActivo !== '6meses'"
+          [class.text-gray-600]="filtroActivo !== '6meses'"
+          [class.dark:text-gray-400]="filtroActivo !== '6meses'"
+        >
+          <p class="text-sm font-medium leading-normal">Últimos 6 meses</p>
+        </button>
+        <button 
+          (click)="cambiarFiltro('1ano')"
+          [class.bg-primary/20]="filtroActivo === '1ano'"
+          [class.text-primary]="filtroActivo === '1ano'"
+          [class.border-primary]="filtroActivo === '1ano'"
+          class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-lg pl-4 pr-4 border transition-colors"
+          [class.bg-card-light]="filtroActivo !== '1ano'"
+          [class.dark:bg-card-dark]="filtroActivo !== '1ano'"
+          [class.border-gray-300]="filtroActivo !== '1ano'"
+          [class.dark:border-gray-700]="filtroActivo !== '1ano'"
+          [class.text-gray-600]="filtroActivo !== '1ano'"
+          [class.dark:text-gray-400]="filtroActivo !== '1ano'"
+        >
+          <p class="text-sm font-medium leading-normal">Último año</p>
+        </button>
+      </div>
+    </div>
+
+    <!-- Section Header -->
+    <h2 class="text-[22px] font-bold leading-tight tracking-[-0.015em] pt-5">Línea de Tiempo de Citas Completadas</h2>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="flex justify-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+    </div>
+
+    <!-- Timeline Component -->
+    <div *ngIf="!loading && citasFiltradas.length > 0" class="relative flex flex-col gap-8">
+      <!-- Timeline Axis -->
+      <div aria-hidden="true" class="absolute left-4 top-2 bottom-2 w-0.5 bg-gray-200 dark:bg-gray-700"></div>
+
+      <!-- Timeline Items -->
+      <div *ngFor="let cita of citasFiltradas" class="relative pl-12">
+        <div class="absolute left-0 top-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-primary/20">
+          <div class="h-3 w-3 rounded-full bg-primary"></div>
+        </div>
+        <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 flex flex-col gap-4">
+          <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+            <p class="font-bold text-lg text-gray-900 dark:text-white">{{ formatearFecha(cita.fecha_hora_inicio) }}</p>
+            <div class="text-sm">
+              <p class="font-semibold text-gray-900 dark:text-white">{{ cita.medico?.nombre_completo }}</p>
+              <p class="text-gray-600 dark:text-gray-400">{{ cita.medico?.especialidad }}</p>
+            </div>
+          </div>
+          <div>
+            <h3 class="font-semibold text-base mb-1 text-gray-900 dark:text-white">Motivo de Consulta</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ cita.motivo_consulta || 'Consulta general' }}</p>
+          </div>
+          <div *ngIf="cita.diagnostico">
+            <h3 class="font-semibold text-base mb-1 text-gray-900 dark:text-white">Diagnóstico</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ cita.diagnostico }}</p>
+          </div>
+          <button 
+            (click)="verDetalleCita(cita.id)"
+            class="text-primary font-bold text-sm self-start hover:underline"
+          >
+            Ver Detalles Completos
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && citasFiltradas.length === 0" class="relative pl-12">
+      <div class="absolute left-0 top-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 border-2 border-dashed border-gray-300 dark:border-gray-700">
+        <span class="material-symbols-outlined text-gray-400 text-base">sentiment_very_dissatisfied</span>
+      </div>
+      <div class="rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-10 flex flex-col items-center justify-center text-center gap-4">
+        <span class="material-symbols-outlined text-4xl text-gray-400">folder_off</span>
+        <h3 class="font-bold text-lg text-gray-900 dark:text-white">No hay citas en tu historial</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 max-w-sm">
+          Aún no tienes citas completadas registradas. Cuando finalices una, aparecerá aquí.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

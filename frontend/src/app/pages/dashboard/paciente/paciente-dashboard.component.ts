@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { PacienteDashboardService } from '../../../services/paciente-dashboard.service';
 import { DashboardData, Cita, Medico, Notificacion } from '../../../models/dashboard.models';
@@ -9,7 +9,7 @@ import { environment } from '../../../../environments/environment';
 @Component({
   selector: 'app-paciente-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   templateUrl: './paciente-dashboard.component.html',
   styleUrls: ['./paciente-dashboard.component.css']
 })
@@ -87,10 +87,6 @@ export class PacienteDashboardComponent implements OnInit {
 
   // ==================== MÉTODOS DE NAVEGACIÓN ====================
   
-  navegarACitas(): void {
-    this.router.navigate(['/paciente/citas/mis-citas']);
-  }
-
   navegarAMedicos(): void {
     this.router.navigate(['/paciente/citas/medicos']);
   }
@@ -99,29 +95,14 @@ export class PacienteDashboardComponent implements OnInit {
     this.router.navigate(['/paciente/notificaciones']);
   }
 
-  navegarAPerfil(): void {
-    this.router.navigate(['/paciente/mi-perfil']);
-  }
-
   // ==================== MÉTODOS DE ACCIONES ====================
   
   agendarCita(medicoId: string): void {
     this.router.navigate(['/paciente/citas/medicos', medicoId, 'agendar']);
   }
 
-  verDetalleMedico(medicoId: string): void {
-    this.router.navigate(['/paciente/citas/medicos', medicoId]);
-  }
-
   verDetalleCita(citaId: string): void {
     this.router.navigate(['/paciente/citas/detalle', citaId]);
-  }
-
-  cerrarSesion(): void {
-    if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
-      this.authService.logout();
-      this.router.navigate(['/login']);
-    }
   }
 
   // Métodos helper

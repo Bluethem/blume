@@ -172,7 +172,41 @@
           <!-- Reseñas -->
           <div *ngIf="tabActiva === 'resenas'" class="space-y-6">
             <h2 class="text-2xl font-bold text-text-light dark:text-text-dark mb-4">Reseñas de Pacientes</h2>
-            <div class="space-y-6">
+            
+            <!-- Estadísticas de valoraciones -->
+            <div *ngIf="estadisticas && !loadingValoraciones" class="bg-card-light dark:bg-card-dark p-6 rounded-xl shadow-sm mb-6">
+              <div class="flex items-center justify-between mb-4">
+                <div>
+                  <p class="text-4xl font-bold text-text-light dark:text-text-dark">{{ estadisticas.calificacion_promedio || 0 }}</p>
+                  <div class="flex text-yellow-500 my-1">
+                    <span *ngFor="let i of [1,2,3,4,5]" class="material-symbols-outlined">
+                      {{ i <= (estadisticas.calificacion_promedio || 0) ? 'star' : 'star_border' }}
+                    </span>
+                  </div>
+                  <p class="text-sm text-secondary-button dark:text-gray-400">{{ estadisticas.total_valoraciones || 0 }} reseñas</p>
+                </div>
+                <div class="flex-1 max-w-xs ml-8">
+                  <div *ngFor="let estrella of [5,4,3,2,1]" class="flex items-center gap-2 mb-1">
+                    <span class="text-sm text-secondary-button dark:text-gray-400 w-8">{{ estrella }}★</span>
+                    <div class="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                      <div 
+                        class="h-full bg-yellow-500" 
+                        [style.width.%]="getDistribucionPorcentaje(estrella)"
+                      ></div>
+                    </div>
+                    <span class="text-sm text-secondary-button dark:text-gray-400 w-8 text-right">{{ getCantidadPorEstrella(estrella) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Loading -->
+            <div *ngIf="loadingValoraciones" class="flex justify-center py-8">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+
+            <!-- Lista de reseñas -->
+            <div *ngIf="!loadingValoraciones && resenasFormateadas.length > 0" class="space-y-4">
               <div 
                 *ngFor="let resena of resenasFormateadas"
                 class="bg-card-light dark:bg-card-dark p-5 rounded-xl shadow-sm"
@@ -191,10 +225,17 @@
                         {{ i <= resena.calificacion ? 'star' : 'star_border' }}
                       </span>
                     </div>
-                    <p class="text-secondary-button dark:text-gray-400">{{ resena.comentario }}</p>
+                    <p class="text-secondary-button dark:text-gray-400" *ngIf="resena.comentario">{{ resena.comentario }}</p>
                   </div>
                 </div>
               </div>
+            </div>
+
+            <!-- Sin reseñas -->
+            <div *ngIf="!loadingValoraciones && resenasFormateadas.length === 0" class="bg-card-light dark:bg-card-dark p-12 rounded-xl shadow-sm text-center">
+              <span class="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-600 mb-4 block">rate_review</span>
+              <p class="text-gray-500 dark:text-gray-400 text-lg">Aún no hay reseñas para este médico</p>
+              <p class="text-gray-400 dark:text-gray-500 text-sm mt-2">Sé el primero en compartir tu experiencia</p>
             </div>
           </div>
         </div>

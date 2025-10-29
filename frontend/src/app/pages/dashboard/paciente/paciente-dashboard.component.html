@@ -1,5 +1,10 @@
+<!-- Breadcrumb -->
+<div breadcrumb>
+  <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Inicio / Dashboard</p>
+</div>
+
 <!-- Pantalla de Carga -->
-<div *ngIf="isLoading" class="flex items-center justify-center min-h-screen bg-background-light dark:bg-background-dark">
+<div *ngIf="isLoading" class="flex items-center justify-center min-h-[60vh]">
   <div class="text-center">
     <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
     <p class="mt-4 text-text-secondary-light dark:text-text-secondary-dark">Cargando dashboard...</p>
@@ -7,7 +12,7 @@
 </div>
 
 <!-- Error Message -->
-<div *ngIf="errorMessage && !isLoading" class="flex items-center justify-center min-h-screen bg-background-light dark:bg-background-dark p-6">
+<div *ngIf="errorMessage && !isLoading" class="flex items-center justify-center min-h-[60vh]">
   <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 max-w-md w-full">
     <div class="flex items-center gap-3 text-red-600 dark:text-red-400 mb-4">
       <span class="material-symbols-outlined text-3xl">error</span>
@@ -24,237 +29,160 @@
 </div>
 
 <!-- Dashboard Content -->
-<div *ngIf="!isLoading && !errorMessage" class="relative flex min-h-screen w-full">
-  <!-- Sidebar -->
-  <aside class="flex-col w-64 bg-[#B71C1C] text-white fixed h-full hidden lg:flex z-20">
-    <div class="flex items-center justify-center h-20 border-b border-white/20">
-      <img src="/images/logo_simbolo_blanco.png" 
-      alt="Logo Blume" 
-      class="w-8 h-8 object-contain">
-      <h1 class="text-2xl font-bold ml-2">blume</h1>
+<div *ngIf="!isLoading && !errorMessage">
+  <div class="flex flex-wrap justify-between gap-3 mb-6">
+    <div class="flex min-w-72 flex-col gap-1">
+      <p class="text-gray-900 dark:text-white text-3xl font-bold leading-tight tracking-tight">¡Hola, {{ primerNombre }}!</p>
+      <p class="text-gray-500 dark:text-gray-400 text-base font-normal leading-normal capitalize">{{ fechaActual }}</p>
     </div>
-    
-    <div class="flex flex-col items-center p-4 gap-4">
-      <div class="bg-gray-300 bg-center bg-no-repeat aspect-square bg-cover rounded-full size-16"></div>
-      <h2 class="text-white text-lg font-medium">{{ currentUser?.nombre_completo }}</h2>
-    </div>
-    
-    <nav class="flex flex-col p-4 space-y-2 flex-grow">
-      <a routerLink="/dashboard/paciente" routerLinkActive="bg-primary" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/50">
-        <span class="material-symbols-outlined">home</span>
-        <p class="text-sm font-medium">Inicio</p>
-      </a>
-      <a routerLink="/paciente/citas/mis-citas" routerLinkActive="bg-primary" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/50">
-        <span class="material-symbols-outlined">calendar_month</span>
-        <p class="text-sm font-medium">Mis Citas</p>
-      </a>
-      <a routerLink="/paciente/citas/medicos" routerLinkActive="bg-primary" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/50">
-        <span class="material-symbols-outlined">group</span>
-        <p class="text-sm font-medium">Médicos</p>
-      </a>
-      <a routerLink="/paciente/notificaciones" routerLinkActive="bg-primary" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/50">
-        <span class="material-symbols-outlined">notifications</span>
-        <p class="text-sm font-medium">Notificaciones</p>
-      </a>
-      <a routerLink="/paciente/mi-perfil" routerLinkActive="bg-primary" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/50">
-        <span class="material-symbols-outlined">person</span>
-        <p class="text-sm font-medium">Mi Perfil</p>
-      </a>
-    </nav>
-    
-    <div class="p-4 border-t border-white/20">
-      <button (click)="cerrarSesion()" class="flex w-full items-center justify-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/50">
-        <span class="material-symbols-outlined">logout</span>
-        <span class="truncate">Cerrar Sesión</span>
-      </button>
-    </div>
-  </aside>
+  </div>
 
-  <!-- Main Content -->
-  <div class="flex-1 lg:ml-64">
-    <!-- Topbar -->
-    <header class="flex items-center justify-between whitespace-nowrap border-b border-b-[#e7d0d1] dark:border-b-gray-700 bg-white dark:bg-background-dark/80 backdrop-blur-sm sticky top-0 z-10 h-20 px-6">
-      <div class="flex items-center gap-4">
-        <button class="lg:hidden text-gray-800 dark:text-white">
-          <span class="material-symbols-outlined">menu</span>
-        </button>
-        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium">Inicio / Dashboard</p>
-      </div>
-      <div class="flex flex-1 justify-end items-center gap-4">
-        <div class="hidden md:block">
-          <label class="flex flex-col min-w-40 !h-10 max-w-sm">
-            <div class="flex w-full flex-1 items-stretch rounded-lg h-full">
-              <div class="text-gray-500 dark:text-gray-400 flex border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 items-center justify-center pl-4 rounded-l-lg">
-                <span class="material-symbols-outlined">search</span>
+  <div class="grid grid-cols-12 gap-6">
+    <!-- Próxima Cita -->
+    <div class="col-span-12 lg:col-span-8">
+      <div *ngIf="proximaCita" class="flex flex-col items-start justify-start rounded-xl shadow-sm bg-white dark:bg-gray-800 p-6 hover:shadow-md transition-shadow">
+        <p class="text-gray-900 dark:text-white text-xl font-bold leading-tight tracking-[-0.015em] mb-4">Próxima Cita</p>
+        <div class="flex flex-col sm:flex-row w-full items-start gap-4">
+          <div class="bg-gray-300 bg-center bg-no-repeat aspect-square bg-cover rounded-xl size-20"></div>
+          <div class="flex-grow">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-gray-900 dark:text-white text-base font-bold">{{ proximaCita.medico.nombre_profesional }}</p>
+                <p class="text-gray-500 dark:text-gray-400 text-sm font-normal">{{ proximaCita.medico.especialidad }}</p>
               </div>
-              <input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 h-full placeholder:text-gray-500 dark:placeholder-gray-400 px-4 text-sm font-normal leading-normal" placeholder="Buscar médicos, especialidades..." />
             </div>
-          </label>
-        </div>
-        <button (click)="navegarANotificaciones()" class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white relative">
-          <span class="material-symbols-outlined">notifications</span>
-          <span *ngIf="notificaciones.length > 0" class="absolute top-1 right-1.5 flex h-2.5 w-2.5">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
-          </span>
-        </button>
-        <div class="bg-gray-300 bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 cursor-pointer" (click)="navegarAPerfil()"></div>
-      </div>
-    </header>
-
-    <!-- Page Content -->
-    <main class="p-6 bg-background-light dark:bg-background-dark">
-      <div class="flex flex-wrap justify-between gap-3 mb-6">
-        <div class="flex min-w-72 flex-col gap-1">
-          <p class="text-gray-900 dark:text-white text-3xl font-bold leading-tight tracking-tight">¡Hola, {{ primerNombre }}!</p>
-          <p class="text-gray-500 dark:text-gray-400 text-base font-normal leading-normal capitalize">{{ fechaActual }}</p>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-12 gap-6">
-        <!-- Próxima Cita -->
-        <div class="col-span-12 lg:col-span-8">
-          <div *ngIf="proximaCita" class="flex flex-col items-start justify-start rounded-xl shadow-sm bg-white dark:bg-gray-800 p-6 hover:shadow-md transition-shadow">
-            <p class="text-gray-900 dark:text-white text-xl font-bold leading-tight tracking-[-0.015em] mb-4">Próxima Cita</p>
-            <div class="flex flex-col sm:flex-row w-full items-start gap-4">
-              <div class="bg-gray-300 bg-center bg-no-repeat aspect-square bg-cover rounded-xl size-20"></div>
-              <div class="flex-grow">
-                <div class="flex items-start justify-between">
-                  <div>
-                    <p class="text-gray-900 dark:text-white text-base font-bold">{{ proximaCita.medico.nombre_profesional }}</p>
-                    <p class="text-gray-500 dark:text-gray-400 text-sm font-normal">{{ proximaCita.medico.especialidad }}</p>
-                  </div>
-                </div>
-                <div class="flex items-center gap-4 mt-3 text-sm text-gray-600 dark:text-gray-300">
-                  <div class="flex items-center gap-1.5">
-                    <span class="material-symbols-outlined text-base">calendar_today</span>
-                    <span>{{ formatearFecha(proximaCita.fecha_hora_inicio) }}</span>
-                  </div>
-                  <div class="flex items-center gap-1.5">
-                    <span class="material-symbols-outlined text-base">schedule</span>
-                    <span>{{ formatearHora(proximaCita.fecha_hora_inicio) }}</span>
-                  </div>
-                  <div class="flex items-center gap-1.5">
-                    <span class="material-symbols-outlined text-base">location_on</span>
-                    <span>{{ proximaCita.medico.direccion || 'Consultorio médico' }}</span>
-                  </div>
-                </div>
+            <div class="flex items-center gap-4 mt-3 text-sm text-gray-600 dark:text-gray-300">
+              <div class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-base">calendar_today</span>
+                <span>{{ formatearFecha(proximaCita.fecha_hora_inicio) }}</span>
               </div>
-              <div class="flex flex-col gap-2">
-                <span class="px-3 py-1 rounded-full text-xs font-medium" [ngClass]="getEstadoColor(proximaCita.estado)">
-                  {{ proximaCita.estado_label || getEstadoLabel(proximaCita.estado) }}
+              <div class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-base">schedule</span>
+                <span>{{ formatearHora(proximaCita.fecha_hora_inicio) }}</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-base">location_on</span>
+                <span>{{ proximaCita.medico.direccion || 'Consultorio médico' }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-col gap-2">
+            <span class="px-3 py-1 rounded-full text-xs font-medium" [ngClass]="getEstadoColor(proximaCita.estado)">
+              {{ proximaCita.estado_label || getEstadoLabel(proximaCita.estado) }}
+            </span>
+            <button (click)="verDetalleCita(proximaCita.id)" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium">
+              Ver Detalles
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div *ngIf="!proximaCita" class="flex flex-col items-center justify-center rounded-xl shadow-sm bg-white dark:bg-gray-800 p-12 hover:shadow-md transition-shadow">
+        <span class="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-600 mb-4">event_busy</span>
+        <p class="text-gray-900 dark:text-white text-xl font-bold mb-2">No tienes citas próximas</p>
+        <p class="text-gray-500 dark:text-gray-400 text-center mb-6">Agenda una cita con nuestros médicos disponibles</p>
+        <button (click)="navegarAMedicos()" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
+          Ver Médicos Disponibles
+        </button>
+      </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="col-span-12 lg:col-span-4 grid grid-cols-1 gap-4">
+      <div class="flex flex-col gap-2 rounded-xl p-4 bg-white dark:bg-gray-800 shadow-sm border-l-4 border-blue-500">
+        <p class="text-gray-600 dark:text-gray-300 text-sm font-medium leading-normal">Total de Citas</p>
+        <p class="text-gray-900 dark:text-white tracking-light text-2xl font-bold leading-tight">{{ dashboardData?.estadisticas?.total_citas || 0 }}</p>
+      </div>
+      <div class="flex flex-col gap-2 rounded-xl p-4 bg-white dark:bg-gray-800 shadow-sm border-l-4 border-yellow-500">
+        <p class="text-gray-600 dark:text-gray-300 text-sm font-medium leading-normal">Citas Pendientes</p>
+        <p class="text-gray-900 dark:text-white tracking-light text-2xl font-bold leading-tight">{{ dashboardData?.estadisticas?.citas_pendientes || 0 }}</p>
+      </div>
+      <div class="flex flex-col gap-2 rounded-xl p-4 bg-white dark:bg-gray-800 shadow-sm border-l-4 border-green-500">
+        <p class="text-gray-600 dark:text-gray-300 text-sm font-medium leading-normal">Citas Completadas</p>
+        <p class="text-gray-900 dark:text-white tracking-light text-2xl font-bold leading-tight">{{ dashboardData?.estadisticas?.citas_completadas || 0 }}</p>
+      </div>
+      <div class="flex flex-col gap-2 rounded-xl p-4 bg-white dark:bg-gray-800 shadow-sm border-l-4 border-red-500">
+        <p class="text-gray-600 dark:text-gray-300 text-sm font-medium leading-normal">Citas Canceladas</p>
+        <p class="text-gray-900 dark:text-white tracking-light text-2xl font-bold leading-tight">{{ dashboardData?.estadisticas?.citas_canceladas || 0 }}</p>
+      </div>
+    </div>
+
+    <!-- Médicos Disponibles -->
+    <div class="col-span-12">
+      <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Médicos Disponibles</h3>
+      <div *ngIf="medicosDisponibles.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div *ngFor="let medico of medicosDisponibles" class="flex flex-col rounded-xl shadow-sm bg-white dark:bg-gray-800 p-4 hover:shadow-md transition-shadow">
+          <div class="flex items-center gap-4">
+            <img 
+              [src]="medico.foto_url || 'https://ui-avatars.com/api/?name=' + medico.nombre_completo + '&size=200&background=B71C1C&color=fff'" 
+              [alt]="'Foto de ' + medico.nombre_completo"
+              class="rounded-full size-16 object-cover border-2 border-gray-200 dark:border-gray-700"
+            />
+            <div class="flex-grow">
+              <p class="font-bold text-gray-900 dark:text-white">{{ medico.nombre_completo }}</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">{{ medico.especialidad }}, {{ medico.anios_experiencia }} años exp.</p>
+            </div>
+          </div>
+          <div class="flex justify-between items-end mt-4">
+            <div>
+              <p class="text-sm text-gray-600 dark:text-gray-300">Costo: ${{ medico.costo_consulta }} MXN</p>
+              <div class="flex items-center text-yellow-500">
+                <span *ngFor="let star of generarEstrellas(medico.calificacion || 0)" 
+                      class="material-symbols-outlined text-yellow-500">
+                  {{ star }}
                 </span>
-                <button (click)="verDetalleCita(proximaCita.id)" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium">
-                  Ver Detalles
-                </button>
+                <span class="ml-1 text-xs text-gray-500 dark:text-gray-400">({{ medico.calificacion || 0 }})</span>
               </div>
             </div>
-          </div>
-          
-          <div *ngIf="!proximaCita" class="flex flex-col items-center justify-center rounded-xl shadow-sm bg-white dark:bg-gray-800 p-12 hover:shadow-md transition-shadow">
-            <span class="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-600 mb-4">event_busy</span>
-            <p class="text-gray-900 dark:text-white text-xl font-bold mb-2">No tienes citas próximas</p>
-            <p class="text-gray-500 dark:text-gray-400 text-center mb-6">Agenda una cita con nuestros médicos disponibles</p>
-            <button (click)="navegarAMedicos()" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-red-700 transition-colors font-medium">
-              Ver Médicos Disponibles
+            <button (click)="agendarCita(medico.id)" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-9 px-3 bg-primary/20 text-primary text-sm font-medium leading-normal hover:bg-primary/30 transition-colors">
+              <span class="truncate">Agendar Cita</span>
             </button>
-          </div>
-        </div>
-
-        <!-- Estadísticas -->
-        <div class="col-span-12 lg:col-span-4 grid grid-cols-1 gap-4">
-          <div class="flex flex-col gap-2 rounded-xl p-4 bg-white dark:bg-gray-800 shadow-sm border-l-4 border-blue-500">
-            <p class="text-gray-600 dark:text-gray-300 text-sm font-medium leading-normal">Total de Citas</p>
-            <p class="text-gray-900 dark:text-white tracking-light text-2xl font-bold leading-tight">{{ dashboardData?.estadisticas?.total_citas || 0 }}</p>
-          </div>
-          <div class="flex flex-col gap-2 rounded-xl p-4 bg-white dark:bg-gray-800 shadow-sm border-l-4 border-yellow-500">
-            <p class="text-gray-600 dark:text-gray-300 text-sm font-medium leading-normal">Citas Pendientes</p>
-            <p class="text-gray-900 dark:text-white tracking-light text-2xl font-bold leading-tight">{{ dashboardData?.estadisticas?.citas_pendientes || 0 }}</p>
-          </div>
-          <div class="flex flex-col gap-2 rounded-xl p-4 bg-white dark:bg-gray-800 shadow-sm border-l-4 border-green-500">
-            <p class="text-gray-600 dark:text-gray-300 text-sm font-medium leading-normal">Citas Completadas</p>
-            <p class="text-gray-900 dark:text-white tracking-light text-2xl font-bold leading-tight">{{ dashboardData?.estadisticas?.citas_completadas || 0 }}</p>
-          </div>
-          <div class="flex flex-col gap-2 rounded-xl p-4 bg-white dark:bg-gray-800 shadow-sm border-l-4 border-red-500">
-            <p class="text-gray-600 dark:text-gray-300 text-sm font-medium leading-normal">Citas Canceladas</p>
-            <p class="text-gray-900 dark:text-white tracking-light text-2xl font-bold leading-tight">{{ dashboardData?.estadisticas?.citas_canceladas || 0 }}</p>
-          </div>
-        </div>
-
-        <!-- Médicos Disponibles -->
-        <div class="col-span-12">
-          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Médicos Disponibles</h3>
-          <div *ngIf="medicosDisponibles.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            <div *ngFor="let medico of medicosDisponibles" class="flex flex-col rounded-xl shadow-sm bg-white dark:bg-gray-800 p-4 hover:shadow-md transition-shadow">
-              <div class="flex items-center gap-4">
-                <div class="bg-gray-300 bg-center bg-no-repeat aspect-square bg-cover rounded-full size-16"></div>
-                <div class="flex-grow">
-                  <p class="font-bold text-gray-900 dark:text-white">{{ medico.nombre_completo }}</p>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">{{ medico.especialidad }}, {{ medico.anios_experiencia }} años exp.</p>
-                </div>
-              </div>
-              <div class="flex justify-between items-end mt-4">
-                <div>
-                  <p class="text-sm text-gray-600 dark:text-gray-300">Costo: ${{ medico.costo_consulta }} MXN</p>
-                  <div class="flex items-center text-yellow-500">
-                    <span *ngFor="let star of generarEstrellas(medico.calificacion || 0)" 
-                          class="material-symbols-outlined text-yellow-500">
-                      {{ star }}
-                    </span>
-                    <span class="ml-1 text-xs text-gray-500 dark:text-gray-400">({{ medico.calificacion || 0 }})</span>
-                  </div>
-                </div>
-                <button (click)="agendarCita(medico.id)" class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-9 px-3 bg-primary/20 text-primary text-sm font-medium leading-normal hover:bg-primary/30 transition-colors">
-                  <span class="truncate">Agendar Cita</span>
-                </button>
-              </div>
-            </div>
-          </div>
-          
-          <div *ngIf="medicosDisponibles.length === 0" class="text-center py-12">
-            <span class="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-600 mb-4 block">person_search</span>
-            <p class="text-gray-500 dark:text-gray-400">No hay médicos disponibles en este momento</p>
-          </div>
-        </div>
-
-        <!-- Notificaciones Recientes -->
-        <div class="col-span-12">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white">Notificaciones Recientes</h3>
-            <button (click)="navegarANotificaciones()" class="text-sm text-primary hover:underline font-medium">
-              Ver todas
-            </button>
-          </div>
-          
-          <div *ngIf="notificaciones.length > 0" class="space-y-4">
-            <div *ngFor="let notif of notificaciones" class="flex items-start gap-4 p-4 rounded-xl bg-white dark:bg-gray-800 shadow-sm">
-              <div class="flex items-center justify-center size-8 rounded-full" [ngClass]="{
-                'bg-blue-100 dark:bg-blue-900/50': notif.tipo === 'cita_creada',
-                'bg-orange-100 dark:bg-orange-900/50': notif.tipo === 'recordatorio',
-                'bg-green-100 dark:bg-green-900/50': notif.tipo === 'cita_confirmada',
-                'bg-red-100 dark:bg-red-900/50': notif.tipo === 'cita_cancelada'
-              }">
-                <span class="material-symbols-outlined text-xl" [ngClass]="{
-                  'text-blue-600 dark:text-blue-400': notif.tipo === 'cita_creada',
-                  'text-orange-600 dark:text-orange-400': notif.tipo === 'recordatorio',
-                  'text-green-600 dark:text-green-400': notif.tipo === 'cita_confirmada',
-                  'text-red-600 dark:text-red-400': notif.tipo === 'cita_cancelada'
-                }">{{ getNotificacionIcono(notif.tipo) }}</span>
-              </div>
-              <div class="flex-grow">
-                <p class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ notif.mensaje }}</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">{{ getTiempoRelativo(notif.created_at) }}</p>
-              </div>
-              <div class="w-2.5 h-2.5 rounded-full mt-1.5" [ngClass]="notif.leida ? 'bg-transparent' : 'bg-primary'" [title]="notif.leida ? 'Leído' : 'No leído'"></div>
-            </div>
-          </div>
-          
-          <div *ngIf="notificaciones.length === 0" class="text-center py-12 bg-white dark:bg-gray-800 rounded-xl">
-            <span class="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-600 mb-4 block">notifications_off</span>
-            <p class="text-gray-500 dark:text-gray-400">No tienes notificaciones recientes</p>
           </div>
         </div>
       </div>
-    </main>
+      
+      <div *ngIf="medicosDisponibles.length === 0" class="text-center py-12">
+        <span class="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-600 mb-4 block">person_search</span>
+        <p class="text-gray-500 dark:text-gray-400">No hay médicos disponibles en este momento</p>
+      </div>
+    </div>
+
+    <!-- Notificaciones Recientes -->
+    <div class="col-span-12">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold text-gray-900 dark:text-white">Notificaciones Recientes</h3>
+        <button (click)="navegarANotificaciones()" class="text-sm text-primary hover:underline font-medium">
+          Ver todas
+        </button>
+      </div>
+      
+      <div *ngIf="notificaciones.length > 0" class="space-y-4">
+        <div *ngFor="let notif of notificaciones" class="flex items-start gap-4 p-4 rounded-xl bg-white dark:bg-gray-800 shadow-sm">
+          <div class="flex items-center justify-center size-8 rounded-full" [ngClass]="{
+            'bg-blue-100 dark:bg-blue-900/50': notif.tipo === 'cita_creada',
+            'bg-orange-100 dark:bg-orange-900/50': notif.tipo === 'recordatorio',
+            'bg-green-100 dark:bg-green-900/50': notif.tipo === 'cita_confirmada',
+            'bg-red-100 dark:bg-red-900/50': notif.tipo === 'cita_cancelada'
+          }">
+            <span class="material-symbols-outlined text-xl" [ngClass]="{
+              'text-blue-600 dark:text-blue-400': notif.tipo === 'cita_creada',
+              'text-orange-600 dark:text-orange-400': notif.tipo === 'recordatorio',
+              'text-green-600 dark:text-green-400': notif.tipo === 'cita_confirmada',
+              'text-red-600 dark:text-red-400': notif.tipo === 'cita_cancelada'
+            }">{{ getNotificacionIcono(notif.tipo) }}</span>
+          </div>
+          <div class="flex-grow">
+            <p class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ notif.mensaje }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">{{ getTiempoRelativo(notif.created_at) }}</p>
+          </div>
+          <div class="w-2.5 h-2.5 rounded-full mt-1.5" [ngClass]="notif.leida ? 'bg-transparent' : 'bg-primary'" [title]="notif.leida ? 'Leído' : 'No leído'"></div>
+        </div>
+      </div>
+      
+      <div *ngIf="notificaciones.length === 0" class="text-center py-12 bg-white dark:bg-gray-800 rounded-xl">
+        <span class="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-600 mb-4 block">notifications_off</span>
+        <p class="text-gray-500 dark:text-gray-400">No tienes notificaciones recientes</p>
+      </div>
+    </div>
   </div>
 </div>

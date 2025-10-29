@@ -110,7 +110,7 @@ export class PerfilMedicoComponent implements OnInit {
   }
 
   volver(): void {
-    this.router.navigate(['/paciente/medicos']);
+    this.router.navigate(['/paciente/citas/medicos']);
   }
 
   // Helpers
@@ -172,6 +172,17 @@ export class PerfilMedicoComponent implements OnInit {
       comentario: v.comentario || '',
       fecha: this.formatearFechaRelativa(v.created_at)
     }));
+  }
+
+  getDistribucionPorcentaje(estrellas: number): number {
+    if (!this.estadisticas?.distribucion || !this.estadisticas?.total_valoraciones) return 0;
+    const cantidad = this.getCantidadPorEstrella(estrellas);
+    return (cantidad / this.estadisticas.total_valoraciones) * 100;
+  }
+
+  getCantidadPorEstrella(estrellas: number): number {
+    if (!this.estadisticas?.distribucion) return 0;
+    return (this.estadisticas.distribucion as any)[estrellas] || 0;
   }
 
   formatearFechaRelativa(fecha: string): string {

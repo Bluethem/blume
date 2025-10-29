@@ -10,16 +10,28 @@ module Api
 
       # GET /api/v1/medicos/:medico_id/valoraciones
       def index
-        @valoraciones = @medico.valoraciones
-                              .includes(paciente: :usuario)
-                              .recientes
-                              .page(params[:page])
-                              .per(params[:per_page] || 10)
+        page = (params[:page] || 1).to_i
+        per_page = (params[:per_page] || 10).to_i
+        
+        valoraciones_query = @medico.valoraciones
+                                    .includes(paciente: :usuario)
+                                    .recientes
+        
+        total = valoraciones_query.count
+        total_pages = (total.to_f / per_page).ceil
+        offset = (page - 1) * per_page
+        
+        @valoraciones = valoraciones_query.limit(per_page).offset(offset)
 
         render json: {
           success: true,
           data: @valoraciones.map { |v| valoracion_json(v) },
-          meta: pagination_meta(@valoraciones)
+          meta: {
+            page: page,
+            per_page: per_page,
+            total: total,
+            total_pages: total_pages
+          }
         }
       end
 
@@ -177,17 +189,8 @@ module Api
           anonimo: valoracion.anonimo,
           nombre_paciente: valoracion.nombre_paciente,
           iniciales_paciente: valoracion.iniciales_paciente,
-          fecha: valoracion.created_at,
+          created_at: valoracion.created_at,
           fecha_formateada: I18n.l(valoracion.created_at, format: :long)
-        }
-      end
-
-      def pagination_meta(collection)
-        {
-          current_page: collection.current_page,
-          total_pages: collection.total_pages,
-          total_count: collection.total_count,
-          per_page: collection.limit_value
         }
       end
     end

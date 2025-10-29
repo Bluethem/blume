@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } 
 import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { PacientesService } from '../../../services/pacientes.service';
+import { PerfilService } from '../../../services/perfil.service';
 
 type TabType = 'personal' | 'medica' | 'seguridad' | 'historial';
 
@@ -36,6 +37,7 @@ export class MiPerfilComponent implements OnInit {
   router = inject(Router); // ✅ Hazlo público para usarlo en el template
   private authService = inject(AuthService);
   private pacientesService = inject(PacientesService);
+  private perfilService = inject(PerfilService);
 
   // Estado
   usuario: PerfilUsuario | null = null;
@@ -53,6 +55,7 @@ export class MiPerfilComponent implements OnInit {
   formSeguridad!: FormGroup;
 
   // Foto
+  uploadingFoto = false;
   selectedFile: File | null = null;
   previewUrl: string | null = null;
 
@@ -236,7 +239,20 @@ export class MiPerfilComponent implements OnInit {
   onFileSelected(event: any): void {
     const file = event.target.files[0];
     if (file) {
+      // Validar tipo
+      if (!file.type.startsWith('image/')) {
+        this.error = 'Solo se permiten imágenes';
+        return;
+      }
+      
+      // Validar tamaño (máx 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        this.error = 'La imagen no debe superar los 5MB';
+        return;
+      }
+
       this.selectedFile = file;
+      this.error = null;
       
       // Previsualización
       const reader = new FileReader();
@@ -253,24 +269,35 @@ export class MiPerfilComponent implements OnInit {
   subirFoto(): void {
     if (!this.selectedFile) return;
 
+    this.uploadingFoto = true;
     this.saving = true;
-    const formData = new FormData();
-    formData.append('foto', this.selectedFile);
+    this.error = null;
 
-    this.authService.uploadPhoto(formData).subscribe({
+    this.perfilService.uploadFoto(this.selectedFile).subscribe({
       next: (response) => {
         if (response.success && response.data) {
           this.successMessage = 'Foto actualizada correctamente';
           if (this.usuario) {
             this.usuario.foto_url = response.data.foto_url;
           }
+          
+          // Recargar el perfil para actualizar la foto en todas partes
+          this.cargarPerfil();
         }
+        this.uploadingFoto = false;
         this.saving = false;
+        
+        // Limpiar mensaje después de 3 segundos
+        setTimeout(() => {
+          this.successMessage = null;
+        }, 3000);
       },
-      error: () => {
-        this.error = 'Error al subir la foto';
+      error: (err) => {
+        this.error = err.error?.message || 'Error al subir la foto';
+        this.uploadingFoto = false;
         this.saving = false;
         this.previewUrl = null;
+        this.selectedFile = null;
       }
     });
   }
@@ -307,7 +334,7 @@ export class MiPerfilComponent implements OnInit {
   }
 
   verHistorialMedico(): void {
-    this.router.navigate(['/paciente/historial-medico']);
+    this.router.navigate(['/paciente/mi-perfil/historial-medico']);
   }
 
   cerrarSesion(): void {

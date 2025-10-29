@@ -161,7 +161,7 @@ class Medico < ApplicationRecord
   end
 
   def foto_url
-    usuario.foto_url || "https://ui-avatars.com/api/?name=#{nombre_completo}&size=200"
+    usuario.foto_perfil_url
   end
 
   def disponible_hoy?

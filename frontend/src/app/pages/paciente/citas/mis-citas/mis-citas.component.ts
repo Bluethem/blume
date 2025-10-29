@@ -155,9 +155,13 @@ export class MisCitasComponent implements OnInit {
   }
 
   volverAgendar(cita: Cita): void {
-    this.router.navigate(['/paciente/citas/nueva'], {
-      queryParams: { medico_id: cita.medico?.id }
-    });
+    // Navegar directamente al formulario de agendar con el médico pre-seleccionado
+    if (cita.medico?.id) {
+      this.router.navigate(['/paciente/citas/medicos', cita.medico.id, 'agendar']);
+    } else {
+      // Si por alguna razón no hay médico, ir a la lista de médicos
+      this.router.navigate(['/paciente/citas/medicos']);
+    }
   }
 
   nuevaCita(): void {

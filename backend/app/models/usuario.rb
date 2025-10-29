@@ -61,6 +61,10 @@ class Usuario < ApplicationRecord
     "#{nombre} #{apellido}"
   end
   
+  def foto_perfil_url
+    foto_url.presence || "https://ui-avatars.com/api/?name=#{nombre_completo.gsub(' ', '+')}&size=200&background=B71C1C&color=fff"
+  end
+  
   def paciente?
     es_paciente?
   end

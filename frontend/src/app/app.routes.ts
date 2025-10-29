@@ -9,6 +9,12 @@ export const routes: Routes = [
     redirectTo: '/login',
     pathMatch: 'full'
   },
+  // Redirect del antiguo dashboard a la nueva ubicación
+  {
+    path: 'dashboard/paciente',
+    redirectTo: '/paciente/dashboard',
+    pathMatch: 'full'
+  },
 
   // ==================== RUTAS PÚBLICAS (AUTH) ====================
   {
@@ -32,15 +38,6 @@ export const routes: Routes = [
       .then(m => m.ResetPasswordComponent)
   },
 
-  // ==================== DASHBOARDS PROTEGIDOS ====================
-  {
-    path: 'dashboard/paciente',
-    canActivate: [authGuard, roleGuard],
-    data: { role: 'paciente' },
-    loadComponent: () => import('./pages/dashboard/paciente/paciente-dashboard.component')
-      .then(m => m.PacienteDashboardComponent)
-  },
-
   // ==================== RUTAS DE PACIENTE ====================
   {
     path: 'paciente',
@@ -49,6 +46,16 @@ export const routes: Routes = [
     loadComponent: () => import('./shared/layouts/paciente-layout/paciente-layout.component')
       .then(m => m.PacienteLayoutComponent),
     children: [
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
+      },
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./pages/dashboard/paciente/paciente-dashboard.component')
+          .then(m => m.PacienteDashboardComponent)
+      },
       {
         path: 'citas/medicos',
         loadComponent: () => import('./pages/paciente/citas/lista-medicos/lista-medicos.component')
@@ -83,6 +90,11 @@ export const routes: Routes = [
         path: 'mi-perfil',
         loadComponent: () => import('./pages/paciente/mi-perfil/mi-perfil.component')
           .then(m => m.MiPerfilComponent)
+      },
+      {
+        path: 'mi-perfil/historial-medico',
+        loadComponent: () => import('./pages/paciente/mi-perfil/historial-medico/historial-medico.component')
+          .then(m => m.HistorialMedicoComponent)
       },
       {
         path: 'notificaciones',

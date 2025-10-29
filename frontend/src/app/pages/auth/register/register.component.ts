@@ -238,7 +238,7 @@ export class RegisterComponent {
 
     this.authService.register(registerData).subscribe({
       next: (response) => {
-        this.router.navigate(['/dashboard/paciente']);
+        this.router.navigate(['/paciente/dashboard']);
       },
       error: (error) => {
         this.errorMessage = error.message || 'Error al crear la cuenta.';

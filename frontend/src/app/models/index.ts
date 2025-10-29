@@ -8,6 +8,7 @@ export interface Usuario {
   direccion?: string;
   rol: 'paciente' | 'medico' | 'administrador';
   activo: boolean;
+  foto_url?: string;
   created_at: string;
   updated_at?: string;
   paciente?: Paciente;

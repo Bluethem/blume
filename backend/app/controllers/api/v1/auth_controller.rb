@@ -251,6 +251,7 @@ module Api
           direccion: user.direccion,
           rol: user.rol,
           activo: user.activo,
+          foto_url: user.foto_perfil_url,
           created_at: user.created_at
         }
 

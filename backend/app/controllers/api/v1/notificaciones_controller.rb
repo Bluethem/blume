@@ -17,19 +17,23 @@ module Api
           @notificaciones = @notificaciones.where(tipo: params[:tipo])
         end
 
-        # Paginar
-        page = params[:page] || 1
-        per_page = params[:per_page] || 20
+        # Paginar manualmente
+        page = (params[:page] || 1).to_i
+        per_page = (params[:per_page] || 20).to_i
         
-        paginated_notificaciones = @notificaciones.page(page).per(per_page)
+        total = @notificaciones.count
+        total_pages = (total.to_f / per_page).ceil
+        offset = (page - 1) * per_page
+        
+        paginated_notificaciones = @notificaciones.limit(per_page).offset(offset)
 
         render_success({
           notificaciones: paginated_notificaciones.map { |n| notificacion_response(n) },
-          total: @notificaciones.count,
+          total: total,
           no_leidas: current_user.notificaciones.where(leida: false).count,
-          page: page.to_i,
-          per_page: per_page.to_i,
-          total_pages: paginated_notificaciones.total_pages
+          page: page,
+          per_page: per_page,
+          total_pages: total_pages
         })
       end
 

@@ -9,12 +9,16 @@
     </div>
     
     <div class="flex flex-col items-center p-4 gap-4">
-      <div class="bg-gray-300 bg-center bg-no-repeat aspect-square bg-cover rounded-full size-16"></div>
+      <img 
+        [src]="currentUser?.foto_url || 'https://ui-avatars.com/api/?name=' + nombreCompleto + '&size=200&background=ffffff&color=B71C1C'" 
+        [alt]="'Foto de ' + nombreCompleto"
+        class="rounded-full size-16 object-cover border-2 border-white/20"
+      />
       <h2 class="text-white text-lg font-medium text-center px-2">{{ nombreCompleto }}</h2>
     </div>
     
     <nav class="flex flex-col p-4 space-y-2 flex-grow">
-      <a routerLink="/dashboard/paciente" routerLinkActive="bg-primary" [routerLinkActiveOptions]="{exact: true}" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/50 transition-colors">
+      <a routerLink="/paciente/dashboard" routerLinkActive="bg-primary" [routerLinkActiveOptions]="{exact: true}" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/50 transition-colors">
         <span class="material-symbols-outlined">home</span>
         <p class="text-sm font-medium">Inicio</p>
       </a>
@@ -36,7 +40,17 @@
       </a>
     </nav>
     
-    <div class="p-4 border-t border-white/20">
+    <div class="p-4 border-t border-white/20 space-y-2">
+      <!-- Dark Mode Toggle -->
+      <button 
+        (click)="themeService.toggleTheme()" 
+        class="flex w-full items-center justify-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/50 transition-colors"
+      >
+        <span class="material-symbols-outlined" *ngIf="!themeService.isDarkMode()">dark_mode</span>
+        <span class="material-symbols-outlined" *ngIf="themeService.isDarkMode()">light_mode</span>
+        <span class="truncate">{{ themeService.isDarkMode() ? 'Modo Claro' : 'Modo Oscuro' }}</span>
+      </button>
+      
       <button (click)="cerrarSesion()" class="flex w-full items-center justify-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/50 transition-colors">
         <span class="material-symbols-outlined">logout</span>
         <span class="truncate">Cerrar Sesión</span>
@@ -63,12 +77,16 @@
     </div>
     
     <div class="flex flex-col items-center p-4 gap-4">
-      <div class="bg-gray-300 bg-center bg-no-repeat aspect-square bg-cover rounded-full size-16"></div>
+      <img 
+        [src]="currentUser?.foto_url || 'https://ui-avatars.com/api/?name=' + nombreCompleto + '&size=200&background=ffffff&color=B71C1C'" 
+        [alt]="'Foto de ' + nombreCompleto"
+        class="rounded-full size-16 object-cover border-2 border-white/20"
+      />
       <h2 class="text-white text-lg font-medium text-center px-2">{{ nombreCompleto }}</h2>
     </div>
     
     <nav class="flex flex-col p-4 space-y-2 flex-grow">
-      <a (click)="toggleSidebar()" routerLink="/dashboard/paciente" routerLinkActive="bg-primary" [routerLinkActiveOptions]="{exact: true}" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/50 transition-colors">
+      <a (click)="toggleSidebar()" routerLink="/paciente/dashboard" routerLinkActive="bg-primary" [routerLinkActiveOptions]="{exact: true}" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/50 transition-colors">
         <span class="material-symbols-outlined">home</span>
         <p class="text-sm font-medium">Inicio</p>
       </a>
@@ -90,7 +108,17 @@
       </a>
     </nav>
     
-    <div class="p-4 border-t border-white/20">
+    <div class="p-4 border-t border-white/20 space-y-2">
+      <!-- Dark Mode Toggle -->
+      <button 
+        (click)="themeService.toggleTheme()" 
+        class="flex w-full items-center justify-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/50 transition-colors"
+      >
+        <span class="material-symbols-outlined" *ngIf="!themeService.isDarkMode()">dark_mode</span>
+        <span class="material-symbols-outlined" *ngIf="themeService.isDarkMode()">light_mode</span>
+        <span class="truncate">{{ themeService.isDarkMode() ? 'Modo Claro' : 'Modo Oscuro' }}</span>
+      </button>
+      
       <button (click)="cerrarSesion()" class="flex w-full items-center justify-center gap-3 px-3 py-2 rounded-lg hover:bg-primary/50 transition-colors">
         <span class="material-symbols-outlined">logout</span>
         <span class="truncate">Cerrar Sesión</span>
@@ -124,14 +152,90 @@
             </div>
           </form>
         </div>
-        <button (click)="navegarANotificaciones()" class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white relative">
-          <span class="material-symbols-outlined">notifications</span>
-          <span *ngIf="notificacionesNoLeidas > 0" class="absolute top-1 right-1.5 flex h-2.5 w-2.5">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
-          </span>
+        
+        <!-- Dark Mode Toggle -->
+        <button 
+          (click)="themeService.toggleTheme()" 
+          class="flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+          [title]="themeService.isDarkMode() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+        >
+          <span class="material-symbols-outlined" *ngIf="!themeService.isDarkMode()">dark_mode</span>
+          <span class="material-symbols-outlined" *ngIf="themeService.isDarkMode()">light_mode</span>
         </button>
-        <div class="bg-gray-300 bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 cursor-pointer" (click)="navegarAPerfil()"></div>
+        
+        <!-- Notificaciones Dropdown -->
+        <div class="relative">
+          <button (click)="toggleNotificaciones()" class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 w-10 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white relative hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+            <span class="material-symbols-outlined">notifications</span>
+            <span *ngIf="notificacionesNoLeidas > 0" class="absolute top-1 right-1.5 flex h-2.5 w-2.5">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
+            </span>
+          </button>
+
+          <!-- Dropdown Panel -->
+          <div *ngIf="notificacionesDropdownOpen" class="absolute right-0 mt-2 w-96 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50 max-h-[500px] overflow-hidden flex flex-col">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Notificaciones</h3>
+              <button (click)="marcarTodasLeidas()" class="text-sm text-primary hover:underline font-medium">
+                Marcar todas como leídas
+              </button>
+            </div>
+
+            <!-- Lista de notificaciones -->
+            <div class="overflow-y-auto flex-1">
+              <div *ngIf="notificaciones.length === 0" class="p-8 text-center">
+                <span class="material-symbols-outlined text-4xl text-gray-300 dark:text-gray-600 mb-2 block">notifications_off</span>
+                <p class="text-gray-500 dark:text-gray-400">No tienes notificaciones</p>
+              </div>
+
+              <div *ngFor="let notif of notificaciones" 
+                   (click)="handleNotificacionClick(notif)"
+                   class="p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
+                   [class.bg-blue-50]="!notif.leida"
+                   [class.dark:bg-blue-900/10]="!notif.leida">
+                <div class="flex items-start gap-3">
+                  <div class="flex items-center justify-center size-10 rounded-full flex-shrink-0" [ngClass]="{
+                    'bg-blue-100 dark:bg-blue-900/50': notif.tipo === 'cita_creada',
+                    'bg-orange-100 dark:bg-orange-900/50': notif.tipo === 'recordatorio',
+                    'bg-green-100 dark:bg-green-900/50': notif.tipo === 'cita_confirmada',
+                    'bg-red-100 dark:bg-red-900/50': notif.tipo === 'cita_cancelada'
+                  }">
+                    <span class="material-symbols-outlined text-xl" [ngClass]="{
+                      'text-blue-600 dark:text-blue-400': notif.tipo === 'cita_creada',
+                      'text-orange-600 dark:text-orange-400': notif.tipo === 'recordatorio',
+                      'text-green-600 dark:text-green-400': notif.tipo === 'cita_confirmada',
+                      'text-red-600 dark:text-red-400': notif.tipo === 'cita_cancelada'
+                    }">{{ getNotificacionIcono(notif.tipo) }}</span>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100" [class.font-bold]="!notif.leida">
+                      {{ notif.mensaje }}
+                    </p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {{ getTiempoRelativo(notif.created_at) }}
+                    </p>
+                  </div>
+                  <div class="w-2.5 h-2.5 rounded-full mt-1.5 flex-shrink-0" [ngClass]="notif.leida ? 'bg-transparent' : 'bg-primary'"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+              <button (click)="navegarANotificaciones()" class="w-full text-center text-sm text-primary hover:underline font-medium py-1">
+                Ver todas las notificaciones
+              </button>
+            </div>
+          </div>
+        </div>
+        <img 
+          [src]="currentUser?.foto_url || 'https://ui-avatars.com/api/?name=' + nombreCompleto + '&size=200&background=B71C1C&color=fff'" 
+          [alt]="'Foto de ' + nombreCompleto"
+          class="rounded-full size-10 object-cover cursor-pointer border-2 border-gray-200 dark:border-gray-700 hover:border-primary transition-colors"
+          (click)="navegarAPerfil()"
+        />
       </div>
     </header>
 

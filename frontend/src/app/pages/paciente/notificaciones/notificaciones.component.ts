@@ -31,13 +31,15 @@ export class NotificacionesComponent implements OnInit {
     this.notificacionesService.getNotificaciones().subscribe({
       next: (response) => {
         if (response.success && response.data) {
-          this.notificaciones = response.data;
+          // El backend devuelve { notificaciones: [...], total: X, no_leidas: Y }
+          this.notificaciones = response.data.notificaciones || [];
           this.aplicarFiltro();
         }
         this.loading = false;
       },
       error: (error: any) => {
         console.error('Error cargando notificaciones:', error);
+        this.notificaciones = [];
         this.loading = false;
       }
     });

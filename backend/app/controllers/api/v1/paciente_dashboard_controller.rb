@@ -83,8 +83,9 @@ module Api
           medico: {
             id: cita.medico.id,
             nombre_completo: cita.medico.usuario.nombre_completo,
-            especialidad: cita.medico.especialidad_principal,
-            foto_url: nil,
+            nombre_profesional: cita.medico.nombre_profesional,
+            especialidad: cita.medico.especialidad_principal&.nombre || 'Sin especialidad',
+            foto_url: cita.medico.foto_url,
             telefono: cita.medico.usuario.telefono,
             direccion: cita.medico.usuario.direccion
           },
@@ -104,7 +105,7 @@ module Api
       end
 
       def medicos_disponibles
-        medicos = Medico.includes(:usuario, :certificaciones)
+        medicos = Medico.includes(:usuario, :certificaciones, :medico_especialidades, :especialidades, :valoraciones)
           .joins(:usuario)
           .where(usuarios: { activo: true })
           .limit(6)
@@ -114,13 +115,13 @@ module Api
           {
             id: medico.id,
             nombre_completo: medico.usuario.nombre_completo,
-            especialidad: medico.especialidad_principal,
-            anos_experiencia: medico.anios_experiencia || 0,
+            especialidad: medico.especialidad_principal&.nombre || 'Sin especialidad',
+            anios_experiencia: medico.anios_experiencia || 0,
             costo_consulta: medico.costo_consulta || 0,
             biografia: medico.biografia&.truncate(100),
-            calificacion: 4.5,
-            total_reviews: rand(10..50),
-            foto_url: nil,
+            calificacion: medico.calificacion_promedio,
+            total_reviews: medico.total_resenas,
+            foto_url: medico.foto_url,
             certificaciones: medico.certificaciones.pluck(:nombre).take(2),
             disponible_hoy: tiene_horario_disponible_hoy?(medico)
           }
@@ -161,7 +162,7 @@ module Api
           id: cita.id,
           fecha: cita.fecha_hora_inicio,
           medico: cita.medico.usuario.nombre_completo,
-          especialidad: cita.medico.especialidad_principal,
+          especialidad: cita.medico.especialidad_principal&.nombre || 'Sin especialidad',
           diagnostico: cita.diagnostico
         }
       end

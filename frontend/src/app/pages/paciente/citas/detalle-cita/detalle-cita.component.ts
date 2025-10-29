@@ -93,7 +93,7 @@ export class DetalleCitaComponent implements OnInit {
 
   verPerfilMedico(): void {
     if (this.cita?.medico?.id) {
-      this.router.navigate(['/paciente/medicos', this.cita.medico.id]);
+      this.router.navigate(['/paciente/citas/medicos', this.cita.medico.id]);
     }
   }
 
