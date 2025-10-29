@@ -37,17 +37,6 @@ class HorarioMedico < ApplicationRecord
   scope :del_dia, ->(dia) { where(dia_semana: dia) }
   scope :por_medico, ->(medico_id) { where(medico_id: medico_id) }
   
-  # Enum para facilitar el uso
-  enum :dia_semana, {
-    domingo: 0,
-    lunes: 1,
-    martes: 2,
-    miercoles: 3,
-    jueves: 4,
-    viernes: 5,
-    sabado: 6
-  }, prefix: :dia
-  
   # Métodos de clase
   def self.dias_semana_hash
     {

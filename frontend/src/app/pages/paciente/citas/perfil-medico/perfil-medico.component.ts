@@ -4,6 +4,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Medico } from '../../../../services/medicos.service';
 import { MedicosService } from '../../../../services/medicos.service';
+import { ValoracionesService } from '../../../../services/valoraciones.service';
+import { Valoracion, EstadisticasValoraciones } from '../../../../models';
 
 interface Certificacion {
   nombre: string;
@@ -28,10 +30,16 @@ export class PerfilMedicoComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private medicosService = inject(MedicosService);
+  private valoracionesService = inject(ValoracionesService);
 
   medico: Medico | null = null;
   loading = true;
   error: string | null = null;
+  
+  // Valoraciones
+  valoraciones: Valoracion[] = [];
+  estadisticas: EstadisticasValoraciones | null = null;
+  loadingValoraciones = false;
 
   // Tabs
   tabActiva: 'informacion' | 'horarios' | 'resenas' = 'informacion';
@@ -49,6 +57,8 @@ export class PerfilMedicoComponent implements OnInit {
     const medicoId = this.route.snapshot.paramMap.get('id');
     if (medicoId) {
       this.cargarMedico(medicoId);
+      this.cargarValoraciones(medicoId);
+      this.cargarEstadisticas(medicoId);
     } else {
       this.error = 'ID de médico no válido';
       this.loading = false;
@@ -132,23 +142,53 @@ export class PerfilMedicoComponent implements OnInit {
     ];
   }
 
-  get resenasFormateadas(): Resena[] {
-    // Por ahora retornamos datos de ejemplo
-    // TODO: Implementar cuando el backend tenga las reseñas
-    return [
-      {
-        nombre_paciente: 'Juan Pérez',
-        calificacion: 5,
-        comentario: 'Excelente profesional, muy atento y claro en sus explicaciones. Me sentí muy cómodo durante toda la consulta.',
-        fecha: 'Hace 2 días'
+  cargarValoraciones(medicoId: string): void {
+    this.loadingValoraciones = true;
+    this.valoracionesService.getValoracionesMedico(medicoId, { per_page: 10 }).subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          this.valoraciones = response.data;
+        }
+        this.loadingValoraciones = false;
       },
-      {
-        nombre_paciente: 'María Rodriguez',
-        calificacion: 4,
-        comentario: 'Buen doctor, aunque la espera fue un poco larga. El tratamiento ha sido efectivo.',
-        fecha: 'Hace 1 semana'
+      error: () => {
+        this.loadingValoraciones = false;
       }
-    ];
+    });
+  }
+
+  cargarEstadisticas(medicoId: string): void {
+    this.valoracionesService.getEstadisticas(medicoId).subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          this.estadisticas = response.data;
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  get resenasFormateadas(): Resena[] {
+    return this.valoraciones.map(v => ({
+      nombre_paciente: v.nombre_paciente,
+      calificacion: v.calificacion,
+      comentario: v.comentario || '',
+      fecha: this.formatearFechaRelativa(v.created_at)
+    }));
+  }
+
+  formatearFechaRelativa(fecha: string): string {
+    const ahora = new Date();
+    const fechaValoracion = new Date(fecha);
+    const diff = ahora.getTime() - fechaValoracion.getTime();
+    const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+    
+    if (dias === 0) return 'Hoy';
+    if (dias === 1) return 'Ayer';
+    if (dias < 7) return `Hace ${dias} días`;
+    if (dias < 30) return `Hace ${Math.floor(dias / 7)} semanas`;
+    if (dias < 365) return `Hace ${Math.floor(dias / 30)} meses`;
+    return `Hace ${Math.floor(dias / 365)} años`;
   }
 
   estrellasPorCalificacion(calificacion: number): { llenas: number; vacia: boolean } {

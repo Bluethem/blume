@@ -34,7 +34,7 @@ class Paciente < ApplicationRecord
   belongs_to :usuario
   has_many :citas, dependent: :destroy
   has_many :medicos, through: :citas
-  has_many :valoraciones, dependent: :destroy
+  has_many :valoraciones, class_name: 'Valoracion', dependent: :destroy
 
   # Validaciones
   validates :usuario_id, presence: true, uniqueness: true

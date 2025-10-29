@@ -34,37 +34,11 @@ export const routes: Routes = [
 
   // ==================== DASHBOARDS PROTEGIDOS ====================
   {
-    path: 'dashboard',
-    canActivate: [authGuard],
-    children: [
-      // Dashboard Paciente
-      {
-        path: 'paciente',
-        canActivate: [roleGuard],
-        data: { role: 'paciente' },
-        loadComponent: () => import('./pages/dashboard/paciente/paciente-dashboard.component')
-          .then(m => m.PacienteDashboardComponent)
-      },
-      /*
-      // Dashboard Médico
-      {
-        path: 'medico',
-        canActivate: [roleGuard],
-        data: { role: 'medico' },
-        loadComponent: () => import('./pages/dashboard/medico/medico-dashboard.component')
-          .then(m => m.MedicoDashboardComponent)
-      },
-
-      // Dashboard Administrador
-      {
-        path: 'admin',
-        canActivate: [roleGuard],
-        data: { role: 'administrador' },
-        loadComponent: () => import('./pages/dashboard/admin/admin-dashboard.component')
-          .then(m => m.AdminDashboardComponent)
-      }
-      */
-    ]
+    path: 'dashboard/paciente',
+    canActivate: [authGuard, roleGuard],
+    data: { role: 'paciente' },
+    loadComponent: () => import('./pages/dashboard/paciente/paciente-dashboard.component')
+      .then(m => m.PacienteDashboardComponent)
   },
 
   // ==================== RUTAS DE PACIENTE ====================
@@ -72,58 +46,63 @@ export const routes: Routes = [
     path: 'paciente',
     canActivate: [authGuard, roleGuard],
     data: { role: 'paciente' },
+    loadComponent: () => import('./shared/layouts/paciente-layout/paciente-layout.component')
+      .then(m => m.PacienteLayoutComponent),
     children: [
-      // Mis Citas
       {
-        path: 'agendar-cita',
-        canActivate: [authGuard, roleGuard],
-        data: { role: 'paciente' },
-        loadComponent: () => import('./pages/paciente/citas/agendar-cita/agendar-cita.component')
-          .then(m => m.AgendarCitaComponent)
-      },
-
-      {
-        path: 'citas/lista-medicos',
-        canActivate: [authGuard, roleGuard],
-        data: { role: 'paciente' },
+        path: 'citas/medicos',
         loadComponent: () => import('./pages/paciente/citas/lista-medicos/lista-medicos.component')
           .then(m => m.ListaMedicosComponent)
       },
-
       {
-        path: 'citas/perfil-medico/:id',
-        canActivate: [authGuard, roleGuard],
-        data: { role: 'paciente' },
+        path: 'citas/medicos/:id',
         loadComponent: () => import('./pages/paciente/citas/perfil-medico/perfil-medico.component')
           .then(m => m.PerfilMedicoComponent)
       },
-
+      {
+        path: 'citas/medicos/:id/agendar',
+        loadComponent: () => import('./pages/paciente/citas/agendar-cita/agendar-cita.component')
+          .then(m => m.AgendarCitaComponent)
+      },
       {
         path: 'citas/mis-citas',
-        canActivate: [authGuard, roleGuard],
-        data: { role: 'paciente' },
         loadComponent: () => import('./pages/paciente/citas/mis-citas/mis-citas.component')
           .then(m => m.MisCitasComponent)
       },
-
       {
         path: 'citas/detalle/:id',
-        canActivate: [authGuard, roleGuard],
-        data: { role: 'paciente' },
         loadComponent: () => import('./pages/paciente/citas/detalle-cita/detalle-cita.component')
           .then(m => m.DetalleCitaComponent)
       },
-
       {
         path: 'mi-perfil',
-        canActivate: [authGuard, roleGuard],
-        data: { role: 'paciente' },
         loadComponent: () => import('./pages/paciente/mi-perfil/mi-perfil.component')
           .then(m => m.MiPerfilComponent)
       }
+      // TODO: Implementar componente de notificaciones
+      // {
+      //   path: 'notificaciones',
+      //   loadComponent: () => import('./pages/paciente/notificaciones/notificaciones.component')
+      //     .then(m => m.NotificacionesComponent)
+      // }
     ]
-  },
+  }
   /*
+  // ==================== DASHBOARDS DE MÉDICO Y ADMIN (NO IMPLEMENTADOS) ====================
+  {
+    path: 'dashboard/medico',
+    canActivate: [authGuard, roleGuard],
+    data: { role: 'medico' },
+    loadComponent: () => import('./pages/dashboard/medico/medico-dashboard.component')
+      .then(m => m.MedicoDashboardComponent)
+  },
+  {
+    path: 'admin',
+    canActivate: [roleGuard],
+    data: { role: 'administrador' },
+    loadComponent: () => import('./pages/dashboard/admin/admin-dashboard.component')
+      .then(m => m.AdminDashboardComponent)
+  },
   // ==================== RUTAS DE MÉDICOS (COMPARTIDAS) ====================
   {
     path: 'medicos',

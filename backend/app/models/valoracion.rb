@@ -16,6 +16,8 @@
 #
 
 class Valoracion < ApplicationRecord
+  self.table_name = 'valoraciones'
+  
   # ========== Asociaciones ==========
   belongs_to :paciente
   belongs_to :medico

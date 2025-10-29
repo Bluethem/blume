@@ -1,8 +1,9 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CitasService } from '../../../../services/citas.service';
 import { Cita } from '../../../../models';
+import { ModalValoracionComponent } from '../components/modal-valoracion/modal-valoracion.component';
 
 interface HistorialCambio {
   accion: string;
@@ -14,7 +15,7 @@ interface HistorialCambio {
 @Component({
   selector: 'app-detalle-cita',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, ModalValoracionComponent],
   templateUrl: './detalle-cita.component.html',
   styleUrls: ['./detalle-cita.component.css']
 })
@@ -26,6 +27,9 @@ export class DetalleCitaComponent implements OnInit {
   cita: Cita | null = null;
   loading = true;
   error: string | null = null;
+  
+  // Modal valoración
+  mostrarModalValoracion = false;
 
   ngOnInit(): void {
     const citaId = this.route.snapshot.paramMap.get('id');
@@ -50,8 +54,7 @@ export class DetalleCitaComponent implements OnInit {
         }
         this.loading = false;
       },
-      error: (err) => {
-        console.error('Error al cargar cita:', err);
+      error: () => {
         this.error = 'Error al cargar la información de la cita';
         this.loading = false;
       }
@@ -71,8 +74,7 @@ export class DetalleCitaComponent implements OnInit {
             this.cargarCita(this.cita!.id);
           }
         },
-        error: (err) => {
-          console.error('Error al cancelar:', err);
+        error: () => {
           alert('Error al procesar la cancelación');
         }
       });
@@ -82,7 +84,6 @@ export class DetalleCitaComponent implements OnInit {
   descargarResumen(): void {
     if (!this.cita) return;
     // TODO: Implementar descarga de PDF
-    console.log('Descargar resumen de cita:', this.cita.id);
     alert('Funcionalidad de descarga en desarrollo');
   }
 
@@ -230,5 +231,23 @@ export class DetalleCitaComponent implements OnInit {
     const tiempoMinimo = 2 * 60 * 60 * 1000;
     
     return ahora < new Date(inicioCita.getTime() - tiempoMinimo);
+  }
+
+  // Valoración
+  puedeValorar(): boolean {
+    return this.cita?.estado === 'completada';
+  }
+
+  abrirModalValoracion(): void {
+    this.mostrarModalValoracion = true;
+  }
+
+  cerrarModalValoracion(): void {
+    this.mostrarModalValoracion = false;
+  }
+
+  onValoracionExitosa(): void {
+    alert('¡Gracias por tu valoración!');
+    this.cerrarModalValoracion();
   }
 }

@@ -25,7 +25,7 @@ class Medico < ApplicationRecord
   has_many :pacientes, through: :citas
   has_many :medico_especialidades, dependent: :destroy
   has_many :especialidades, through: :medico_especialidades
-  has_many :valoraciones, dependent: :destroy
+  has_many :valoraciones, class_name: 'Valoracion', dependent: :destroy
 
   # Validaciones
   validates :usuario_id, presence: true, uniqueness: true

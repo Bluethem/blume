@@ -242,3 +242,41 @@ export interface HorariosDisponibles {
     nombre_profesional: string;
   };
 }
+
+// ✅ VALORACIONES/RESEÑAS
+export interface Valoracion {
+  id: string;
+  paciente_id: string;
+  medico_id: string;
+  cita_id?: string;
+  calificacion: number; // 1-5
+  comentario?: string;
+  anonimo: boolean;
+  nombre_paciente: string;
+  iniciales_paciente: string;
+  fecha: string;
+  fecha_formateada: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateValoracionRequest {
+  valoracion: {
+    calificacion: number;
+    comentario?: string;
+    anonimo?: boolean;
+    cita_id?: string;
+  };
+}
+
+export interface EstadisticasValoraciones {
+  calificacion_promedio: number;
+  total_valoraciones: number;
+  distribucion: {
+    5: number;
+    4: number;
+    3: number;
+    2: number;
+    1: number;
+  };
+}

@@ -488,7 +488,11 @@ puts " Cita creada: Paciente #{pacientes_creados[2].usuario.nombre} con Dr. #{me
 
 # Cita 4: Cancelada
 fecha_cita4 = 5.days.ago
-fecha_cita4 = fecha_cita4.next_occurring(:tuesday) unless fecha_cita4.tuesday?
+# Buscar el martes más cercano en el pasado
+while !fecha_cita4.tuesday?
+  fecha_cita4 -= 1.day
+end
+
 cita4 = Cita.create!(
   paciente: pacientes_creados[3],
   medico: medicos_creados[3],

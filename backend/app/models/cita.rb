@@ -46,7 +46,7 @@ class Cita < ApplicationRecord
   validates :costo, numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
   
   validate :fecha_fin_posterior_a_inicio
-  validate :fecha_no_pasada, on: :create
+  validate :fecha_no_pasada, on: :create, unless: -> { estado_completada? || estado_cancelada? }
   validate :dentro_horario_medico
   validate :sin_superposicion_medico
   validate :motivo_cancelacion_presente_si_cancelada
@@ -212,17 +212,22 @@ class Cita < ApplicationRecord
     dia_semana = fecha_hora_inicio.wday
     hora_cita = fecha_hora_inicio.strftime('%H:%M:%S')
     
-    horario = medico.horario_medicos.activos.find_by(dia_semana: dia_semana)
+    # Buscar TODOS los horarios del médico para este día
+    horarios = medico.horario_medicos.activos.where(dia_semana: dia_semana)
     
-    unless horario
+    unless horarios.any?
       errors.add(:base, 'El médico no atiende este día de la semana')
       return
     end
     
-    hora_inicio_str = horario.hora_inicio.strftime('%H:%M:%S')
-    hora_fin_str = horario.hora_fin.strftime('%H:%M:%S')
+    # Verificar si la cita está dentro de ALGUNO de los horarios
+    dentro_de_algun_horario = horarios.any? do |horario|
+      hora_inicio_str = horario.hora_inicio.strftime('%H:%M:%S')
+      hora_fin_str = horario.hora_fin.strftime('%H:%M:%S')
+      hora_cita.between?(hora_inicio_str, hora_fin_str)
+    end
     
-    unless hora_cita.between?(hora_inicio_str, hora_fin_str)
+    unless dentro_de_algun_horario
       errors.add(:base, 'La cita está fuera del horario de atención del médico')
     end
   end
