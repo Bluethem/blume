@@ -1,0 +1,245 @@
+<div class="flex h-screen bg-background-light dark:bg-background-dark">
+  <!-- Sidebar Desktop -->
+  <aside class="flex-col w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 fixed h-full hidden lg:flex z-20">
+    <div class="flex h-full min-h-0 flex-col justify-between p-4">
+      <div class="flex flex-col gap-4">
+        <!-- Logo -->
+        <div class="flex items-center gap-3 px-3">
+          <img src="/images/android-chrome-192x192.png" 
+               alt="Logo Blume"
+               class="w-10 h-10 object-contain">
+          <h1 class="text-gray-900 dark:text-white text-lg font-bold">blume</h1>
+        </div>
+
+        <!-- Navigation -->
+        <div class="flex flex-col gap-2 mt-4">
+          <a routerLink="/medico/dashboard" routerLinkActive="bg-primary/10 dark:bg-primary/20" [routerLinkActiveOptions]="{exact: true}"
+             class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <span class="material-symbols-outlined" [class.text-primary]="router.url === '/medico/dashboard'" [class.text-gray-700]="router.url !== '/medico/dashboard'" [class.dark:text-gray-300]="router.url !== '/medico/dashboard'">home</span>
+            <p class="text-sm font-medium" [class.text-primary]="router.url === '/medico/dashboard'" [class.text-gray-700]="router.url !== '/medico/dashboard'" [class.dark:text-gray-300]="router.url !== '/medico/dashboard'">Inicio</p>
+          </a>
+          
+          <a routerLink="/medico/citas" routerLinkActive="bg-primary/10 dark:bg-primary/20"
+             class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <span class="material-symbols-outlined text-gray-700 dark:text-gray-300">calendar_month</span>
+            <p class="text-gray-700 dark:text-gray-300 text-sm font-medium">Mis Citas</p>
+          </a>
+          
+          <a routerLink="/medico/pacientes" routerLinkActive="bg-primary/10 dark:bg-primary/20"
+             class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <span class="material-symbols-outlined text-gray-700 dark:text-gray-300">groups</span>
+            <p class="text-gray-700 dark:text-gray-300 text-sm font-medium">Mis Pacientes</p>
+          </a>
+          
+          <a routerLink="/medico/horarios" routerLinkActive="bg-primary/10 dark:bg-primary/20"
+             class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <span class="material-symbols-outlined text-gray-700 dark:text-gray-300">schedule</span>
+            <p class="text-gray-700 dark:text-gray-300 text-sm font-medium">Horarios</p>
+          </a>
+          
+          <a routerLink="/medico/estadisticas" routerLinkActive="bg-primary/10 dark:bg-primary/20"
+             class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <span class="material-symbols-outlined text-gray-700 dark:text-gray-300">bar_chart</span>
+            <p class="text-gray-700 dark:text-gray-300 text-sm font-medium">Estadísticas</p>
+          </a>
+          
+          <a routerLink="/medico/perfil" routerLinkActive="bg-primary/10 dark:bg-primary/20"
+             class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <span class="material-symbols-outlined text-gray-700 dark:text-gray-300">person</span>
+            <p class="text-gray-700 dark:text-gray-300 text-sm font-medium">Mi Perfil</p>
+          </a>
+
+          <!-- Dark Mode Toggle -->
+          <button (click)="themeService.toggleTheme()" 
+                  class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <span class="material-symbols-outlined text-gray-700 dark:text-gray-300">
+              {{ themeService.isDarkMode() ? 'light_mode' : 'dark_mode' }}
+            </span>
+            <p class="text-gray-700 dark:text-gray-300 text-sm font-medium">
+              {{ themeService.isDarkMode() ? 'Modo Claro' : 'Modo Oscuro' }}
+            </p>
+          </button>
+        </div>
+      </div>
+
+      <!-- Logout -->
+      <div class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors"
+           (click)="cerrarSesion()">
+        <span class="material-symbols-outlined text-gray-700 dark:text-gray-300">logout</span>
+        <p class="text-gray-700 dark:text-gray-300 text-sm font-medium">Cerrar Sesión</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Mobile Sidebar -->
+  <aside *ngIf="sidebarOpen" 
+         class="flex flex-col w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 fixed h-full lg:hidden z-30">
+    <div class="flex h-full min-h-0 flex-col justify-between p-4">
+      <div class="flex flex-col gap-4">
+        <div class="flex items-center justify-between px-3">
+          <div class="flex items-center gap-3">
+            <img src="/images/logo_simbolo_rojo.png" 
+                 alt="Logo Blume"
+                 class="w-10 h-10 object-contain">
+            <h1 class="text-gray-900 dark:text-white text-lg font-bold">Blume</h1>
+          </div>
+          <button (click)="toggleSidebar()" class="text-gray-700 dark:text-gray-300">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <div class="flex flex-col gap-2 mt-4">
+          <a (click)="toggleSidebar()" routerLink="/medico/dashboard" routerLinkActive="bg-primary/10 dark:bg-primary/20" [routerLinkActiveOptions]="{exact: true}"
+             class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <span class="material-symbols-outlined text-gray-700 dark:text-gray-300">home</span>
+            <p class="text-gray-700 dark:text-gray-300 text-sm font-medium">Inicio</p>
+          </a>
+          <a (click)="toggleSidebar()" routerLink="/medico/citas" routerLinkActive="bg-primary/10 dark:bg-primary/20"
+             class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <span class="material-symbols-outlined text-gray-700 dark:text-gray-300">calendar_month</span>
+            <p class="text-gray-700 dark:text-gray-300 text-sm font-medium">Mis Citas</p>
+          </a>
+          <a (click)="toggleSidebar()" routerLink="/medico/pacientes" routerLinkActive="bg-primary/10 dark:bg-primary/20"
+             class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <span class="material-symbols-outlined text-gray-700 dark:text-gray-300">groups</span>
+            <p class="text-gray-700 dark:text-gray-300 text-sm font-medium">Mis Pacientes</p>
+          </a>
+          <a (click)="toggleSidebar()" routerLink="/medico/horarios" routerLinkActive="bg-primary/10 dark:bg-primary/20"
+             class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <span class="material-symbols-outlined text-gray-700 dark:text-gray-300">schedule</span>
+            <p class="text-gray-700 dark:text-gray-300 text-sm font-medium">Horarios</p>
+          </a>
+          <a (click)="toggleSidebar()" routerLink="/medico/estadisticas" routerLinkActive="bg-primary/10 dark:bg-primary/20"
+             class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <span class="material-symbols-outlined text-gray-700 dark:text-gray-300">bar_chart</span>
+            <p class="text-gray-700 dark:text-gray-300 text-sm font-medium">Estadísticas</p>
+          </a>
+          <a (click)="toggleSidebar()" routerLink="/medico/mi-perfil" routerLinkActive="bg-primary/10 dark:bg-primary/20"
+             class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <span class="material-symbols-outlined text-gray-700 dark:text-gray-300">person</span>
+            <p class="text-gray-700 dark:text-gray-300 text-sm font-medium">Mi Perfil</p>
+          </a>
+
+          <!-- Dark Mode Toggle Mobile -->
+          <button (click)="themeService.toggleTheme()" 
+                  class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <span class="material-symbols-outlined text-gray-700 dark:text-gray-300">
+              {{ themeService.isDarkMode() ? 'light_mode' : 'dark_mode' }}
+            </span>
+            <p class="text-gray-700 dark:text-gray-300 text-sm font-medium">
+              {{ themeService.isDarkMode() ? 'Modo Claro' : 'Modo Oscuro' }}
+            </p>
+          </button>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer transition-colors"
+           (click)="cerrarSesion()">
+        <span class="material-symbols-outlined text-gray-700 dark:text-gray-300">logout</span>
+        <p class="text-gray-700 dark:text-gray-300 text-sm font-medium">Cerrar Sesión</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="flex-1 flex flex-col lg:ml-64">
+    <!-- Top Header -->
+    <header class="flex items-center justify-between px-4 md:px-6 py-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-10">
+      <div class="flex items-center gap-4">
+        <button (click)="toggleSidebar()" class="lg:hidden text-gray-700 dark:text-gray-300">
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+        <h1 class="text-xl font-bold text-gray-900 dark:text-white lg:hidden">Blume</h1>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <!-- Dark Mode Toggle (Desktop) -->
+        <button (click)="themeService.toggleTheme()" 
+                class="hidden lg:flex items-center justify-center h-10 w-10 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+          <span class="material-symbols-outlined">
+            {{ themeService.isDarkMode() ? 'light_mode' : 'dark_mode' }}
+          </span>
+        </button>
+
+        <!-- Notifications -->
+        <div class="relative notifications-dropdown">
+          <button (click)="toggleNotificaciones($event)" 
+                  class="flex items-center justify-center h-10 w-10 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors relative">
+            <span class="material-symbols-outlined">notifications</span>
+            <span *ngIf="notificacionesNoLeidas > 0" 
+                  class="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-xs">
+              {{ notificacionesNoLeidas > 9 ? '9+' : notificacionesNoLeidas }}
+            </span>
+          </button>
+
+          <!-- Dropdown -->
+          <div *ngIf="notificacionesDropdownOpen" 
+               class="absolute right-0 mt-2 w-96 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+            <!-- Header -->
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+              <h3 class="font-semibold text-gray-900 dark:text-white">Notificaciones</h3>
+              <button (click)="marcarTodasLeidas()" 
+                      class="text-xs text-primary hover:underline">
+                Marcar todas leídas
+              </button>
+            </div>
+
+            <!-- List -->
+            <div class="max-h-96 overflow-y-auto">
+              <div *ngFor="let notif of notificaciones" 
+                   (click)="handleNotificacionClick(notif)"
+                   class="p-4 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
+                   [class.bg-blue-50]="!notif.leida"
+                   [class.dark:bg-blue-900/20]="!notif.leida">
+                <div class="flex gap-3">
+                  <div class="flex-shrink-0">
+                    <span class="material-symbols-outlined text-xl" [ngClass]="{
+                      'text-blue-600 dark:text-blue-400': notif.tipo === 'cita_creada',
+                      'text-orange-600 dark:text-orange-400': notif.tipo === 'recordatorio',
+                      'text-green-600 dark:text-green-400': notif.tipo === 'cita_confirmada',
+                      'text-red-600 dark:text-red-400': notif.tipo === 'cita_cancelada'
+                    }">{{ getNotificacionIcono(notif.tipo) }}</span>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100" [class.font-bold]="!notif.leida">
+                      {{ notif.mensaje }}
+                    </p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {{ getTiempoRelativo(notif.created_at) }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Empty State -->
+              <div *ngIf="notificaciones.length === 0" class="p-8 text-center">
+                <span class="material-symbols-outlined text-4xl text-gray-300 dark:text-gray-700">notifications_off</span>
+                <p class="text-gray-500 dark:text-gray-400 mt-2 text-sm">No tienes notificaciones</p>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+              <button (click)="navegarANotificaciones()" class="w-full text-center text-sm text-primary hover:underline font-medium py-1">
+                Ver todas las notificaciones
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Profile -->
+        <img 
+          [src]="currentUser?.foto_url || 'https://ui-avatars.com/api/?name=' + nombreCompleto + '&size=200&background=D9363E&color=fff'" 
+          [alt]="'Foto de ' + nombreCompleto"
+          class="rounded-full size-10 object-cover cursor-pointer border-2 border-gray-200 dark:border-gray-700 hover:border-primary transition-colors"
+          (click)="navegarAPerfil()"
+        />
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="flex-1 overflow-auto">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

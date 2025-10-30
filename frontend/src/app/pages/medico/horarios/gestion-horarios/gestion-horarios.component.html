@@ -1,0 +1,268 @@
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 md:p-10">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center min-h-screen">
+    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!loading" class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-wrap justify-between items-center gap-4 mb-8">
+      <p class="text-4xl font-black leading-tight tracking-tight text-gray-900 dark:text-white">
+        Mi Horario Semanal
+      </p>
+      
+      <!-- Week Navigation (opcional para futuro) -->
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm px-3 py-2">
+          <span class="material-symbols-outlined text-primary">event</span>
+          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Semana Actual
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calendar Container -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 md:p-6 overflow-x-auto">
+      <div class="min-w-[1000px]">
+        <!-- Header Row - Días de la semana -->
+        <div class="grid grid-cols-8 gap-1 mb-2">
+          <div class="text-center text-sm font-bold text-gray-500 dark:text-gray-400 py-2"></div>
+          <div *ngFor="let dia of diasSemana" 
+               class="text-center text-sm font-bold text-gray-500 dark:text-gray-400 py-2 border-b border-gray-200 dark:border-gray-700">
+            {{ dia.nombre }}
+          </div>
+        </div>
+
+        <!-- Calendar Grid -->
+        <div class="relative">
+          <!-- Time labels and grid lines -->
+          <div class="grid grid-cols-8 gap-1">
+            <!-- Time column -->
+            <div class="space-y-1">
+              <div *ngFor="let hora of horas" 
+                   class="h-24 flex items-start -mt-2 pr-2">
+                <span class="text-xs text-gray-400 dark:text-gray-500">
+                  {{ hora.toString().padStart(2, '0') }}:00
+                </span>
+              </div>
+            </div>
+
+            <!-- Day columns with grid -->
+            <div *ngFor="let dia of diasSemana" class="relative border-l border-gray-200 dark:border-gray-700">
+              <!-- Grid lines -->
+              <div *ngFor="let hora of horas" 
+                   class="h-24 border-t border-gray-200 dark:border-gray-700"></div>
+              
+              <!-- Schedule blocks for this day -->
+              <div class="absolute inset-0 pointer-events-none">
+                <!-- Bloques de Horario (Disponibilidad) -->
+                <div *ngFor="let horario of obtenerHorariosPorDia(dia.valor)"
+                     [style.top.px]="(horario.fila_inicio! - 1) * 96"
+                     [style.height.px]="horario.filas_span! * 96"
+                     class="absolute left-0 right-0 p-1 pointer-events-auto">
+                  <div class="group relative rounded-lg h-full flex flex-col justify-between p-2 overflow-hidden border-l-4 transition-all"
+                       [ngClass]="{
+                         'bg-primary/20 dark:bg-primary/30 border-primary': horario.activo && !horario.tiene_conflicto,
+                         'bg-gray-200 dark:bg-gray-700 border-gray-400 dark:border-gray-500': !horario.activo,
+                         'bg-yellow-400/20 dark:bg-yellow-400/30 border-yellow-500 ring-2 ring-yellow-500': horario.tiene_conflicto
+                       }">
+                    <p class="font-bold text-sm"
+                       [ngClass]="{
+                         'text-primary dark:text-white': horario.activo && !horario.tiene_conflicto,
+                         'text-gray-500 dark:text-gray-400': !horario.activo,
+                         'text-yellow-600 dark:text-yellow-300': horario.tiene_conflicto
+                       }">
+                      {{ horario.hora_inicio }} - {{ horario.hora_fin }}
+                    </p>
+                    
+                    <!-- Action buttons (visible on hover) -->
+                    <div class="absolute top-1 right-1 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button (click)="editarHorario(horario)"
+                              class="size-6 bg-white/80 dark:bg-gray-900/80 rounded-md flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white">
+                        <span class="material-symbols-outlined text-sm">edit</span>
+                      </button>
+                      <button (click)="eliminarHorario(horario)"
+                              class="size-6 bg-white/80 dark:bg-gray-900/80 rounded-md flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400">
+                        <span class="material-symbols-outlined text-sm">delete</span>
+                      </button>
+                      <button (click)="toggleActivo(horario)"
+                              class="size-6 bg-white/80 dark:bg-gray-900/80 rounded-md flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-primary">
+                        <span class="material-symbols-outlined text-sm">
+                          {{ horario.activo ? 'toggle_on' : 'toggle_off' }}
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Bloques de Citas Agendadas -->
+                <div *ngFor="let cita of obtenerCitasPorDia(dia.valor)"
+                     [style.top.px]="(cita.fila_inicio! - 1) * 96"
+                     [style.height.px]="cita.filas_span! * 96"
+                     class="absolute left-0 right-0 p-1 pointer-events-auto z-10">
+                  <div (click)="verDetalleCita(cita.id)"
+                       class="group relative rounded-lg h-full flex flex-col justify-start p-2 overflow-hidden border-l-4 transition-all cursor-pointer hover:shadow-lg"
+                       [ngClass]="getEstadoCitaClass(cita.estado)">
+                    <div class="flex items-start justify-between">
+                      <div class="flex-1 min-w-0">
+                        <p class="font-bold text-xs truncate"
+                           [ngClass]="getEstadoCitaTextClass(cita.estado)">
+                          {{ cita.paciente.nombre_completo }}
+                        </p>
+                        <p class="text-xs mt-0.5 truncate"
+                           [ngClass]="getEstadoCitaTextClass(cita.estado)">
+                          {{ cita.motivo_consulta }}
+                        </p>
+                      </div>
+                      <span class="material-symbols-outlined text-sm ml-1"
+                            [ngClass]="getEstadoCitaTextClass(cita.estado)">
+                        event
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAB - Floating Action Button -->
+<div class="fixed bottom-8 right-8 z-10">
+  <button (click)="abrirModal()"
+          class="flex cursor-pointer items-center justify-center overflow-hidden rounded-full h-14 px-5 bg-primary text-white shadow-lg hover:bg-primary/90 transition-colors text-base font-bold leading-normal tracking-wide min-w-0 gap-3 pl-4 pr-6">
+    <span class="material-symbols-outlined">add</span>
+    <span class="truncate">Agregar Horario</span>
+  </button>
+</div>
+
+<!-- Modal -->
+<div *ngIf="modalAbierto" 
+     class="fixed inset-0 bg-gray-900 bg-opacity-50 dark:bg-opacity-80 flex items-center justify-center p-4 z-30 transition-opacity duration-300"
+     (click)="cerrarModal()">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg transform transition-transform duration-300"
+       (click)="$event.stopPropagation()">
+    
+    <!-- Modal Header -->
+    <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+      <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+        {{ editando ? 'Editar' : 'Configurar' }} Disponibilidad
+      </h2>
+      <button (click)="cerrarModal()"
+              class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <form [formGroup]="form" (ngSubmit)="guardarHorario()" class="p-6 space-y-6">
+      
+      <!-- Días de la semana -->
+      <div>
+        <label class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+          Días de la semana <span class="text-red-500">*</span>
+        </label>
+        <div class="flex flex-wrap gap-2">
+          <button *ngFor="let dia of diasSemana"
+                  type="button"
+                  (click)="toggleDia(dia.valor)"
+                  [class.border-2]="isDiaSeleccionado(dia.valor)"
+                  [class.border-primary]="isDiaSeleccionado(dia.valor)"
+                  [class.bg-primary/10]="isDiaSeleccionado(dia.valor)"
+                  [class.text-primary]="isDiaSeleccionado(dia.valor)"
+                  [class.border]="!isDiaSeleccionado(dia.valor)"
+                  [class.border-gray-300]="!isDiaSeleccionado(dia.valor)"
+                  [class.dark:border-gray-600]="!isDiaSeleccionado(dia.valor)"
+                  class="px-3 py-1.5 text-sm font-medium rounded-full text-gray-700 dark:text-gray-300 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+            {{ dia.abrev }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Horas -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label for="hora_inicio" class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+            Hora de inicio <span class="text-red-500">*</span>
+          </label>
+          <select id="hora_inicio"
+                  formControlName="hora_inicio"
+                  class="w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2">
+            <option *ngFor="let hora of getHorasDisponibles()" [value]="hora">
+              {{ hora }}
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <label for="hora_fin" class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+            Hora de fin <span class="text-red-500">*</span>
+          </label>
+          <select id="hora_fin"
+                  formControlName="hora_fin"
+                  class="w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2">
+            <option *ngFor="let hora of getHorasDisponibles()" [value]="hora">
+              {{ hora }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Duración de cita -->
+      <div>
+        <label for="duracion" class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 block">
+          Duración de cada cita <span class="text-red-500">*</span>
+        </label>
+        <select id="duracion"
+                formControlName="duracion_cita_minutos"
+                class="w-full rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:ring-primary focus:border-primary px-3 py-2">
+          <option *ngFor="let duracion of getDuracionesDisponibles()" [value]="duracion">
+            {{ duracion }} min
+          </option>
+        </select>
+      </div>
+
+      <!-- Toggle activo/inactivo -->
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Estado</span>
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-gray-500 dark:text-gray-400">Inactivo</span>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" 
+                   formControlName="activo"
+                   class="sr-only peer">
+            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+          </label>
+          <span class="text-sm font-medium text-primary">Activo</span>
+        </div>
+      </div>
+
+      <!-- Capacidad estimada -->
+      <div class="bg-primary/10 dark:bg-primary/20 p-3 rounded-lg text-center">
+        <p class="text-sm font-medium text-primary dark:text-primary/90">
+          Capacidad estimada: {{ calcularCapacidadEstimada() }} citas
+        </p>
+      </div>
+    </form>
+
+    <!-- Modal Footer -->
+    <div class="p-6 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+      <button (click)="cerrarModal()"
+              type="button"
+              class="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+        Cancelar
+      </button>
+      <button (click)="guardarHorario()"
+              type="button"
+              [disabled]="guardando"
+              class="px-4 py-2 text-sm font-medium rounded-lg bg-primary text-white hover:bg-primary/90 disabled:opacity-50 transition-colors">
+        {{ guardando ? 'Guardando...' : 'Guardar' }}
+      </button>
+    </div>
+  </div>
+</div>

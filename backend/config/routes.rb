@@ -5,6 +5,26 @@ Rails.application.routes.draw do
   # API v1
   namespace :api do
     namespace :v1 do
+      get "medico_notificaciones/index"
+      get "medico_notificaciones/marcar_todas_leidas"
+      get "medico_notificaciones/marcar_leida"
+      get "medico_notificaciones/marcar_no_leida"
+      get "medico_notificaciones/destroy"
+      get "medico_perfil/show"
+      get "medico_perfil/update"
+      get "medico_estadisticas/index"
+      get "medico_horarios/disponibles"
+      get "medico_pacientes/buscar"
+      get "medico_pacientes/index"
+      get "medico_pacientes/show"
+      get "medico_pacientes/create"
+      get "medico_citas/index"
+      get "medico_citas/show"
+      get "medico_citas/create"
+      get "medico_citas/completar"
+      get "medico_citas/cancelar"
+      get "medico_dashboard/index"
+      get "medico_dashboard/estadisticas"
       # =====================================================
       # AUTENTICACIÓN
       # =====================================================
@@ -38,6 +58,54 @@ Rails.application.routes.draw do
           post 'valorar'
         end
       end
+
+      # =====================================================
+      # DASHBOARD MÉDICO
+      # =====================================================
+      get 'medico/dashboard', to: 'medico_dashboard#index'
+      get 'medico/dashboard/estadisticas', to: 'medico_dashboard#estadisticas'
+
+      # =====================================================
+      # CITAS MÉDICO
+      # =====================================================
+      resources :medico_citas, path: 'medico/citas', only: [:index, :show, :create] do
+        member do
+          put 'completar'
+          put 'cancelar'
+        end
+      end
+
+      # =====================================================
+      # PACIENTES MÉDICO
+      # =====================================================
+      get 'medico/pacientes/buscar', to: 'medico_pacientes#buscar'
+      resources :medico_pacientes, path: 'medico/pacientes', only: [:index, :show, :create, :update]
+
+      # =====================================================
+      # HORARIOS MÉDICO
+      # =====================================================
+      get 'medico/horarios/disponibles', to: 'medico_horarios#disponibles'
+      resources :medico_horarios, path: 'medico/horarios', only: [:index, :create, :update, :destroy]
+
+      # =====================================================
+      # ESTADÍSTICAS MÉDICO
+      # =====================================================
+      get 'medico/estadisticas', to: 'medico_estadisticas#index'
+
+      # =====================================================
+      # PERFIL MÉDICO
+      # =====================================================
+      get 'medico/perfil', to: 'medico_perfil#show'
+      put 'medico/perfil', to: 'medico_perfil#update'
+
+      # =====================================================
+      # NOTIFICACIONES MÉDICO
+      # =====================================================
+      get 'medico/notificaciones', to: 'medico_notificaciones#index'
+      post 'medico/notificaciones/marcar_todas_leidas', to: 'medico_notificaciones#marcar_todas_leidas'
+      put 'medico/notificaciones/:id/marcar_leida', to: 'medico_notificaciones#marcar_leida'
+      put 'medico/notificaciones/:id/marcar_no_leida', to: 'medico_notificaciones#marcar_no_leida'
+      delete 'medico/notificaciones/:id', to: 'medico_notificaciones#destroy'
 
       # =====================================================
       # USUARIOS

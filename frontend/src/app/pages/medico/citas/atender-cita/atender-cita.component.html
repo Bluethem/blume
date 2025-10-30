@@ -1,0 +1,232 @@
+<div class="flex h-screen w-full flex-col bg-background-light dark:bg-background-dark">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center h-screen">
+    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!loading && cita" class="flex flex-1 overflow-hidden">
+    <!-- Sidebar - Información del Paciente -->
+    <aside class="w-80 shrink-0 border-r border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900 p-6 flex flex-col justify-between overflow-y-auto">
+      <div>
+        <!-- Foto y datos básicos del paciente -->
+        <div class="flex flex-col items-center text-center">
+          <img [src]="cita.paciente?.foto_url || 'https://ui-avatars.com/api/?name=' + cita.paciente?.nombre_completo + '&size=192&background=B71C1C&color=fff'"
+               [alt]="'Foto de ' + cita.paciente?.nombre_completo"
+               class="w-24 h-24 rounded-full mb-4 object-cover border-2 border-gray-200 dark:border-gray-700">
+          <h2 class="text-lg font-bold text-gray-900 dark:text-white">
+            {{ cita.paciente?.nombre_completo }}
+          </h2>
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            {{ cita.paciente?.edad }} años
+          </p>
+        </div>
+
+        <!-- Información médica básica -->
+        <div class="mt-8">
+          <div class="grid grid-cols-2 gap-y-4 text-sm border-t border-gray-200 dark:border-gray-800 pt-4">
+            <p class="text-gray-600 dark:text-gray-400 font-medium">Teléfono</p>
+            <p class="text-gray-900 dark:text-white text-right">
+              {{ cita.paciente?.telefono || 'No registrado' }}
+            </p>
+            
+            <p class="text-gray-600 dark:text-gray-400 font-medium">ID Paciente</p>
+            <p class="text-gray-900 dark:text-white text-right text-xs">
+              {{ cita.paciente?.id?.substring(0, 8) }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Motivo de la consulta -->
+        <div class="mt-6">
+          <div class="border-t border-gray-200 dark:border-gray-800 pt-4">
+            <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Motivo de Consulta</p>
+            <p class="text-sm text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 p-3 rounded-lg">
+              {{ cita.motivo_consulta }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Historial resumido (expandible) -->
+        <div class="mt-4 flex flex-col">
+          <details class="group border-t border-gray-200 dark:border-gray-800 pt-4">
+            <summary class="flex cursor-pointer list-none items-center justify-between py-2 text-sm font-medium text-gray-900 dark:text-white">
+              Historial Resumido
+              <span class="material-symbols-outlined transition-transform duration-300 group-open:rotate-180">
+                expand_more
+              </span>
+            </summary>
+            <div class="space-y-2 pb-2 text-sm text-gray-600 dark:text-gray-400">
+              <p class="py-1">Primera consulta con este paciente</p>
+              <button class="text-primary hover:underline text-xs">
+                Ver historial completo →
+              </button>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <!-- Botón de volver -->
+      <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-800">
+        <button (click)="cancelar()"
+                type="button"
+                class="w-full flex items-center justify-center gap-2 rounded-lg h-10 px-4 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors">
+          <span class="material-symbols-outlined">arrow_back</span>
+          <span>Volver a Detalle</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Form Area -->
+    <main class="flex-1 overflow-y-auto p-8">
+      <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="flex flex-wrap justify-between items-center gap-4 mb-8">
+          <h1 class="text-4xl font-black tracking-tight text-gray-900 dark:text-white">
+            Atender Cita
+          </h1>
+          <div *ngIf="ultimoGuardado" class="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">schedule</span>
+            Borrador guardado a las {{ formatearHoraGuardado() }}
+          </div>
+        </div>
+
+        <!-- Formulario -->
+        <form [formGroup]="form" (ngSubmit)="completarConsulta()" class="space-y-6">
+          
+          <!-- Observaciones del Médico -->
+          <div>
+            <label for="observaciones" class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+              Observaciones del Médico
+            </label>
+            <textarea
+              id="observaciones"
+              formControlName="observaciones"
+              rows="5"
+              placeholder="Añadir notas clínicas, síntomas observados, evolución del paciente..."
+              class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors">
+            </textarea>
+            <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
+              Detalles sobre la exploración física y síntomas del paciente
+            </p>
+          </div>
+
+          <!-- Diagnóstico (Requerido) -->
+          <div>
+            <label for="diagnostico" class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+              Diagnóstico 
+              <span class="text-red-500">*</span>
+            </label>
+            <input
+              id="diagnostico"
+              type="text"
+              formControlName="diagnostico"
+              placeholder="Ej: Hipertensión arterial esencial (I10), Diabetes mellitus tipo 2 (E11)..."
+              required
+              [class.border-red-500]="diagnostico?.invalid && diagnostico?.touched"
+              class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors">
+            <p *ngIf="diagnostico?.invalid && diagnostico?.touched" class="text-xs text-red-500 mt-1">
+              El diagnóstico es obligatorio
+            </p>
+            <p *ngIf="!diagnostico?.invalid" class="text-xs text-gray-500 dark:text-gray-500 mt-1">
+              Puede incluir códigos CIE-10 para mayor precisión
+            </p>
+          </div>
+
+          <!-- Receta / Indicaciones -->
+          <div>
+            <label for="receta" class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+              Receta / Indicaciones
+            </label>
+            <textarea
+              id="receta"
+              formControlName="receta"
+              rows="6"
+              placeholder="Prescribir medicamentos con dosis, frecuencia y duración. Indicar tratamientos, recomendaciones y cuidados..."
+              class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors font-mono">
+            </textarea>
+            <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
+              Ejemplo: "Losartán 50mg, 1 tableta cada 24 horas por 30 días"
+            </p>
+          </div>
+
+          <!-- Próxima Consulta Recomendada -->
+          <div>
+            <label for="proxima-cita" class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+              Próxima Consulta Recomendada
+            </label>
+            <input
+              id="proxima-cita"
+              type="date"
+              formControlName="proxima_cita"
+              class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 text-sm text-gray-900 dark:text-white focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors">
+            <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
+              Opcional - Para seguimiento del tratamiento
+            </p>
+          </div>
+
+          <!-- Botones de Acción -->
+          <div class="flex flex-wrap items-center justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-800">
+            <!-- Guardar Borrador -->
+            <button
+              (click)="guardarBorrador()"
+              type="button"
+              class="flex items-center justify-center gap-2 rounded-lg h-10 px-4 bg-gray-600 text-white text-sm font-bold shadow-sm hover:bg-gray-700 transition-colors">
+              <span class="material-symbols-outlined text-base">save</span>
+              <span>Guardar Borrador</span>
+            </button>
+
+            <!-- Marcar como No Asistió -->
+            <button
+              (click)="marcarNoAsistio()"
+              type="button"
+              class="flex items-center justify-center gap-2 rounded-lg h-10 px-4 bg-yellow-500 text-gray-900 text-sm font-bold shadow-sm hover:bg-yellow-600 transition-colors">
+              <span class="material-symbols-outlined text-base">person_off</span>
+              <span>No Asistió</span>
+            </button>
+
+            <!-- Cancelar -->
+            <button
+              (click)="cancelar()"
+              type="button"
+              class="flex items-center justify-center gap-2 rounded-lg h-10 px-4 bg-transparent border-2 border-primary text-primary text-sm font-bold hover:bg-primary/10 transition-colors">
+              <span class="material-symbols-outlined text-base">close</span>
+              <span>Cancelar</span>
+            </button>
+
+            <!-- Completar Consulta -->
+            <button
+              type="submit"
+              [disabled]="guardando"
+              [class.opacity-50]="guardando"
+              [class.cursor-not-allowed]="guardando"
+              class="flex items-center justify-center gap-2 rounded-lg h-10 px-6 bg-green-600 text-white text-sm font-bold shadow-sm hover:bg-green-700 transition-colors">
+              <span *ngIf="!guardando" class="material-symbols-outlined text-base">check_circle</span>
+              <span *ngIf="guardando" class="animate-spin material-symbols-outlined text-base">progress_activity</span>
+              <span>{{ guardando ? 'Guardando...' : 'Completar Consulta' }}</span>
+            </button>
+          </div>
+        </form>
+
+        <!-- Información adicional -->
+        <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <p class="text-sm text-blue-900 dark:text-blue-200">
+            <span class="material-symbols-outlined text-sm align-middle mr-1">info</span>
+            <strong>Nota:</strong> Al completar la consulta, el paciente podrá ver el diagnóstico y receta en su historial.
+            Esta acción no se puede deshacer.
+          </p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!loading && !cita" class="flex flex-col items-center justify-center h-screen">
+    <span class="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-700">error_outline</span>
+    <p class="text-gray-500 dark:text-gray-400 mt-4">Cita no encontrada</p>
+    <button (click)="cancelar()" 
+            class="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+      Volver a Mis Citas
+    </button>
+  </div>
+</div>

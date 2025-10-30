@@ -1,0 +1,44 @@
+/* Mis Citas - Médico */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Colores de estado personalizados */
+:root {
+  --state-confirmed: #3182CE;
+  --state-completed: #38A169;
+  --state-cancelled: #E53E3E;
+  --state-pending: #D69E2E;
+}
+
+.bg-state-confirmed {
+  background-color: var(--state-confirmed);
+}
+
+.bg-state-completed {
+  background-color: var(--state-completed);
+}
+
+.bg-state-cancelled {
+  background-color: var(--state-cancelled);
+}
+
+.bg-state-pending {
+  background-color: var(--state-pending);
+}
+
+.text-state-confirmed {
+  color: var(--state-confirmed);
+}
+
+.text-state-completed {
+  color: var(--state-completed);
+}
+
+.text-state-cancelled {
+  color: var(--state-cancelled);
+}
+
+.text-state-pending {
+  color: var(--state-pending);
+}

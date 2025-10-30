@@ -1,0 +1,225 @@
+<div class="w-full p-4 md:p-6 lg:p-8">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center min-h-screen">
+    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!loading">
+    <!-- Header -->
+    <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+      <h1 class="text-4xl font-black leading-tight tracking-tight text-gray-900 dark:text-white">Mis Citas</h1>
+    </div>
+
+    <!-- Tabs -->
+    <div class="pb-3 sticky top-0 bg-background-light dark:bg-background-dark z-10">
+      <div class="border-b border-gray-200 dark:border-gray-800 flex items-center justify-between overflow-x-auto">
+        <div class="flex gap-4 sm:gap-8">
+          <button (click)="cambiarFiltro('todas')"
+                  [class.border-b-primary]="filtroActivo === 'todas'"
+                  [class.text-gray-900]="filtroActivo === 'todas'"
+                  [class.dark:text-white]="filtroActivo === 'todas'"
+                  [class.text-gray-600]="filtroActivo !== 'todas'"
+                  [class.dark:text-gray-400]="filtroActivo !== 'todas'"
+                  class="flex items-center justify-center border-b-[3px] border-b-transparent pb-3 pt-4 hover:text-gray-900 dark:hover:text-white transition-colors whitespace-nowrap">
+            <p class="text-sm font-bold leading-normal tracking-wide">Todas</p>
+            <span class="ml-2 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-semibold px-2 py-0.5 rounded-full">
+              {{ estadisticas.todas }}
+            </span>
+          </button>
+
+          <button (click)="cambiarFiltro('proximas')"
+                  [class.border-b-primary]="filtroActivo === 'proximas'"
+                  [class.text-gray-900]="filtroActivo === 'proximas'"
+                  [class.dark:text-white]="filtroActivo === 'proximas'"
+                  [class.text-gray-600]="filtroActivo !== 'proximas'"
+                  [class.dark:text-gray-400]="filtroActivo !== 'proximas'"
+                  class="flex items-center justify-center border-b-[3px] border-b-transparent pb-3 pt-4 hover:text-gray-900 dark:hover:text-white transition-colors whitespace-nowrap">
+            <p class="text-sm font-bold leading-normal tracking-wide">Próximas</p>
+            <span class="ml-2 bg-primary/20 text-primary text-xs font-semibold px-2 py-0.5 rounded-full"
+                  [class.bg-primary/20]="filtroActivo === 'proximas'"
+                  [class.bg-gray-200]="filtroActivo !== 'proximas'"
+                  [class.dark:bg-gray-700]="filtroActivo !== 'proximas'"
+                  [class.text-gray-600]="filtroActivo !== 'proximas'"
+                  [class.dark:text-gray-300]="filtroActivo !== 'proximas'">
+              {{ estadisticas.proximas }}
+            </span>
+          </button>
+
+          <button (click)="cambiarFiltro('completadas')"
+                  [class.border-b-primary]="filtroActivo === 'completadas'"
+                  [class.text-gray-900]="filtroActivo === 'completadas'"
+                  [class.dark:text-white]="filtroActivo === 'completadas'"
+                  [class.text-gray-600]="filtroActivo !== 'completadas'"
+                  [class.dark:text-gray-400]="filtroActivo !== 'completadas'"
+                  class="flex items-center justify-center border-b-[3px] border-b-transparent pb-3 pt-4 hover:text-gray-900 dark:hover:text-white transition-colors whitespace-nowrap">
+            <p class="text-sm font-bold leading-normal tracking-wide">Completadas</p>
+            <span class="ml-2 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-semibold px-2 py-0.5 rounded-full">
+              {{ estadisticas.completadas }}
+            </span>
+          </button>
+
+          <button (click)="cambiarFiltro('canceladas')"
+                  [class.border-b-primary]="filtroActivo === 'canceladas'"
+                  [class.text-gray-900]="filtroActivo === 'canceladas'"
+                  [class.dark:text-white]="filtroActivo === 'canceladas'"
+                  [class.text-gray-600]="filtroActivo !== 'canceladas'"
+                  [class.dark:text-gray-400]="filtroActivo !== 'canceladas'"
+                  class="flex items-center justify-center border-b-[3px] border-b-transparent pb-3 pt-4 hover:text-gray-900 dark:hover:text-white transition-colors whitespace-nowrap">
+            <p class="text-sm font-bold leading-normal tracking-wide">Canceladas</p>
+            <span class="ml-2 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-semibold px-2 py-0.5 rounded-full">
+              {{ estadisticas.canceladas }}
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search and Actions -->
+    <div class="flex flex-col md:flex-row justify-between gap-4 py-5">
+      <div class="flex gap-2 flex-1">
+        <div class="relative flex-1">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400">search</span>
+          <input [(ngModel)]="busqueda"
+                 (keyup.enter)="buscar()"
+                 class="w-full h-10 pl-10 pr-4 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 focus:ring-primary focus:border-primary text-gray-900 dark:text-white"
+                 placeholder="Buscar por paciente o motivo..."
+                 type="text"/>
+        </div>
+        <button (click)="buscar()" class="p-2 rounded-lg border border-gray-200 dark:border-gray-800 hover:bg-primary/10 dark:hover:bg-primary/20 flex-shrink-0">
+          <span class="material-symbols-outlined">search</span>
+        </button>
+      </div>
+      <button (click)="agendarNuevaCita()"
+              class="inline-flex items-center justify-center gap-2 h-10 px-4 py-2 text-sm font-bold text-white bg-primary rounded-lg hover:bg-red-700 whitespace-nowrap transition-colors">
+        <span class="material-symbols-outlined">add</span>
+        Agendar Cita Nueva
+      </button>
+    </div>
+
+    <!-- Timeline de Citas -->
+    <div class="grid grid-cols-[auto_1fr] gap-x-4 mt-6">
+      <!-- Línea vertical del timeline -->
+      <div class="relative">
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 h-full w-0.5 bg-gray-200 dark:bg-gray-800"></div>
+      </div>
+
+      <!-- Lista de citas -->
+      <div class="flex flex-col gap-6">
+        <div *ngFor="let cita of citas" class="relative">
+          <!-- Icono del timeline -->
+          <div class="absolute -left-8 top-1 flex h-full items-start">
+            <div class="w-8 flex justify-center">
+              <div [ngClass]="getEstadoIconClass(cita.estado)"
+                   class="z-10 flex size-6 items-center justify-center rounded-full ring-4 ring-white dark:ring-gray-900">
+                <span class="material-symbols-outlined text-sm text-white">{{ getEstadoIcon(cita.estado) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card de cita -->
+          <div [class.opacity-70]="cita.estado === 'cancelada'"
+               class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 p-5 shadow-sm hover:shadow-md transition-shadow">
+            <!-- Header de la cita -->
+            <div class="flex justify-between items-start flex-wrap gap-2">
+              <div>
+                <p [class.line-through]="cita.estado === 'cancelada'"
+                   [class.text-gray-500]="cita.estado === 'cancelada'"
+                   [class.dark:text-gray-600]="cita.estado === 'cancelada'"
+                   class="text-lg font-bold text-gray-900 dark:text-white">
+                  {{ formatearFechaHora(cita.fecha_hora_inicio).fecha }} - {{ formatearFechaHora(cita.fecha_hora_inicio).hora }}
+                </p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">{{ cita.motivo_consulta }}</p>
+              </div>
+              <span [ngClass]="getEstadoBadgeClass(cita.estado)"
+                    class="text-xs font-bold py-1 px-3 rounded-full">
+                {{ getEstadoLabel(cita.estado) }}
+              </span>
+            </div>
+
+            <!-- Divider -->
+            <div class="my-4 h-px bg-gray-200 dark:bg-gray-800"></div>
+
+            <!-- Info del paciente -->
+            <div class="flex items-center">
+              <div class="flex items-center gap-3">
+                <img [src]="cita.paciente?.foto_url || 'https://ui-avatars.com/api/?name=' + cita.paciente?.nombre_completo + '&size=96&background=B71C1C&color=fff'"
+                     [alt]="'Foto de ' + cita.paciente?.nombre_completo"
+                     class="rounded-full size-12 object-cover">
+                <div>
+                  <p class="font-semibold text-gray-900 dark:text-white">{{ cita.paciente?.nombre_completo }}</p>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">Paciente</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Acciones -->
+            <div class="mt-4 flex gap-2 justify-end flex-wrap">
+              <!-- Acciones para citas confirmadas/pendientes -->
+              <ng-container *ngIf="cita.estado === 'confirmada' || cita.estado === 'pendiente'">
+                <button (click)="verDetalle(cita.id)"
+                        class="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-primary px-3 py-1 rounded-md transition-colors">
+                  Ver Detalles
+                </button>
+                <button (click)="cancelarCita(cita.id)"
+                        class="text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-1 rounded-md transition-colors">
+                  Cancelar
+                </button>
+                <button (click)="atenderCita(cita.id)"
+                        class="text-sm font-bold text-white bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg transition-colors">
+                  Atender Cita
+                </button>
+              </ng-container>
+
+              <!-- Acciones para citas completadas -->
+              <ng-container *ngIf="cita.estado === 'completada'">
+                <button (click)="verDiagnostico(cita.id)"
+                        class="text-sm font-bold text-primary bg-primary/10 hover:bg-primary/20 px-4 py-2 rounded-lg transition-colors">
+                  Ver Diagnóstico
+                </button>
+              </ng-container>
+
+              <!-- Sin acciones para canceladas -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="citas.length === 0" class="text-center py-12">
+          <span class="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-700">event_busy</span>
+          <p class="text-gray-500 dark:text-gray-400 mt-4">No se encontraron citas</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Paginación -->
+    <div *ngIf="totalPages > 1" class="flex justify-center mt-8">
+      <nav class="flex items-center gap-2">
+        <button (click)="cambiarPagina(currentPage - 1)"
+                [disabled]="currentPage === 1"
+                class="inline-flex items-center justify-center size-9 rounded-md border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+          <span class="material-symbols-outlined text-base">chevron_left</span>
+        </button>
+
+        <button *ngFor="let page of getPaginaNumbers()"
+                (click)="cambiarPagina(page)"
+                [class.border-primary]="currentPage === page"
+                [class.bg-primary]="currentPage === page"
+                [class.text-white]="currentPage === page"
+                [class.bg-white]="currentPage !== page"
+                [class.dark:bg-gray-900]="currentPage !== page"
+                [class.text-gray-600]="currentPage !== page"
+                [class.dark:text-gray-400]="currentPage !== page"
+                class="inline-flex items-center justify-center size-9 rounded-md border border-gray-200 dark:border-gray-800 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+          {{ page }}
+        </button>
+
+        <button (click)="cambiarPagina(currentPage + 1)"
+                [disabled]="currentPage === totalPages"
+                class="inline-flex items-center justify-center size-9 rounded-md border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+          <span class="material-symbols-outlined text-base">chevron_right</span>
+        </button>
+      </nav>
+    </div>
+  </div>
+</div>

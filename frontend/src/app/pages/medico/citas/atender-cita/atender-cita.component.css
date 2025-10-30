@@ -1,0 +1,77 @@
+/* Atender Cita - Médico */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Estilos para textarea de receta */
+textarea[formControlName="receta"] {
+  font-family: 'Courier New', Courier, monospace;
+  line-height: 1.6;
+}
+
+/* Animación para el botón de guardar */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Estilos para el sidebar en móviles */
+@media (max-width: 1024px) {
+  aside {
+    position: fixed;
+    left: -320px;
+    top: 0;
+    height: 100vh;
+    z-index: 50;
+    transition: left 0.3s ease-in-out;
+  }
+  
+  aside.open {
+    left: 0;
+  }
+}
+
+/* Mejorar legibilidad del textarea */
+textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Estilos para campos requeridos */
+input:required:invalid:focus,
+textarea:required:invalid:focus {
+  border-color: #ef4444;
+  outline: 2px solid rgba(239, 68, 68, 0.2);
+  outline-offset: 2px;
+}
+
+/* Scroll suave para el sidebar */
+aside {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
+}
+
+aside::-webkit-scrollbar {
+  width: 6px;
+}
+
+aside::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+aside::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.3);
+  border-radius: 3px;
+}
+
+aside::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 163, 175, 0.5);
+}

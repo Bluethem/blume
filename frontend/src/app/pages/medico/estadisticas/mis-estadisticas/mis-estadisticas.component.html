@@ -1,0 +1,258 @@
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center min-h-screen">
+    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+  </div>
+
+  <!-- Content -->
+  <main *ngIf="!loading && estadisticas" class="w-full p-8">
+    <div class="mx-auto max-w-7xl">
+      <!-- Page Header -->
+      <header class="flex flex-wrap items-center justify-between gap-4 border-b border-gray-200 dark:border-gray-700 pb-6">
+        <div class="flex flex-col gap-1">
+          <h1 class="text-gray-900 dark:text-white text-3xl font-bold leading-tight">
+            Mis Estadísticas
+          </h1>
+          <p class="text-gray-600 dark:text-gray-400 text-base font-normal leading-normal">
+            Analiza tu desempeño y el historial de citas.
+          </p>
+        </div>
+        <button (click)="exportarDatos()"
+                class="flex min-w-[84px] cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg bg-primary h-10 px-4 text-white text-sm font-bold leading-normal tracking-wide transition-colors hover:bg-primary/90">
+          <span class="material-symbols-outlined text-lg">download</span>
+          <span class="truncate">Exportar Datos</span>
+        </button>
+      </header>
+
+      <!-- Filters -->
+      <div class="flex flex-wrap items-center gap-4 py-6">
+        <div class="flex items-center rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-1">
+          <button *ngFor="let periodo of periodos"
+                  (click)="cambiarPeriodo(periodo.value)"
+                  [class.bg-primary/20]="periodoActivo === periodo.value"
+                  [class.text-primary]="periodoActivo === periodo.value"
+                  [class.dark:bg-primary/30]="periodoActivo === periodo.value"
+                  class="flex h-8 shrink-0 items-center justify-center rounded-md px-4 text-gray-900 dark:text-gray-300 hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors">
+            <p class="text-sm font-medium leading-normal">{{ periodo.label }}</p>
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <!-- Total Citas Atendidas -->
+        <div class="flex flex-col gap-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6">
+          <p class="text-gray-600 dark:text-gray-400 text-base font-medium leading-normal">
+            Total de Citas Atendidas
+          </p>
+          <p class="text-gray-900 dark:text-white tracking-tight text-4xl font-bold leading-tight">
+            {{ estadisticas.total_citas_atendidas }}
+          </p>
+          <p class="text-base font-medium leading-normal flex items-center gap-1"
+             [class.text-green-600]="estadisticas.cambio_citas >= 0"
+             [class.dark:text-green-500]="estadisticas.cambio_citas >= 0"
+             [class.text-red-600]="estadisticas.cambio_citas < 0"
+             [class.dark:text-red-500]="estadisticas.cambio_citas < 0">
+            <span class="material-symbols-outlined text-lg">
+              {{ estadisticas.cambio_citas >= 0 ? 'arrow_upward' : 'arrow_downward' }}
+            </span>
+            {{ estadisticas.cambio_citas >= 0 ? '+' : '' }}{{ estadisticas.cambio_citas }}%
+          </p>
+        </div>
+
+        <!-- Tasa de No Asistencia -->
+        <div class="flex flex-col gap-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6">
+          <p class="text-gray-600 dark:text-gray-400 text-base font-medium leading-normal">
+            Tasa de No Asistencia
+          </p>
+          <p class="text-gray-900 dark:text-white tracking-tight text-4xl font-bold leading-tight">
+            {{ estadisticas.tasa_no_asistencia }}%
+          </p>
+          <p class="text-base font-medium leading-normal flex items-center gap-1"
+             [class.text-red-600]="estadisticas.cambio_no_asistencia >= 0"
+             [class.dark:text-red-500]="estadisticas.cambio_no_asistencia >= 0"
+             [class.text-green-600]="estadisticas.cambio_no_asistencia < 0"
+             [class.dark:text-green-500]="estadisticas.cambio_no_asistencia < 0">
+            <span class="material-symbols-outlined text-lg">
+              {{ estadisticas.cambio_no_asistencia >= 0 ? 'arrow_upward' : 'arrow_downward' }}
+            </span>
+            {{ estadisticas.cambio_no_asistencia >= 0 ? '+' : '' }}{{ estadisticas.cambio_no_asistencia }}%
+          </p>
+        </div>
+
+        <!-- Calificación Promedio (placeholder) -->
+        <div class="flex flex-col gap-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6">
+          <p class="text-gray-600 dark:text-gray-400 text-base font-medium leading-normal">
+            Calificación Promedio
+          </p>
+          <div class="flex items-baseline gap-2">
+            <p class="text-gray-900 dark:text-white tracking-tight text-4xl font-bold leading-tight">
+              {{ estadisticas.calificacion_promedio.toFixed(1) }}
+            </p>
+            <span class="text-yellow-500 flex items-center">
+              <span class="material-symbols-outlined" *ngFor="let star of [1,2,3,4,5]">
+                {{ star <= estadisticas.calificacion_promedio ? 'star' : (star - 0.5 <= estadisticas.calificacion_promedio ? 'star_half' : 'star_outline') }}
+              </span>
+            </span>
+          </div>
+          <p class="text-green-600 dark:text-green-500 text-base font-medium leading-normal">
+            {{ estadisticas.cambio_calificacion >= 0 ? '+' : '' }}{{ estadisticas.cambio_calificacion.toFixed(1) }} vs período anterior
+          </p>
+        </div>
+      </div>
+
+      <!-- Charts Grid -->
+      <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <!-- Line Chart -->
+        <div class="flex flex-col gap-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 lg:col-span-2">
+          <div class="flex flex-col">
+            <p class="text-gray-900 dark:text-white text-lg font-bold leading-normal">
+              Citas Atendidas vs. Canceladas
+            </p>
+            <p class="text-gray-600 dark:text-gray-400 text-sm">
+              Últimos Meses
+            </p>
+          </div>
+          <div class="h-72 w-full flex items-center justify-center text-gray-400 dark:text-gray-500">
+            <!-- Placeholder para gráfico de líneas -->
+            <div class="text-center">
+              <span class="material-symbols-outlined text-6xl">show_chart</span>
+              <p class="mt-2 text-sm">Gráfico de tendencia</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Donut Chart -->
+        <div class="flex flex-col gap-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6">
+          <div class="flex flex-col">
+            <p class="text-gray-900 dark:text-white text-lg font-bold leading-normal">
+              Distribución por Estado
+            </p>
+            <p class="text-gray-600 dark:text-gray-400 text-sm">
+              {{ getPeriodoLabel() }}
+            </p>
+          </div>
+          <div class="flex h-72 w-full items-center justify-center">
+            <svg class="transform -rotate-90" height="200" viewBox="0 0 36 36" width="200">
+              <!-- Background circle -->
+              <circle class="stroke-current text-gray-200 dark:text-gray-700"
+                      cx="18"
+                      cy="18"
+                      fill="none"
+                      r="15.915"
+                      stroke-width="3.8">
+              </circle>
+              
+              <!-- Completadas (primary) -->
+              <circle class="stroke-current text-primary"
+                      cx="18"
+                      cy="18"
+                      fill="none"
+                      r="15.915"
+                      [attr.stroke-dasharray]="getCirclePath(calcularPorcentajeCompletadas())"
+                      stroke-width="3.8">
+              </circle>
+              
+              <!-- Canceladas (blue) -->
+              <circle class="stroke-current text-blue-400"
+                      cx="18"
+                      cy="18"
+                      fill="none"
+                      r="15.915"
+                      [attr.stroke-dasharray]="getCirclePath(calcularPorcentajeCanceladas())"
+                      [attr.stroke-dashoffset]="getCircleOffset(calcularPorcentajeCompletadas())"
+                      stroke-width="3.8">
+              </circle>
+              
+              <!-- No asistió (teal) -->
+              <circle class="stroke-current text-teal-400"
+                      cx="18"
+                      cy="18"
+                      fill="none"
+                      r="15.915"
+                      [attr.stroke-dasharray]="getCirclePath(calcularPorcentajeNoAsistio())"
+                      [attr.stroke-dashoffset]="getCircleOffset(calcularPorcentajeCompletadas() + calcularPorcentajeCanceladas())"
+                      stroke-width="3.8">
+              </circle>
+              
+              <!-- Center text -->
+              <text class="transform rotate-90 origin-center text-5xl font-bold fill-current text-gray-900 dark:text-white"
+                    text-anchor="middle"
+                    x="18"
+                    y="20.35">
+                {{ estadisticas.total_citas_atendidas }}
+              </text>
+            </svg>
+          </div>
+          <!-- Legend -->
+          <div class="flex flex-col gap-2 text-sm">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full bg-primary"></div>
+                <span class="text-gray-700 dark:text-gray-300">Completadas</span>
+              </div>
+              <span class="font-medium text-gray-900 dark:text-white">
+                {{ estadisticas.distribucion_estados.completadas }}
+              </span>
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full bg-blue-400"></div>
+                <span class="text-gray-700 dark:text-gray-300">Canceladas</span>
+              </div>
+              <span class="font-medium text-gray-900 dark:text-white">
+                {{ estadisticas.distribucion_estados.canceladas }}
+              </span>
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full bg-teal-400"></div>
+                <span class="text-gray-700 dark:text-gray-300">No asistió</span>
+              </div>
+              <span class="font-medium text-gray-900 dark:text-white">
+                {{ estadisticas.distribucion_estados.no_asistio }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Appointments Table -->
+      <div class="mt-6 flex flex-col gap-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6">
+        <h3 class="text-gray-900 dark:text-white text-lg font-bold leading-normal">
+          Citas más Recientes
+        </h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-gray-600 dark:text-gray-400">
+            <thead class="bg-gray-50 dark:bg-gray-900 text-xs uppercase text-gray-600 dark:text-gray-400">
+              <tr>
+                <th class="px-6 py-3" scope="col">Paciente</th>
+                <th class="px-6 py-3" scope="col">Fecha</th>
+                <th class="px-6 py-3" scope="col">Hora</th>
+                <th class="px-6 py-3" scope="col">Motivo</th>
+                <th class="px-6 py-3" scope="col">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cita of estadisticas.citas_recientes"
+                  class="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                <th class="whitespace-nowrap px-6 py-4 font-medium text-gray-900 dark:text-white" scope="row">
+                  {{ cita.paciente_nombre }}
+                </th>
+                <td class="px-6 py-4">{{ formatearFecha(cita.fecha) }}</td>
+                <td class="px-6 py-4">{{ formatearHora(cita.fecha) }}</td>
+                <td class="px-6 py-4">{{ cita.motivo_consulta }}</td>
+                <td class="px-6 py-4">
+                  <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                        [ngClass]="getEstadoBadgeClass(cita.estado)">
+                    {{ getEstadoLabel(cita.estado) }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

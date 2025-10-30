@@ -12,7 +12,23 @@ export interface Usuario {
   created_at: string;
   updated_at?: string;
   paciente?: Paciente;
-  medico?: Medico;
+  medico?: {
+    id: string;
+    numero_colegiatura: string;
+    anios_experiencia: number;
+    calificacion_promedio: number;
+    costo_consulta: number;
+    biografia?: string;
+    especialidad_principal?: string;
+    especialidades: Array<{
+      id: string;
+      nombre: string;
+      es_principal: boolean;
+    }>;
+  };
+  admin?: {
+    permisos: string[];
+  };
 }
 
 export interface Paciente {
@@ -281,3 +297,9 @@ export interface EstadisticasValoraciones {
     1: number;
   };
 }
+
+// ✅ Exportar modelos de dashboard de médico
+export * from './dashboard.models';
+export * from './medico-dashboard.models';
+export * from './medico-citas.models';
+export * from './agendar-cita.models';

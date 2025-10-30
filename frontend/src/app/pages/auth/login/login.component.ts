@@ -94,10 +94,10 @@ export class LoginComponent implements OnInit {
         this.router.navigate(['/paciente/dashboard']);
         break;
       case 'medico':
-        this.router.navigate(['/dashboard/medico']);
+        this.router.navigate(['/medico/dashboard']);
         break;
       case 'administrador':
-        this.router.navigate(['/dashboard/admin']);
+        this.router.navigate(['/admin/dashboard']);
         break;
       default:
         // Si el rol no es reconocido, ir a una página de error o logout

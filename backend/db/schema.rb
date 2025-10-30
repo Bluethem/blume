@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_10_29_214824) do
+ActiveRecord::Schema[8.1].define(version: 2025_10_30_002711) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -30,6 +30,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_10_29_214824) do
     t.datetime "created_at", null: false
     t.text "diagnostico"
     t.integer "estado", default: 0, null: false
+    t.datetime "fecha_atencion"
     t.datetime "fecha_hora_fin", null: false
     t.datetime "fecha_hora_inicio", null: false
     t.uuid "medico_id", null: false
@@ -37,6 +38,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_10_29_214824) do
     t.text "motivo_consulta"
     t.text "observaciones"
     t.uuid "paciente_id", null: false
+    t.text "receta"
     t.datetime "updated_at", null: false
     t.index ["cancelada_por_id"], name: "index_citas_on_cancelada_por_id"
     t.index ["estado"], name: "index_citas_on_estado"

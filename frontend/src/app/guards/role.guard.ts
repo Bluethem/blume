@@ -35,9 +35,9 @@ function redirectToDashboard(role: string, router: Router): UrlTree {
     case 'paciente':
       return router.createUrlTree(['/paciente/dashboard']);
     case 'medico':
-      return router.createUrlTree(['/dashboard/medico']);
+      return router.createUrlTree(['/medico/dashboard']);
     case 'administrador':
-      return router.createUrlTree(['/dashboard/admin']);
+      return router.createUrlTree(['/admin/dashboard']);
     default:
       return router.createUrlTree(['/login']);
   }

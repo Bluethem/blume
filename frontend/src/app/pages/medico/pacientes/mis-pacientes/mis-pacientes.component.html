@@ -1,0 +1,182 @@
+<div class="w-full p-4 sm:p-6 lg:p-10">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center min-h-screen">
+    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!loading" class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+      <div class="flex flex-col gap-1">
+        <h1 class="text-4xl font-black leading-tight tracking-tighter text-gray-900 dark:text-white">
+          Mis Pacientes
+        </h1>
+        <p class="text-base font-normal leading-normal text-gray-600 dark:text-gray-400">
+          Busca, filtra y gestiona tus pacientes.
+        </p>
+      </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
+      <!-- Search Bar -->
+      <div class="lg:col-span-2">
+        <div class="flex w-full items-stretch rounded-lg h-12">
+          <div class="text-gray-600 dark:text-gray-400 flex bg-gray-100 dark:bg-gray-800 items-center justify-center pl-4 rounded-l-lg">
+            <span class="material-symbols-outlined">search</span>
+          </div>
+          <input
+            [(ngModel)]="busqueda"
+            (input)="onBusquedaChange()"
+            type="text"
+            placeholder="Buscar paciente por nombre..."
+            class="flex w-full min-w-0 flex-1 rounded-r-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border-none bg-gray-100 dark:bg-gray-800 h-full placeholder:text-gray-600 dark:placeholder:text-gray-400 px-4 text-base font-normal">
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="flex gap-3 items-center justify-start lg:justify-end lg:col-span-2 flex-wrap">
+        <!-- Blood Type Filter -->
+        <div class="relative group">
+          <button class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-gray-100 dark:bg-gray-800 px-4 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+            <p class="text-gray-900 dark:text-white text-sm font-medium leading-normal">Grupo Sanguíneo</p>
+            <span class="material-symbols-outlined text-gray-900 dark:text-white text-xl">arrow_drop_down</span>
+          </button>
+          <div class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 hidden group-hover:block z-10">
+            <div class="py-1">
+              <button *ngFor="let grupo of gruposSanguineosUnicos()"
+                      (click)="cambiarFiltroGrupoSanguineo(grupo)"
+                      [class.bg-primary]="filtroGrupoSanguineo === grupo"
+                      [class.text-white]="filtroGrupoSanguineo === grupo"
+                      class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                {{ grupo }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Allergies Filter -->
+        <div class="relative group">
+          <button class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-gray-100 dark:bg-gray-800 px-4 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+            <p class="text-gray-900 dark:text-white text-sm font-medium leading-normal">Alergias</p>
+            <span class="material-symbols-outlined text-gray-900 dark:text-white text-xl">arrow_drop_down</span>
+          </button>
+          <div class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 hidden group-hover:block z-10">
+            <div class="py-1">
+              <button (click)="cambiarFiltroAlergias('si')"
+                      [class.bg-primary]="filtroAlergias === 'si'"
+                      [class.text-white]="filtroAlergias === 'si'"
+                      class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                Con alergias
+              </button>
+              <button (click)="cambiarFiltroAlergias('no')"
+                      [class.bg-primary]="filtroAlergias === 'no'"
+                      [class.text-white]="filtroAlergias === 'no'"
+                      class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                Sin alergias
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sort By Filter -->
+        <div class="relative group">
+          <button class="flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-gray-100 dark:bg-gray-800 px-4 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+            <p class="text-gray-900 dark:text-white text-sm font-medium leading-normal">Ordenar por</p>
+            <span class="material-symbols-outlined text-gray-900 dark:text-white text-xl">arrow_drop_down</span>
+          </button>
+          <div class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 hidden group-hover:block z-10">
+            <div class="py-1">
+              <button (click)="cambiarOrden('nombre')"
+                      [class.bg-primary]="ordenarPor === 'nombre'"
+                      [class.text-white]="ordenarPor === 'nombre'"
+                      class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                Nombre
+              </button>
+              <button (click)="cambiarOrden('ultima_cita')"
+                      [class.bg-primary]="ordenarPor === 'ultima_cita'"
+                      [class.text-white]="ordenarPor === 'ultima_cita'"
+                      class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                Última visita
+              </button>
+              <button (click)="cambiarOrden('total_citas')"
+                      [class.bg-primary]="ordenarPor === 'total_citas'"
+                      [class.text-white]="ordenarPor === 'total_citas'"
+                      class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                Total visitas
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Patients Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div *ngFor="let paciente of pacientesFiltrados"
+           class="flex flex-col gap-4 p-4 bg-white dark:bg-gray-900 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 border border-gray-200 dark:border-gray-800">
+        
+        <!-- Patient Info -->
+        <div class="flex items-center gap-4">
+          <img [src]="paciente.foto_url || 'https://ui-avatars.com/api/?name=' + paciente.nombre_completo + '&size=160&background=B71C1C&color=fff'"
+               [alt]="'Foto de ' + paciente.nombre_completo"
+               class="w-20 h-20 rounded-full object-cover">
+          
+          <div class="flex-1">
+            <p class="text-lg font-bold leading-normal text-gray-900 dark:text-white">
+              {{ paciente.nombre_completo }}
+            </p>
+            <p class="text-sm font-normal text-gray-600 dark:text-gray-400">
+              {{ paciente.edad }} años
+            </p>
+            
+            <!-- Badges -->
+            <div class="flex items-center gap-2 mt-1">
+              <span *ngIf="paciente.grupo_sanguineo"
+                    class="inline-flex items-center px-2 py-1 text-xs font-bold leading-none text-blue-800 bg-blue-100 rounded-full">
+                {{ paciente.grupo_sanguineo }}
+              </span>
+              <span *ngIf="tieneAlergias(paciente)"
+                    class="material-symbols-outlined text-yellow-500 text-xl"
+                    title="Tiene alergias">
+                warning
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Visit Info -->
+        <div>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">
+            Última visita: {{ formatearFecha(paciente.ultima_cita) }}
+          </p>
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            Total de visitas: {{ paciente.total_citas }}
+          </p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-3 mt-auto pt-4 border-t border-gray-200 dark:border-gray-800">
+          <button (click)="verHistorial(paciente.id)"
+                  class="flex-1 flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal tracking-wide hover:bg-primary/90 transition-colors">
+            Ver Historial
+          </button>
+          <button (click)="agendarCita(paciente.id)"
+                  class="flex-1 flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white text-sm font-bold leading-normal tracking-wide hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+            Agendar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="pacientesFiltrados.length === 0" class="text-center py-12">
+      <span class="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-700">person_off</span>
+      <p class="text-gray-500 dark:text-gray-400 mt-4">No se encontraron pacientes</p>
+      <p class="text-gray-400 dark:text-gray-500 text-sm mt-2">
+        Intenta ajustar los filtros de búsqueda
+      </p>
+    </div>
+  </div>
+</div>

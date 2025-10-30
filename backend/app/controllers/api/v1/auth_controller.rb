@@ -275,13 +275,25 @@ module Api
             response[:medico] = {
               id: user.medico.id,
               numero_colegiatura: user.medico.numero_colegiatura,
-              anos_experiencia: user.medico.anos_experiencia,
+              anios_experiencia: user.medico.anios_experiencia,
               calificacion_promedio: user.medico.calificacion_promedio,
-              tarifa_consulta: user.medico.tarifa_consulta,
+              costo_consulta: user.medico.costo_consulta,
               biografia: user.medico.biografia,
-              especialidades: user.medico.especialidades.map { |e| { id: e.id, nombre: e.nombre } }
+              especialidad_principal: user.medico.especialidad_principal&.nombre,
+              especialidades: user.medico.medico_especialidades.includes(:especialidad).map do |me|
+                { 
+                  id: me.especialidad.id, 
+                  nombre: me.especialidad.nombre, 
+                  es_principal: me.es_principal 
+                }
+              end
             }
           end
+        when 'administrador'
+          # Los administradores solo tienen información básica de usuario
+          response[:admin] = {
+            permisos: ['gestionar_usuarios', 'gestionar_medicos', 'gestionar_pacientes', 'ver_reportes']
+          }
         end
 
         response

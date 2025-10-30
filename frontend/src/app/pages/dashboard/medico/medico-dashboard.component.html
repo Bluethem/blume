@@ -1,0 +1,194 @@
+<div class="w-full p-6 md:p-8">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center min-h-screen">
+    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!loading && dashboardData" class="flex flex-col gap-8">
+    <!-- Header -->
+    <div class="flex flex-wrap justify-between items-center gap-4">
+      <div class="flex flex-col gap-1">
+        <p class="text-gray-900 dark:text-white text-4xl font-black tracking-tight">
+          {{ dashboardData.medico.nombre_profesional }}, bienvenido/a
+        </p>
+        <p class="text-gray-600 dark:text-gray-400 text-base font-normal">{{ fechaActual }}</p>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div class="flex flex-col gap-2 rounded-xl p-6 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+        <p class="text-gray-900 dark:text-white text-base font-medium">Citas Programadas Hoy</p>
+        <p class="text-gray-900 dark:text-white text-3xl font-bold">{{ dashboardData.estadisticas.citas_hoy || 0 }}</p>
+      </div>
+      <div class="flex flex-col gap-2 rounded-xl p-6 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+        <p class="text-gray-900 dark:text-white text-base font-medium">Citas Completadas</p>
+        <p class="text-gray-900 dark:text-white text-3xl font-bold">{{ dashboardData.estadisticas.citas_completadas_hoy || 0 }}</p>
+      </div>
+      <div class="flex flex-col gap-2 rounded-xl p-6 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+        <p class="text-gray-900 dark:text-white text-base font-medium">Próxima Cita</p>
+        <p class="text-gray-900 dark:text-white text-3xl font-bold">
+          {{ dashboardData.estadisticas.proxima_cita_hora || 'Sin citas' }}
+        </p>
+      </div>
+      <div class="flex flex-col gap-2 rounded-xl p-6 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+        <p class="text-gray-900 dark:text-white text-base font-medium">Total Pacientes Atendidos</p>
+        <p class="text-gray-900 dark:text-white text-3xl font-bold">{{ dashboardData.estadisticas.total_pacientes_atendidos || 0 }}</p>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      <!-- Citas de Hoy - 2/3 width -->
+      <div class="xl:col-span-2 flex flex-col gap-4">
+        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
+          <h2 class="text-gray-900 dark:text-white text-xl font-bold tracking-tight px-6 pt-6 pb-4">Citas de Hoy</h2>
+          
+          <!-- Citas List -->
+          <div *ngIf="dashboardData.citas_hoy && dashboardData.citas_hoy.length > 0" class="px-6 pb-6">
+            <div class="grid grid-cols-[auto_1fr_auto_auto] items-center gap-x-4">
+              <ng-container *ngFor="let cita of dashboardData.citas_hoy; let last = last">
+                <!-- Timeline Time -->
+                <div class="flex flex-col items-center self-stretch">
+                  <p class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ formatearHora(cita.fecha_hora_inicio) }}</p>
+                  <div *ngIf="!last" class="w-px bg-gray-300 dark:bg-gray-700 grow mt-2"></div>
+                </div>
+                
+                <!-- Paciente Info -->
+                <div class="py-4" [class.line-through]="cita.estado === 'cancelada'">
+                  <p class="text-gray-900 dark:text-white text-base font-semibold">{{ cita.paciente?.nombre_completo }}</p>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm">{{ cita.motivo_consulta }}</p>
+                </div>
+                
+                <!-- Estado Badge -->
+                <div class="py-4">
+                  <span [ngClass]="getEstadoBadgeClass(cita.estado)" class="px-2 py-1 text-xs font-medium rounded-full">
+                    {{ getEstadoLabel(cita.estado) }}
+                  </span>
+                </div>
+                
+                <!-- Actions -->
+                <div class="py-4">
+                  <button (click)="verDetalleCita(cita.id)" class="text-primary hover:text-primary/80">
+                    <span class="material-symbols-outlined">more_vert</span>
+                  </button>
+                </div>
+              </ng-container>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div *ngIf="!dashboardData.citas_hoy || dashboardData.citas_hoy.length === 0" class="px-6 pb-6 text-center py-12">
+            <span class="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-700">event_busy</span>
+            <p class="text-gray-500 dark:text-gray-400 mt-4">No tienes citas programadas para hoy</p>
+          </div>
+        </div>
+
+        <!-- Calendario Semanal -->
+        <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 flex flex-col gap-4">
+          <h2 class="text-gray-900 dark:text-white text-xl font-bold tracking-tight">Calendario Semanal</h2>
+          
+          <!-- Navegación semana -->
+          <div class="flex justify-between items-center">
+            <button (click)="semanaAnterior()"
+                    class="text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">
+              <span class="material-symbols-outlined">chevron_left</span>
+            </button>
+            <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ tituloSemana }}</p>
+            <button (click)="semanaSiguiente()"
+                    class="text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">
+              <span class="material-symbols-outlined">chevron_right</span>
+            </button>
+          </div>
+
+          <!-- Días de la semana -->
+          <div class="grid grid-cols-7 gap-2">
+            <div *ngFor="let dia of diasSemana"
+                 class="flex flex-col items-center">
+              <!-- Header del día -->
+              <div class="text-center mb-2">
+                <p class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ dia.nombreCorto }}</p>
+                <div class="mt-1 flex items-center justify-center w-8 h-8 rounded-full transition-colors"
+                     [class.bg-primary]="dia.esHoy"
+                     [class.text-white]="dia.esHoy"
+                     [class.font-bold]="dia.esHoy"
+                     [class.text-gray-700]="!dia.esHoy"
+                     [class.dark:text-gray-300]="!dia.esHoy">
+                  <span class="text-sm">{{ dia.numero }}</span>
+                </div>
+              </div>
+
+              <!-- Citas del día -->
+              <div class="w-full space-y-1">
+                <div *ngFor="let cita of getCitasDia(dia)"
+                     (click)="verDetalleCita(cita.id)"
+                     class="w-full text-xs px-2 py-1 rounded cursor-pointer transition-all hover:shadow-md"
+                     [class.bg-blue-100]="cita.estado === 'confirmada'"
+                     [class.dark:bg-blue-900/30]="cita.estado === 'confirmada'"
+                     [class.text-blue-800]="cita.estado === 'confirmada'"
+                     [class.dark:text-blue-200]="cita.estado === 'confirmada'"
+                     [class.bg-yellow-100]="cita.estado === 'pendiente'"
+                     [class.dark:bg-yellow-900/30]="cita.estado === 'pendiente'"
+                     [class.text-yellow-800]="cita.estado === 'pendiente'"
+                     [class.dark:text-yellow-200]="cita.estado === 'pendiente'"
+                     [class.bg-green-100]="cita.estado === 'completada'"
+                     [class.dark:bg-green-900/30]="cita.estado === 'completada'"
+                     [class.text-green-800]="cita.estado === 'completada'"
+                     [class.dark:text-green-200]="cita.estado === 'completada'"
+                     title="{{ formatearHora(cita.fecha_hora_inicio) }} - {{ cita.paciente_nombre }}">
+                  <p class="font-semibold truncate">{{ formatearHora(cita.fecha_hora_inicio) }}</p>
+                  <p class="truncate opacity-90">{{ cita.paciente_nombre }}</p>
+                </div>
+
+                <!-- Indicador de días sin citas -->
+                <div *ngIf="getCitasDia(dia).length === 0"
+                     class="text-center text-gray-300 dark:text-gray-700 py-2">
+                  <span class="material-symbols-outlined text-base">event_available</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pacientes Recientes - 1/3 width -->
+      <div class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
+        <h2 class="text-gray-900 dark:text-white text-xl font-bold tracking-tight px-6 pt-6 pb-4">Pacientes Recientes</h2>
+        
+        <div *ngIf="dashboardData.pacientes_recientes && dashboardData.pacientes_recientes.length > 0" 
+             class="flex flex-col divide-y divide-gray-200 dark:divide-gray-800">
+          <div *ngFor="let paciente of dashboardData.pacientes_recientes" 
+               (click)="verPaciente(paciente.id)"
+               class="flex items-center gap-4 p-4 px-6 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer">
+            <img 
+              [src]="paciente.foto_url || 'https://ui-avatars.com/api/?name=' + paciente.nombre_completo + '&size=80&background=B71C1C&color=fff'"
+              [alt]="'Avatar de ' + paciente.nombre_completo"
+              class="rounded-full size-10 object-cover"
+            />
+            <div class="flex-1">
+              <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ paciente.nombre_completo }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Última cita: {{ formatearFechaCorta(paciente.ultima_cita_fecha) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="!dashboardData.pacientes_recientes || dashboardData.pacientes_recientes.length === 0" 
+             class="px-6 pb-6 text-center py-12">
+          <span class="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-700">groups</span>
+          <p class="text-gray-500 dark:text-gray-400 mt-4">Aún no tienes pacientes atendidos</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!loading && !dashboardData" class="flex flex-col items-center justify-center min-h-screen">
+    <span class="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-700">error_outline</span>
+    <p class="text-gray-500 dark:text-gray-400 mt-4">Error al cargar el dashboard</p>
+    <button (click)="cargarDashboard()" class="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
+      Reintentar
+    </button>
+  </div>
+</div>

@@ -102,16 +102,81 @@ export const routes: Routes = [
           .then(m => m.NotificacionesComponent)
       }
     ]
-  }
-  /*
-  // ==================== DASHBOARDS DE MÉDICO Y ADMIN (NO IMPLEMENTADOS) ====================
+  },
+
+  // ==================== DASHBOARD DE MÉDICO ====================
   {
-    path: 'dashboard/medico',
+    path: 'medico',
     canActivate: [authGuard, roleGuard],
     data: { role: 'medico' },
-    loadComponent: () => import('./pages/dashboard/medico/medico-dashboard.component')
-      .then(m => m.MedicoDashboardComponent)
+    loadComponent: () => import('./shared/layouts/medico-layout/medico-layout.component')
+      .then(m => m.MedicoLayoutComponent),
+    children: [
+      {
+        path: 'dashboard',
+        loadComponent: () => import('./pages/dashboard/medico/medico-dashboard.component')
+          .then(m => m.MedicoDashboardComponent)
+      },
+      {
+        path: 'citas',
+        loadComponent: () => import('./pages/medico/citas/mis-citas/mis-citas.component')
+          .then(m => m.MisCitasComponent)
+      },
+      {
+        path: 'citas/detalle/:id',
+        loadComponent: () => import('./pages/medico/citas/detalle-cita/detalle-cita.component')
+          .then(m => m.DetalleCitaComponent)
+      },
+      {
+        path: 'citas/atender/:id',
+        loadComponent: () => import('./pages/medico/citas/atender-cita/atender-cita.component')
+          .then(m => m.AtenderCitaComponent)
+      },
+      {
+        path: 'citas/agendar',
+        loadComponent: () => import('./pages/medico/citas/agendar-cita/agendar-cita.component')
+          .then(m => m.AgendarCitaComponent)
+      },
+      {
+        path: 'pacientes',
+        loadComponent: () => import('./pages/medico/pacientes/mis-pacientes/mis-pacientes.component')
+          .then(m => m.MisPacientesComponent)
+      },
+      {
+        path: 'pacientes/:id',
+        loadComponent: () => import('./pages/medico/pacientes/detalle-paciente/detalle-paciente.component')
+          .then(m => m.DetallePacienteComponent)
+      },
+      {
+        path: 'horarios',
+        loadComponent: () => import('./pages/medico/horarios/gestion-horarios/gestion-horarios.component')
+          .then(m => m.GestionHorariosComponent)
+      },
+      {
+        path: 'estadisticas',
+        loadComponent: () => import('./pages/medico/estadisticas/mis-estadisticas/mis-estadisticas.component')
+          .then(m => m.MisEstadisticasComponent)
+      },
+      {
+        path: 'perfil',
+        loadComponent: () => import('./pages/medico/mi-perfil/mi-perfil.component')
+          .then(m => m.MiPerfilComponent)
+      },
+      {
+        path: 'notificaciones',
+        loadComponent: () => import('./pages/medico/notificaciones/notificaciones.component')
+          .then(m => m.NotificacionesComponent)
+      },
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
+      }
+    ]
   },
+
+  /*
+  // ==================== DASHBOARD ADMIN (NO IMPLEMENTADO) ====================
   {
     path: 'admin',
     canActivate: [roleGuard],
@@ -119,24 +184,22 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/dashboard/admin/admin-dashboard.component')
       .then(m => m.AdminDashboardComponent)
   },
-  // ==================== RUTAS DE MÉDICOS (COMPARTIDAS) ====================
+
+  // ==================== RUTAS DE MÉDICOS (COMPARTIDAS - NO IMPLEMENTADAS) ====================
   {
     path: 'medicos',
     canActivate: [authGuard],
     children: [
-      // Lista de Médicos
       {
         path: '',
         loadComponent: () => import('./pages/medicos/lista/medicos-lista.component')
           .then(m => m.MedicosListaComponent)
       },
-      // Detalle del Médico
       {
         path: ':id',
         loadComponent: () => import('./pages/medicos/detalle/medico-detalle.component')
           .then(m => m.MedicoDetalleComponent)
       },
-      // Agendar Cita con Médico
       {
         path: ':id/agendar',
         loadComponent: () => import('./pages/medicos/agendar/agendar-cita.component')
@@ -145,7 +208,7 @@ export const routes: Routes = [
     ]
   },
 
-  // ==================== NOTIFICACIONES (COMPARTIDA) ====================
+  // ==================== NOTIFICACIONES (COMPARTIDA - NO IMPLEMENTADA) ====================
   {
     path: 'notificaciones',
     canActivate: [authGuard],
@@ -153,7 +216,7 @@ export const routes: Routes = [
       .then(m => m.NotificacionesComponent)
   },
 
-  // ==================== 404 ====================
+  // ==================== 404 (NO IMPLEMENTADO) ====================
   {
     path: '**',
     loadComponent: () => import('./pages/not-found/not-found.component')

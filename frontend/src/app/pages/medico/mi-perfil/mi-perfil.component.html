@@ -1,0 +1,295 @@
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center min-h-screen">
+    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+  </div>
+
+  <!-- Content -->
+  <main *ngIf="!loading && perfil" class="flex flex-1 justify-center py-5 px-4 sm:px-6 lg:px-8">
+    <div class="flex flex-col w-full max-w-5xl flex-1">
+      
+      <!-- Page Title -->
+      <div class="flex flex-wrap justify-between gap-3 p-4">
+        <p class="text-4xl font-black leading-tight tracking-tight text-gray-900 dark:text-white">
+          Mi Perfil
+        </p>
+      </div>
+
+      <!-- Profile Header Card -->
+      <div class="flex p-4 sm:p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm mb-6 border border-gray-200 dark:border-gray-700">
+        <div class="flex w-full flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
+          <div class="flex gap-4 items-center">
+            <img [src]="perfil.foto_url || 'https://ui-avatars.com/api/?name=' + perfil.nombre + '+' + perfil.apellido + '&size=160&background=B71C1C&color=fff'"
+                 [alt]="'Foto de perfil de Dr. ' + perfil.nombre + ' ' + perfil.apellido"
+                 class="rounded-full min-h-24 w-24 object-cover">
+            <div class="flex flex-col justify-center">
+              <p class="text-2xl font-bold leading-tight tracking-tight text-gray-900 dark:text-white">
+                Dr. {{ perfil.nombre }} {{ perfil.apellido }}
+              </p>
+              <p class="text-base font-normal leading-normal text-gray-600 dark:text-gray-400">
+                {{ perfil.especialidad }}
+              </p>
+            </div>
+          </div>
+          <button (click)="cambiarFoto()"
+                  class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary/10 dark:bg-primary/20 text-gray-900 dark:text-white text-sm font-bold w-full sm:w-auto hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors">
+            <span class="truncate">Cambiar Foto</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabs and Content -->
+      <div class="pb-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <!-- Tabs Header -->
+        <div class="flex border-b border-gray-200 dark:border-gray-700 px-4 gap-8 overflow-x-auto">
+          <button *ngFor="let tab of tabs"
+                  (click)="cambiarTab(tab.id)"
+                  [class.border-b-primary]="tabActivo === tab.id"
+                  [class.text-gray-900]="tabActivo === tab.id"
+                  [class.dark:text-white]="tabActivo === tab.id"
+                  [class.border-b-transparent]="tabActivo !== tab.id"
+                  [class.text-gray-600]="tabActivo !== tab.id"
+                  [class.dark:text-gray-400]="tabActivo !== tab.id"
+                  class="flex flex-col items-center justify-center border-b-[3px] pb-[13px] pt-4 whitespace-nowrap transition-colors">
+            <p class="text-sm font-bold tracking-wide">{{ tab.label }}</p>
+          </button>
+        </div>
+
+        <!-- Tab Content: Información Personal -->
+        <div *ngIf="tabActivo === 'personal'" class="p-4 md:p-6 space-y-6">
+          <form [formGroup]="form" (ngSubmit)="guardarCambios()">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+              
+              <!-- Nombre -->
+              <label class="flex flex-col">
+                <p class="text-base font-medium leading-normal pb-2 text-gray-900 dark:text-white">
+                  Nombre <span class="text-red-500">*</span>
+                </p>
+                <input formControlName="nombre"
+                       type="text"
+                       [class.border-red-500]="nombre?.invalid && nombre?.touched"
+                       class="flex w-full rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 h-12 placeholder:text-gray-500 dark:placeholder:text-gray-400 px-3.5 py-2.5 text-base">
+              </label>
+
+              <!-- Apellido -->
+              <label class="flex flex-col">
+                <p class="text-base font-medium leading-normal pb-2 text-gray-900 dark:text-white">
+                  Apellido <span class="text-red-500">*</span>
+                </p>
+                <input formControlName="apellido"
+                       type="text"
+                       [class.border-red-500]="apellido?.invalid && apellido?.touched"
+                       class="flex w-full rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 h-12 placeholder:text-gray-500 dark:placeholder:text-gray-400 px-3.5 py-2.5 text-base">
+              </label>
+
+              <!-- Email (readonly) -->
+              <label class="flex flex-col md:col-span-2">
+                <p class="text-base font-medium leading-normal pb-2 text-gray-900 dark:text-white">
+                  Email
+                </p>
+                <input formControlName="email"
+                       type="email"
+                       readonly
+                       class="flex w-full rounded-lg text-gray-600 dark:text-gray-400 focus:outline-0 border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 h-12 px-3.5 py-2.5 text-base cursor-not-allowed">
+              </label>
+
+              <!-- Teléfono -->
+              <label class="flex flex-col">
+                <p class="text-base font-medium leading-normal pb-2 text-gray-900 dark:text-white">
+                  Teléfono <span class="text-red-500">*</span>
+                </p>
+                <input formControlName="telefono"
+                       type="tel"
+                       placeholder="+51 999 999 999"
+                       [class.border-red-500]="telefono?.invalid && telefono?.touched"
+                       class="flex w-full rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 h-12 placeholder:text-gray-500 dark:placeholder:text-gray-400 px-3.5 py-2.5 text-base">
+                <p *ngIf="telefono?.invalid && telefono?.touched" class="text-red-500 text-sm mt-1">
+                  Formato inválido. Ejemplo: +51999999999 o 999999999
+                </p>
+              </label>
+
+              <!-- Especialidad (readonly) -->
+              <label class="flex flex-col">
+                <div class="flex items-center gap-2 pb-2">
+                  <p class="text-base font-medium leading-normal text-gray-900 dark:text-white">
+                    Especialidad
+                  </p>
+                  <span class="text-xs text-gray-500 dark:text-gray-400" title="La especialidad se gestiona desde la sección de Certificaciones">
+                  </span>
+                </div>
+                <input formControlName="especialidad"
+                       type="text"
+                       readonly
+                       class="flex w-full rounded-lg text-gray-600 dark:text-gray-400 focus:outline-0 border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 h-12 px-3.5 py-2.5 text-base cursor-not-allowed">
+              </label>
+
+              <!-- Número de Colegiatura -->
+              <label class="flex flex-col">
+                <p class="text-base font-medium leading-normal pb-2 text-gray-900 dark:text-white">
+                  Número de Colegiatura <span class="text-red-500">*</span>
+                </p>
+                <input formControlName="numero_colegiatura"
+                       type="text"
+                       [class.border-red-500]="numero_colegiatura?.invalid && numero_colegiatura?.touched"
+                       class="flex w-full rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 h-12 placeholder:text-gray-500 dark:placeholder:text-gray-400 px-3.5 py-2.5 text-base">
+              </label>
+
+              <!-- Años de experiencia -->
+              <label class="flex flex-col">
+                <p class="text-base font-medium leading-normal pb-2 text-gray-900 dark:text-white">
+                  Años de experiencia <span class="text-red-500">*</span>
+                </p>
+                <input formControlName="anios_experiencia"
+                       type="number"
+                       min="0"
+                       [class.border-red-500]="anios_experiencia?.invalid && anios_experiencia?.touched"
+                       class="flex w-full rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 h-12 placeholder:text-gray-500 dark:placeholder:text-gray-400 px-3.5 py-2.5 text-base">
+              </label>
+
+              <!-- Biografía -->
+              <label class="flex flex-col md:col-span-2">
+                <p class="text-base font-medium leading-normal pb-2 text-gray-900 dark:text-white">
+                  Biografía
+                </p>
+                <textarea formControlName="biografia"
+                          rows="4"
+                          placeholder="Cuéntanos sobre tu trayectoria profesional..."
+                          class="flex w-full resize-y rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 min-h-32 placeholder:text-gray-500 dark:placeholder:text-gray-400 px-3.5 py-2.5 text-base">
+                </textarea>
+              </label>
+            </div>
+
+            <!-- Save Button -->
+            <div class="flex justify-between items-center pt-4 border-t border-gray-200 dark:border-gray-700 mt-6">
+              <!-- Indicador de cambios -->
+              <div *ngIf="cambiosPendientes" class="flex items-center gap-2 text-yellow-600 dark:text-yellow-400">
+                <span class="material-symbols-outlined text-sm">warning</span>
+                <span class="text-sm font-medium">Tienes cambios sin guardar</span>
+              </div>
+              <div *ngIf="!cambiosPendientes"></div>
+              
+              <button type="submit"
+                      [disabled]="guardando || !cambiosPendientes"
+                      class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-6 bg-primary text-white text-sm font-bold tracking-wide hover:bg-primary/90 transition-colors disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed">
+                <span class="truncate">{{ guardando ? 'Guardando...' : 'Guardar Cambios' }}</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Tab Content: Horarios de Atención (Placeholder) -->
+        <div *ngIf="tabActivo === 'horarios'" class="p-4 md:p-6">
+          <div class="text-center py-12">
+            <span class="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-700">schedule</span>
+            <p class="text-gray-500 dark:text-gray-400 mt-4">Gestiona tus horarios desde la sección de Horarios</p>
+            <button (click)="cambiarTab('personal')" 
+                    class="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+              Volver a Información Personal
+            </button>
+          </div>
+        </div>
+
+        <!-- Tab Content: Seguridad -->
+        <div *ngIf="tabActivo === 'seguridad'" class="p-4 md:p-6 space-y-6">
+          <div class="max-w-2xl">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-6">
+              Cambiar Contraseña
+            </h3>
+            
+            <div class="space-y-4">
+              <label class="flex flex-col">
+                <p class="text-base font-medium leading-normal pb-2 text-gray-900 dark:text-white">
+                  Contraseña Actual <span class="text-red-500">*</span>
+                </p>
+                <input type="password"
+                       placeholder="Ingresa tu contraseña actual"
+                       class="flex w-full rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 h-12 placeholder:text-gray-500 dark:placeholder:text-gray-400 px-3.5 py-2.5 text-base">
+              </label>
+              
+              <label class="flex flex-col">
+                <p class="text-base font-medium leading-normal pb-2 text-gray-900 dark:text-white">
+                  Nueva Contraseña <span class="text-red-500">*</span>
+                </p>
+                <input type="password"
+                       placeholder="Mínimo 8 caracteres"
+                       class="flex w-full rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 h-12 placeholder:text-gray-500 dark:placeholder:text-gray-400 px-3.5 py-2.5 text-base">
+              </label>
+              
+              <label class="flex flex-col">
+                <p class="text-base font-medium leading-normal pb-2 text-gray-900 dark:text-white">
+                  Confirmar Nueva Contraseña <span class="text-red-500">*</span>
+                </p>
+                <input type="password"
+                       placeholder="Repite la nueva contraseña"
+                       class="flex w-full rounded-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 h-12 placeholder:text-gray-500 dark:placeholder:text-gray-400 px-3.5 py-2.5 text-base">
+              </label>
+              
+              <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mt-4">
+                <div class="flex gap-3">
+                  <span class="material-symbols-outlined text-blue-600 dark:text-blue-400">info</span>
+                  <div class="text-sm text-blue-800 dark:text-blue-300">
+                    <p class="font-medium mb-1">Requisitos de contraseña:</p>
+                    <ul class="list-disc list-inside space-y-1">
+                      <li>Mínimo 8 caracteres</li>
+                      <li>Al menos una letra mayúscula</li>
+                      <li>Al menos una letra minúscula</li>
+                      <li>Al menos un número</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="flex justify-end pt-4">
+                <button type="button"
+                        onclick="alert('Funcionalidad de cambio de contraseña pendiente de implementación en el backend')"
+                        class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+                  Cambiar Contraseña
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab Content: Certificaciones -->
+        <div *ngIf="tabActivo === 'certificaciones'" class="p-4 md:p-6 space-y-6">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-white">
+              Mis Certificaciones
+            </h3>
+          </div>
+          
+          <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+            <div class="flex gap-3">
+              <span class="material-symbols-outlined text-blue-600 dark:text-blue-400">info</span>
+              <div class="text-sm text-blue-800 dark:text-blue-300">
+                <p class="font-medium">Las certificaciones son gestionadas por el administrador.</p>
+                <p class="mt-1">Si necesitas agregar o actualizar alguna certificación, contacta al administrador del sistema.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lista de certificaciones (ejemplo) -->
+          <div class="space-y-4">
+            <div class="flex items-start gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+              <div class="flex-shrink-0">
+                <span class="material-symbols-outlined text-4xl text-primary">workspace_premium</span>
+              </div>
+              <div class="flex-1">
+                <h4 class="text-base font-bold text-gray-900 dark:text-white">Especialidad en Cardiología</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Universidad Nacional Mayor de San Marcos</p>
+                <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">Fecha de emisión: Enero 2015</p>
+              </div>
+            </div>
+
+            <!-- Empty state si no hay certificaciones -->
+            <div class="text-center py-12 bg-gray-50 dark:bg-gray-800/30 rounded-lg">
+              <span class="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-600">workspace_premium</span>
+              <p class="text-gray-500 dark:text-gray-400 mt-4">No tienes certificaciones registradas</p>
+              <p class="text-sm text-gray-400 dark:text-gray-500 mt-2">Contacta al administrador para agregar tus certificaciones</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

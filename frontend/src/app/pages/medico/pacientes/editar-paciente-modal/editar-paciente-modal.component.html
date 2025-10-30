@@ -1,0 +1,224 @@
+<!-- Modal Overlay -->
+<div *ngIf="isOpen" 
+     class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+     (click)="cerrar()">
+  
+  <!-- Modal Content -->
+  <div class="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+       (click)="$event.stopPropagation()">
+    
+    <!-- Modal Header -->
+    <div class="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white">
+            Editar Datos del Paciente
+          </h2>
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            Modificando el perfil de {{ paciente?.nombre_completo }}
+          </p>
+        </div>
+        <button (click)="cerrar()"
+                class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+          <span class="material-symbols-outlined text-3xl">close</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Body -->
+    <form [formGroup]="form" (ngSubmit)="guardarCambios()" class="p-6 space-y-10">
+      
+      <!-- Información Personal -->
+      <div class="space-y-6">
+        <h3 class="text-xl font-bold tracking-tight border-b border-gray-200 dark:border-gray-800 pb-2 text-gray-900 dark:text-white">
+          Información Personal
+        </h3>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <!-- Nombre -->
+          <div>
+            <label for="nombre" class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+              Nombre <span class="text-red-500">*</span>
+            </label>
+            <input id="nombre"
+                   type="text"
+                   formControlName="nombre"
+                   [class.border-red-500]="nombre?.invalid && nombre?.touched"
+                   class="w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+            <p *ngIf="nombre?.invalid && nombre?.touched" class="mt-1 text-xs text-red-600">
+              El nombre es requerido
+            </p>
+          </div>
+
+          <!-- Apellido -->
+          <div>
+            <label for="apellido" class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+              Apellido <span class="text-red-500">*</span>
+            </label>
+            <input id="apellido"
+                   type="text"
+                   formControlName="apellido"
+                   [class.border-red-500]="apellido?.invalid && apellido?.touched"
+                   class="w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+            <p *ngIf="apellido?.invalid && apellido?.touched" class="mt-1 text-xs text-red-600">
+              El apellido es requerido
+            </p>
+          </div>
+
+          <!-- Email -->
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+              Email
+            </label>
+            <input id="email"
+                   type="email"
+                   formControlName="email"
+                   [class.border-red-500]="email?.invalid && email?.touched"
+                   class="w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+            <p *ngIf="email?.invalid && email?.touched" class="mt-1 text-xs text-red-600">
+              Por favor, ingrese un email válido
+            </p>
+          </div>
+
+          <!-- Teléfono -->
+          <div>
+            <label for="telefono" class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+              Teléfono <span class="text-red-500">*</span>
+            </label>
+            <input id="telefono"
+                   type="tel"
+                   formControlName="telefono"
+                   [class.border-red-500]="telefono?.invalid && telefono?.touched"
+                   class="w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+          </div>
+
+          <!-- Fecha Nacimiento -->
+          <div>
+            <label for="fecha_nacimiento" class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+              Fecha de Nacimiento <span class="text-red-500">*</span>
+            </label>
+            <input id="fecha_nacimiento"
+                   type="date"
+                   formControlName="fecha_nacimiento"
+                   class="w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+          </div>
+
+          <!-- Género -->
+          <div>
+            <label for="genero" class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+              Género <span class="text-red-500">*</span>
+            </label>
+            <select id="genero"
+                    formControlName="genero"
+                    class="w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+              <option value="">Seleccione...</option>
+              <option value="masculino">Masculino</option>
+              <option value="femenino">Femenino</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información Médica -->
+      <div class="space-y-6">
+        <h3 class="text-xl font-bold tracking-tight border-b border-gray-200 dark:border-gray-800 pb-2 text-gray-900 dark:text-white">
+          Información Médica
+        </h3>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <!-- Tipo Documento -->
+          <div>
+            <label for="tipo_documento" class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+              Tipo de Documento <span class="text-red-500">*</span>
+            </label>
+            <select id="tipo_documento"
+                    formControlName="tipo_documento"
+                    class="w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+              <option value="dni">DNI</option>
+              <option value="pasaporte">Pasaporte</option>
+              <option value="carnet_extranjeria">Carnet de Extranjería</option>
+            </select>
+          </div>
+
+          <!-- Número Documento -->
+          <div>
+            <label for="numero_documento" class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+              Número de Documento <span class="text-red-500">*</span>
+            </label>
+            <input id="numero_documento"
+                   type="text"
+                   formControlName="numero_documento"
+                   [class.border-red-500]="numero_documento?.invalid && numero_documento?.touched"
+                   class="w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+          </div>
+
+          <!-- Grupo Sanguíneo -->
+          <div>
+            <label for="grupo_sanguineo" class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+              Grupo Sanguíneo
+            </label>
+            <select id="grupo_sanguineo"
+                    formControlName="grupo_sanguineo"
+                    class="w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+              <option value="">Seleccione...</option>
+              <option value="A+">A+</option>
+              <option value="A-">A-</option>
+              <option value="B+">B+</option>
+              <option value="B-">B-</option>
+              <option value="O+">O+</option>
+              <option value="O-">O-</option>
+              <option value="AB+">AB+</option>
+              <option value="AB-">AB-</option>
+            </select>
+          </div>
+
+          <!-- Alergias -->
+          <div class="sm:col-span-2">
+            <label for="alergias" class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+              Alergias
+            </label>
+            <textarea id="alergias"
+                      formControlName="alergias"
+                      rows="3"
+                      placeholder="Ej: Penicilina, Ibuprofeno (separadas por comas)"
+                      class="w-full rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-all">
+            </textarea>
+            <div class="flex items-start gap-2 mt-2 p-3 rounded-md bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200">
+              <span class="material-symbols-outlined text-base mt-0.5">warning</span>
+              <p class="text-xs">Por favor, separe las alergias con comas. Verifique la información cuidadosamente.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex flex-col sm:flex-row justify-end items-center gap-4 pt-6 border-t border-gray-200 dark:border-gray-800">
+        <button type="button"
+                (click)="cerrar()"
+                class="w-full sm:w-auto flex min-w-[120px] cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg h-10 px-4 bg-transparent border border-gray-600 dark:border-gray-400 text-gray-600 dark:text-gray-400 text-sm font-bold hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+          <span class="truncate">Cancelar</span>
+        </button>
+        <button type="submit"
+                [disabled]="guardando"
+                class="w-full sm:w-auto flex min-w-[120px] cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          <span class="truncate">{{ guardando ? 'Guardando...' : 'Guardar Cambios' }}</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div *ngIf="mostrarConfirmacion" 
+     class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+  <div class="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-md p-6 m-4 text-center">
+    <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
+      <span class="material-symbols-outlined text-3xl text-green-600 dark:text-green-400">check_circle</span>
+    </div>
+    <h3 class="mt-4 text-xl font-bold text-gray-900 dark:text-white">Cambios Guardados</h3>
+    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+      La información del paciente ha sido actualizada correctamente.
+    </p>
+  </div>
+</div>

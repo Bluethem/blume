@@ -1,0 +1,462 @@
+<div class="min-h-screen bg-background-light dark:bg-background-dark">
+  <main class="flex flex-1 justify-center py-8 px-4 sm:px-6">
+    <div class="w-full max-w-4xl">
+      <!-- Page Header -->
+      <div class="flex flex-wrap justify-between gap-3 mb-6">
+        <h1 class="text-gray-900 dark:text-white text-3xl sm:text-4xl font-black leading-tight tracking-tight">
+          Agendar Nueva Cita
+        </h1>
+      </div>
+
+      <!-- Card Container -->
+      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-md border border-gray-200 dark:border-gray-800 p-6 sm:p-8">
+        
+        <!-- Stepper / Tabs -->
+        <div class="pb-6">
+          <div class="flex border-b border-gray-200 dark:border-gray-800 justify-between">
+            <!-- Step 1 -->
+            <div (click)="pasoActual > 1 && (pasoActual = 1)"
+                 [class.border-b-primary]="pasoActual === 1"
+                 [class.text-primary]="pasoActual === 1"
+                 [class.cursor-pointer]="pasoActual > 1"
+                 class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-gray-500 dark:text-gray-400 pb-3 pt-4 flex-1">
+              <p class="text-xs sm:text-sm font-bold leading-normal tracking-wide text-center">
+                1. Paciente
+              </p>
+            </div>
+            <!-- Step 2 -->
+            <div [class.border-b-primary]="pasoActual === 2"
+                 [class.text-primary]="pasoActual === 2"
+                 class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-gray-500 dark:text-gray-400 pb-3 pt-4 flex-1">
+              <p class="text-xs sm:text-sm font-bold leading-normal tracking-wide text-center">
+                2. Fecha/Hora
+              </p>
+            </div>
+            <!-- Step 3 -->
+            <div [class.border-b-primary]="pasoActual === 3"
+                 [class.text-primary]="pasoActual === 3"
+                 class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-gray-500 dark:text-gray-400 pb-3 pt-4 flex-1">
+              <p class="text-xs sm:text-sm font-bold leading-normal tracking-wide text-center">
+                3. Detalles
+              </p>
+            </div>
+            <!-- Step 4 -->
+            <div [class.border-b-primary]="pasoActual === 4"
+                 [class.text-primary]="pasoActual === 4"
+                 class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-gray-500 dark:text-gray-400 pb-3 pt-4 flex-1">
+              <p class="text-xs sm:text-sm font-bold leading-normal tracking-wide text-center">
+                4. Confirmar
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- PASO 1: Seleccionar Paciente -->
+        <div *ngIf="pasoActual === 1">
+          <h2 class="text-gray-900 dark:text-white text-xl font-bold mb-4">
+            Paso 1: Seleccionar Paciente
+          </h2>
+
+          <!-- Búsqueda -->
+          <div class="mb-4" *ngIf="!mostrarFormularioNuevo">
+            <div class="flex w-full items-stretch rounded-lg h-12 border border-gray-200 dark:border-gray-700 focus-within:ring-2 focus-within:ring-primary focus-within:border-primary">
+              <div class="text-gray-500 dark:text-gray-400 flex bg-gray-50 dark:bg-gray-800 items-center justify-center pl-4 rounded-l-lg">
+                <span class="material-symbols-outlined">search</span>
+              </div>
+              <input 
+                [(ngModel)]="terminoBusqueda"
+                (input)="buscarPacientes()"
+                type="text"
+                placeholder="Buscar paciente por nombre, apellido o DNI..."
+                class="flex w-full min-w-0 flex-1 rounded-r-lg text-gray-900 dark:text-white focus:outline-0 focus:ring-0 border-none bg-gray-50 dark:bg-gray-800 h-full placeholder:text-gray-500 dark:placeholder:text-gray-400 px-3 text-base">
+            </div>
+          </div>
+
+          <!-- Loading -->
+          <div *ngIf="buscandoPacientes" class="text-center py-4">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          </div>
+
+          <!-- Lista de Pacientes -->
+          <div *ngIf="!mostrarFormularioNuevo && pacientes.length > 0" class="space-y-3 mb-4">
+            <div *ngFor="let paciente of pacientes"
+                 (click)="seleccionarPaciente(paciente)"
+                 [class.border-primary]="pacienteSeleccionado?.id === paciente.id"
+                 [class.bg-primary/10]="pacienteSeleccionado?.id === paciente.id"
+                 [class.border-2]="pacienteSeleccionado?.id === paciente.id"
+                 class="flex items-center gap-4 p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
+              <img [src]="paciente.foto_url || 'https://ui-avatars.com/api/?name=' + paciente.nombre_completo + '&size=96&background=B71C1C&color=fff'"
+                   [alt]="paciente.nombre_completo"
+                   class="size-12 rounded-full object-cover">
+              <div class="flex-1">
+                <p class="font-bold text-gray-900 dark:text-white">{{ paciente.nombre_completo }}</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">{{ paciente.numero_documento }}</p>
+              </div>
+              <div *ngIf="pacienteSeleccionado?.id === paciente.id" 
+                   class="flex items-center justify-center size-6 rounded-full bg-primary text-white">
+                <span class="material-symbols-outlined text-base">check</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Botón Registrar Nuevo Paciente -->
+          <div *ngIf="!mostrarFormularioNuevo" class="mb-4">
+            <button (click)="mostrarFormularioRegistro()"
+                    type="button"
+                    class="w-full flex items-center justify-center gap-2 rounded-lg h-12 border-2 border-dashed border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-primary hover:text-primary transition-colors">
+              <span class="material-symbols-outlined">person_add</span>
+              <span class="font-semibold">Registrar Nuevo Paciente</span>
+            </button>
+          </div>
+
+          <!-- Formulario de Registro Rápido -->
+          <div *ngIf="mostrarFormularioNuevo" [formGroup]="formNuevoPaciente" class="space-y-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <div class="flex justify-between items-center mb-2">
+              <h3 class="text-lg font-bold text-gray-900 dark:text-white">Registro Rápido de Paciente</h3>
+              <button (click)="ocultarFormularioRegistro()"
+                      type="button"
+                      class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Tipo Documento -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Tipo de Documento <span class="text-red-500">*</span>
+                </label>
+                <select formControlName="tipo_documento"
+                        class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-2.5 text-sm text-gray-900 dark:text-white">
+                  <option value="dni">DNI</option>
+                  <option value="pasaporte">Pasaporte</option>
+                  <option value="carnet_extranjeria">Carnet de Extranjería</option>
+                </select>
+              </div>
+
+              <!-- Número Documento -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Número de Documento <span class="text-red-500">*</span>
+                </label>
+                <input formControlName="numero_documento"
+                       type="text"
+                       placeholder="12345678"
+                       class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-2.5 text-sm text-gray-900 dark:text-white">
+              </div>
+
+              <!-- Nombre -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Nombre <span class="text-red-500">*</span>
+                </label>
+                <input formControlName="nombre"
+                       type="text"
+                       placeholder="Juan"
+                       class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-2.5 text-sm text-gray-900 dark:text-white">
+              </div>
+
+              <!-- Apellido -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Apellido <span class="text-red-500">*</span>
+                </label>
+                <input formControlName="apellido"
+                       type="text"
+                       placeholder="Pérez"
+                       class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-2.5 text-sm text-gray-900 dark:text-white">
+              </div>
+
+              <!-- Fecha Nacimiento -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Fecha de Nacimiento <span class="text-red-500">*</span>
+                </label>
+                <input formControlName="fecha_nacimiento"
+                       type="date"
+                       class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-2.5 text-sm text-gray-900 dark:text-white">
+              </div>
+
+              <!-- Género -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Género <span class="text-red-500">*</span>
+                </label>
+                <select formControlName="genero"
+                        class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-2.5 text-sm text-gray-900 dark:text-white">
+                  <option value="">Seleccione...</option>
+                  <option value="masculino">Masculino</option>
+                  <option value="femenino">Femenino</option>
+                  <option value="otro">Otro</option>
+                </select>
+              </div>
+
+              <!-- Teléfono -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Teléfono <span class="text-red-500">*</span>
+                </label>
+                <input formControlName="telefono"
+                       type="tel"
+                       placeholder="987654321"
+                       class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-2.5 text-sm text-gray-900 dark:text-white">
+              </div>
+
+              <!-- Email -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Email (opcional)
+                </label>
+                <input formControlName="email"
+                       type="email"
+                       placeholder="juan@email.com"
+                       class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-2.5 text-sm text-gray-900 dark:text-white">
+              </div>
+
+              <!-- Grupo Sanguíneo -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Grupo Sanguíneo
+                </label>
+                <select formControlName="grupo_sanguineo"
+                        class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-2.5 text-sm text-gray-900 dark:text-white">
+                  <option value="">Seleccione...</option>
+                  <option value="A+">A+</option>
+                  <option value="A-">A-</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B-</option>
+                  <option value="AB+">AB+</option>
+                  <option value="AB-">AB-</option>
+                  <option value="O+">O+</option>
+                  <option value="O-">O-</option>
+                </select>
+              </div>
+
+              <!-- Alergias -->
+              <div class="sm:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Alergias
+                </label>
+                <textarea formControlName="alergias"
+                          rows="2"
+                          placeholder="Ej: Penicilina, Ibuprofeno..."
+                          class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-2.5 text-sm text-gray-900 dark:text-white"></textarea>
+              </div>
+            </div>
+
+            <!-- Botón Registrar -->
+            <div class="flex justify-end gap-2 pt-2">
+              <button (click)="ocultarFormularioRegistro()"
+                      type="button"
+                      class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                Cancelar
+              </button>
+              <button (click)="registrarNuevoPaciente()"
+                      type="button"
+                      [disabled]="registrandoPaciente"
+                      class="px-4 py-2 rounded-lg bg-primary text-white hover:bg-primary/90 disabled:opacity-50 transition-colors">
+                {{ registrandoPaciente ? 'Registrando...' : 'Registrar Paciente' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Navegación -->
+          <div class="flex justify-end gap-3 mt-6">
+            <button (click)="cancelar()"
+                    type="button"
+                    class="px-6 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              Cancelar
+            </button>
+            <button (click)="siguientePaso()"
+                    [disabled]="!pacienteSeleccionado"
+                    type="button"
+                    class="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-primary text-white hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+              <span>Continuar</span>
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- PASO 2: Fecha y Hora -->
+        <div *ngIf="pasoActual === 2">
+          <h2 class="text-gray-900 dark:text-white text-xl font-bold mb-4">
+            Paso 2: Elegir Fecha y Hora
+          </h2>
+
+          <!-- Selector de Fecha -->
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Seleccione la Fecha
+            </label>
+            <input type="date"
+                   [min]="minFecha"
+                   [max]="maxFecha"
+                   [(ngModel)]="fechaSeleccionada"
+                   (change)="onFechaChange($event)"
+                   class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 text-gray-900 dark:text-white">
+          </div>
+
+          <!-- Loading Slots -->
+          <div *ngIf="cargandoSlots" class="text-center py-8">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p class="text-gray-600 dark:text-gray-400 mt-4">Cargando horarios disponibles...</p>
+          </div>
+
+          <!-- Grid de Slots -->
+          <div *ngIf="!cargandoSlots && slotsDisponibles.length > 0" class="mb-6">
+            <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              Horarios Disponibles
+            </p>
+            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+              <button *ngFor="let slot of slotsDisponibles"
+                      (click)="seleccionarSlot(slot)"
+                      [disabled]="!slot.disponible"
+                      [class.bg-primary]="slotSeleccionado?.hora_inicio === slot.hora_inicio"
+                      [class.text-white]="slotSeleccionado?.hora_inicio === slot.hora_inicio"
+                      [class.border-primary]="slotSeleccionado?.hora_inicio === slot.hora_inicio"
+                      [class.opacity-40]="!slot.disponible"
+                      [class.cursor-not-allowed]="!slot.disponible"
+                      type="button"
+                      class="p-3 rounded-lg border-2 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white hover:border-primary hover:bg-primary/10 transition-colors text-sm font-medium">
+                {{ slot.hora_inicio }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Navegación -->
+          <div class="flex justify-between gap-3 mt-6">
+            <button (click)="pasoAnterior()"
+                    type="button"
+                    class="flex items-center gap-2 px-6 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              <span class="material-symbols-outlined">arrow_back</span>
+              <span>Atrás</span>
+            </button>
+            <button (click)="siguientePaso()"
+                    [disabled]="!slotSeleccionado"
+                    type="button"
+                    class="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-primary text-white hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+              <span>Continuar</span>
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- PASO 3: Detalles de la Cita -->
+        <div *ngIf="pasoActual === 3">
+          <h2 class="text-gray-900 dark:text-white text-xl font-bold mb-4">
+            Paso 3: Detalles de la Cita
+          </h2>
+
+          <form [formGroup]="formDetallesCita" class="space-y-4">
+            <!-- Motivo de Consulta -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Motivo de Consulta <span class="text-red-500">*</span>
+              </label>
+              <textarea formControlName="motivo_consulta"
+                        rows="4"
+                        placeholder="Describa el motivo de la consulta..."
+                        class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 text-gray-900 dark:text-white placeholder-gray-500"></textarea>
+            </div>
+
+            <!-- Observaciones -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Observaciones (opcional)
+              </label>
+              <textarea formControlName="observaciones"
+                        rows="3"
+                        placeholder="Notas adicionales..."
+                        class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 text-gray-900 dark:text-white placeholder-gray-500"></textarea>
+            </div>
+
+            <!-- Costo -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Costo de la Consulta
+              </label>
+              <input formControlName="costo"
+                     type="number"
+                     min="0"
+                     placeholder="0.00"
+                     class="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3 text-gray-900 dark:text-white">
+            </div>
+          </form>
+
+          <!-- Navegación -->
+          <div class="flex justify-between gap-3 mt-6">
+            <button (click)="pasoAnterior()"
+                    type="button"
+                    class="flex items-center gap-2 px-6 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              <span class="material-symbols-outlined">arrow_back</span>
+              <span>Atrás</span>
+            </button>
+            <button (click)="siguientePaso()"
+                    type="button"
+                    class="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors">
+              <span>Continuar</span>
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- PASO 4: Confirmación -->
+        <div *ngIf="pasoActual === 4">
+          <h2 class="text-gray-900 dark:text-white text-xl font-bold mb-4">
+            Paso 4: Confirmar Cita
+          </h2>
+
+          <div class="space-y-6">
+            <!-- Resumen Paciente -->
+            <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Paciente</p>
+              <div class="flex items-center gap-3">
+                <img [src]="pacienteSeleccionado?.foto_url || 'https://ui-avatars.com/api/?name=' + pacienteSeleccionado?.nombre_completo + '&size=96&background=B71C1C&color=fff'"
+                     [alt]="pacienteSeleccionado?.nombre_completo"
+                     class="size-12 rounded-full object-cover">
+                <div>
+                  <p class="font-bold text-gray-900 dark:text-white">{{ pacienteSeleccionado?.nombre_completo }}</p>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">{{ pacienteSeleccionado?.numero_documento }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Resumen Fecha/Hora -->
+            <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Fecha y Hora</p>
+              <p class="font-bold text-gray-900 dark:text-white">{{ formatearFecha(fechaSeleccionada) }}</p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">{{ slotSeleccionado?.hora_inicio }} - {{ slotSeleccionado?.hora_fin }}</p>
+            </div>
+
+            <!-- Resumen Detalles -->
+            <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Detalles</p>
+              <p class="font-semibold text-gray-900 dark:text-white mb-1">Motivo:</p>
+              <p class="text-gray-700 dark:text-gray-300 mb-3">{{ formDetallesCita.value.motivo_consulta }}</p>
+              <p *ngIf="formDetallesCita.value.observaciones" class="font-semibold text-gray-900 dark:text-white mb-1">Observaciones:</p>
+              <p *ngIf="formDetallesCita.value.observaciones" class="text-gray-700 dark:text-gray-300">{{ formDetallesCita.value.observaciones }}</p>
+            </div>
+          </div>
+
+          <!-- Navegación -->
+          <div class="flex justify-between gap-3 mt-6">
+            <button (click)="pasoAnterior()"
+                    type="button"
+                    class="flex items-center gap-2 px-6 py-2.5 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              <span class="material-symbols-outlined">arrow_back</span>
+              <span>Atrás</span>
+            </button>
+            <button (click)="confirmarYAgendar()"
+                    [disabled]="agendando"
+                    type="button"
+                    class="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+              <span class="material-symbols-outlined">check_circle</span>
+              <span>{{ agendando ? 'Agendando...' : 'Confirmar y Agendar' }}</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
