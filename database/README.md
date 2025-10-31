@@ -2,33 +2,7 @@
 
 ### Diagrama Entidad-Relación
 
-```
-┌─────────────────────────┐
-│       USUARIO           │
-├─────────────────────────┤
-│ id (PK, UUID)           │
-│ email (unique, index)   │
-│ password_digest         │
-│ nombre                  │
-│ apellido                │
-│ telefono                │
-│ direccion               │
-│ rol (enum)              │
-│ activo (boolean)        │
-│ created_at              │
-│ updated_at              │
-└──────────┬──────────────┘
-           │
-           │ 1:1
-           │
-    ┌──────┴──────┐
-    │             │
-    │             │
-┌───▼──────┐  ┌──▼────────┐
-│ PACIENTE │  │  MEDICO   │
-└──────────┘  └───────────┘
-
-```
+![Diagrama relacional](/database/DiagramaRelacionalPC2.png)
 
 ### Tablas Detalladas
 
@@ -216,3 +190,13 @@ Paciente 1:N Cita
 Usuario 1:N Notificacion
 Cita 1:N Notificacion
 ```
+
+### Scripts SQL:
+
+#### Creación de tablas
+
+![Creacion de tablas para PostgreSQL](./scripts/scriptDatabase.sql)
+
+#### Poblamiento inicial de datos
+
+![Datos de prueba para PostgreSQL](./scripts/datos_prueba.sql)

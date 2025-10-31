@@ -19,12 +19,22 @@ CREATE TABLE usuarios (
     direccion TEXT,
     rol INTEGER DEFAULT 0 NOT NULL, -- 0: paciente, 1: medico, 2: administrador
     activo BOOLEAN DEFAULT TRUE NOT NULL,
+    reset_password_token VARCHAR(255),
+    reset_password_sent_at TIMESTAMP,
+    foto_url VARCHAR(500),
+    es_super_admin BOOLEAN DEFAULT FALSE NOT NULL,
+    ultimo_acceso TIMESTAMP,
+    creado_por_id UUID REFERENCES usuarios(id) ON DELETE SET NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX index_usuarios_on_email ON usuarios(email);
 CREATE INDEX index_usuarios_on_rol ON usuarios(rol);
+CREATE INDEX index_usuarios_on_activo ON usuarios(activo);
+CREATE INDEX index_usuarios_on_es_super_admin ON usuarios(es_super_admin);
+CREATE INDEX index_usuarios_on_reset_password_token ON usuarios(reset_password_token);
+CREATE INDEX index_usuarios_on_creado_por_id ON usuarios(creado_por_id);
 
 -- =====================================================
 -- 2. TABLA PACIENTES

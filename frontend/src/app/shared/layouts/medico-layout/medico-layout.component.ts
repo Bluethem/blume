@@ -66,20 +66,30 @@ export class MedicoLayoutComponent implements OnInit {
   }
 
   handleNotificacionClick(notificacion: Notificacion): void {
+    // Marcar como leída si no lo está
     if (!notificacion.leida) {
-      this.notificacionesService.marcarLeida(notificacion.id).subscribe();
+      this.notificacionesService.marcarLeida(notificacion.id).subscribe({
+        next: () => {
+          notificacion.leida = true;
+          this.notificacionesNoLeidas = Math.max(0, this.notificacionesNoLeidas - 1);
+        }
+      });
     }
+    
+    // Cerrar dropdown
     this.notificacionesDropdownOpen = false;
     
-    if (notificacion.cita?.id) {
-      this.router.navigate(['/medico/citas/detalle', notificacion.cita.id]);
+    // Navegar si tiene cita asociada
+    if (notificacion.cita_id) {
+      this.router.navigate(['/medico/citas/detalle', notificacion.cita_id]);
     }
   }
 
   marcarTodasLeidas(): void {
     this.notificacionesService.marcarTodasLeidas().subscribe({
       next: () => {
-        this.cargarNotificaciones();
+        this.notificaciones.forEach(n => n.leida = true);
+        this.notificacionesNoLeidas = 0;
       }
     });
   }
