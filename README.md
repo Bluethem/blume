@@ -297,7 +297,7 @@ Desarrollado por:
 
 ---
 
-## 📄 Licencia
+## Licencia
 
 Este proyecto es privado y de uso académico para la Universidad Nacional de Ingeniería (UNI).
 
