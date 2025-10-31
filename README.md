@@ -47,16 +47,17 @@ blume/
 
 ## Requisitos
 
-### Backend
-- **Ruby:** 3.3+
-- **Rails:** 8.1+
-- **PostgreSQL:** 14+
-- **Redis:** (para Solid Queue y Solid Cable)
-
 ### Frontend
 - **Node.js:** 20+
 - **Angular CLI:** 20+
 - **npm:** 10+
+
+### Backend
+- **Ruby:** 3.3+
+- **Rails:** 8.1+
+
+### Database
+- **PostgreSQL:** 14+
 
 ---
 
@@ -256,34 +257,59 @@ ng build --configuration production
 
 ## Tecnologías Utilizadas
 
+### ✨ Características Destacadas
+
+Este proyecto utiliza las **últimas tecnologías modernas** de Rails 8 y Angular 20:
+
+- **🚀 Rails 8.1** - Sin necesidad de Redis gracias a Solid Queue, Solid Cache y Solid Cable
+- **⚡ Angular 20** - Con las últimas mejoras de performance y DX
+- **🎨 TailwindCSS 3.4** - Diseño moderno y responsive
+- **📊 Chart.js 4.5** - Visualización de datos interactiva
+- **🔒 JWT + BCrypt** - Autenticación y seguridad robusta
+- **🐘 PostgreSQL** - Base de datos escalable y confiable
+- **🎯 TypeScript 5.9** - Type-safety en el frontend
+- **📦 Kamal** - Deploy simplificado con Docker
+
 ### Backend
-- **Ruby on Rails 8.1** - Framework web
-- **PostgreSQL** - Base de datos relacional
-- **Solid Queue** - Background jobs
+- **Ruby on Rails 8.1.0** - Framework web full-stack
+- **Ruby 3.3+** - Lenguaje de programación
+- **PostgreSQL 14+** - Base de datos relacional
+- **Puma** - Servidor web de alta performance
+- **Solid Queue** - Background jobs sin Redis
 - **Solid Cache** - Cache de aplicación
-- **Solid Cable** - WebSockets
-- **BCrypt** - Encriptación de contraseñas
-- **JWT** - Autenticación stateless
-- **RuboCop** - Linter de código
-- **Brakeman** - Análisis de seguridad
-- **RSpec** - Testing framework
+- **Solid Cable** - WebSockets en tiempo real
+- **BCrypt 3.1.7** - Encriptación de contraseñas
+- **JWT** - Autenticación stateless con tokens
+- **Rack-CORS** - Manejo de CORS para Angular
+- **HTTParty** - Cliente HTTP para APIs externas
+- **Image Processing** - Procesamiento de imágenes
+- **RuboCop Rails Omakase** - Linter de código
+- **Brakeman** - Análisis estático de seguridad
+- **Bundler Audit** - Auditoría de dependencias
+- **Dotenv** - Gestión de variables de entorno
+- **Kamal** - Deploy con Docker
+- **Thruster** - HTTP caching y compresión
 
 ### Frontend
-- **Angular 20** - Framework SPA
-- **TypeScript** - Lenguaje tipado
-- **RxJS** - Programación reactiva
-- **Angular Material** - Componentes UI
-- **TailwindCSS** - Utilidades CSS
-- **Chart.js** - Gráficos y estadísticas
-- **Socket.io-client** - WebSockets cliente
-- **Jasmine/Karma** - Testing
+- **Angular 20.3** - Framework SPA moderno
+- **TypeScript 5.9** - Lenguaje tipado para JavaScript
+- **RxJS 7.8** - Programación reactiva
+- **TailwindCSS 3.4** - Framework CSS utility-first
+- **@tailwindcss/forms** - Estilos para formularios
+- **Chart.js 4.5** - Gráficos y visualización de datos
+- **Jasmine 5.9** - Framework de testing
+- **Karma 6.4** - Test runner
+- **Autoprefixer** - PostCSS para compatibilidad CSS
+- **Zone.js 0.15** - Change detection de Angular
 
-### DevOps
-- **Docker** - Containerización
-- **GitHub Actions** - CI/CD
-- **PostgreSQL** - Base de datos
-- **Redis** - Cache y jobs
-- **Nginx** - Servidor web / Reverse proxy
+### DevOps & Tools
+- **Git** - Control de versiones
+- **GitHub** - Repositorio y colaboración
+- **GitHub Actions** - CI/CD pipeline
+- **Docker** - Containerización (via Kamal)
+- **PostgreSQL** - Base de datos en producción
+- **Prettier** - Formateo de código
+- **ESLint/TSLint** - Linting JavaScript/TypeScript
 
 ---
 
