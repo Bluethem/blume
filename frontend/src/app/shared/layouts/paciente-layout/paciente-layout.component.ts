@@ -6,11 +6,12 @@ import { AuthService } from '../../../services/auth.service';
 import { NotificacionesService } from '../../../services/notificaciones.service';
 import { ThemeService } from '../../../services/theme.service';
 import { Usuario, Notificacion } from '../../../models';
+import { ChatbotComponent } from '../../../components/chatbot/chatbot.component';
 
 @Component({
   selector: 'app-paciente-layout',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive, RouterOutlet, FormsModule],
+  imports: [CommonModule, RouterLink, RouterLinkActive, RouterOutlet, FormsModule, ChatbotComponent],
   templateUrl: './paciente-layout.component.html',
   styleUrls: ['./paciente-layout.component.css']
 })

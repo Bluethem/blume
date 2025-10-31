@@ -17,10 +17,28 @@ puts "Iniciando seed de datos..."
 # 1. CREAR USUARIOS ADMINISTRADORES
 # =====================================================
 
-puts "\n Creando administradores..."
+puts "\n👑 Creando Super Administrador..."
 
-admin1 = Usuario.create!(
-  email: 'admin@hospital.com',
+super_admin = Usuario.create!(
+  email: 'superadmin@blume.com',
+  password: 'SuperAdmin2024!',
+  password_confirmation: 'SuperAdmin2024!',
+  nombre: 'Super',
+  apellido: 'Administrador',
+  telefono: '999999999',
+  direccion: 'Oficina Central - Blume Hospital',
+  rol: :administrador,
+  es_super_admin: true,
+  activo: true
+)
+
+puts "✅ Super Admin creado: #{super_admin.email}"
+puts "   ⚠️  Guarda esta contraseña: SuperAdmin2024!"
+
+puts "\n👤 Creando Administrador Regular..."
+
+admin_regular = Usuario.create!(
+  email: 'admin@blume.com',
   password: 'password123',
   password_confirmation: 'password123',
   nombre: 'Carlos',
@@ -28,10 +46,12 @@ admin1 = Usuario.create!(
   telefono: '987654321',
   direccion: 'Av. Administración 123, Lima',
   rol: :administrador,
-  activo: true
+  es_super_admin: false,
+  activo: true,
+  creado_por: super_admin
 )
 
-puts "Administrador creado: #{admin1.email}"
+puts "✅ Admin Regular creado: #{admin_regular.email}"
 
 # =====================================================
 # 2. CREAR CERTIFICACIONES
@@ -684,14 +704,26 @@ end
 puts "="*60
 puts "\n💻 CREDENCIALES DE ACCESO:"
 puts "="*60
-puts "   Admin: admin@hospital.com / password123"
-puts "\n   Médicos:"
+puts "\n   👑 SUPER ADMIN:"
+puts "   - superadmin@blume.com / SuperAdmin2024!"
+puts "   - Permisos: Gestión completa del sistema"
+puts "\n   👤 ADMIN REGULAR:"
+puts "   - admin@blume.com / password123"
+puts "   - Permisos: Gestión de usuarios y certificaciones"
+puts "\n   👨‍⚕️ MÉDICOS:"
 medicos_creados.each do |medico|
   puts "   - #{medico.usuario.email} / password123"
 end
-puts "\n   Pacientes:"
+puts "\n   👥 PACIENTES:"
 pacientes_creados.each do |paciente|
   puts "   - #{paciente.usuario.email} / password123"
 end
 puts "="*60
-puts "\n¡Listo para usar!"
+puts "\n🎉 ¡Sistema listo para usar!"
+puts "🔐 IMPORTANTE: Cambia la contraseña del Super Admin en producción"
+puts "="*60
+
+# Cargar seeds adicionales
+puts "\n📦 Cargando seeds adicionales..."
+load Rails.root.join('db', 'seeds', 'notificaciones_admin.rb')
+load Rails.root.join('db', 'seeds', 'configuraciones.rb') if File.exist?(Rails.root.join('db', 'seeds', 'configuraciones.rb'))

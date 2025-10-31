@@ -32,7 +32,7 @@ export interface Cita {
     nombre_profesional: string;
     especialidad: string;
     foto_url?: string;
-    direccion?: string; // ✅ AGREGADO
+    direccion?: string; // 
   };
 }
 
@@ -54,9 +54,11 @@ export interface Medico {
     nombre: string;
   }>;
   calificacion?: number;
+  calificacion_promedio?: number;
   foto_url?: string;
   disponible_hoy?: boolean;
   total_reviews?: number;
+  total_resenas?: number;
 }
 
 export interface Notificacion {

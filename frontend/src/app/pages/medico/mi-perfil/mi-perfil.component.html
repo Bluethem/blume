@@ -268,26 +268,31 @@
             </div>
           </div>
 
-          <!-- Lista de certificaciones (ejemplo) -->
-          <div class="space-y-4">
-            <div class="flex items-start gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+          <!-- Lista de certificaciones -->
+          <div class="space-y-4" *ngIf="perfil.certificaciones && perfil.certificaciones.length > 0; else noCertificaciones">
+            <div *ngFor="let cert of perfil.certificaciones" 
+                 class="flex items-start gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
               <div class="flex-shrink-0">
                 <span class="material-symbols-outlined text-4xl text-primary">workspace_premium</span>
               </div>
               <div class="flex-1">
-                <h4 class="text-base font-bold text-gray-900 dark:text-white">Especialidad en Cardiología</h4>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Universidad Nacional Mayor de San Marcos</p>
-                <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">Fecha de emisión: Enero 2015</p>
+                <h4 class="text-base font-bold text-gray-900 dark:text-white">{{ cert.nombre }}</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ cert.institucion }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">
+                  Fecha de obtención: {{ cert.fecha_obtencion | date:'MMMM yyyy':'':'es' }}
+                </p>
               </div>
             </div>
+          </div>
 
-            <!-- Empty state si no hay certificaciones -->
+          <!-- Empty state si no hay certificaciones -->
+          <ng-template #noCertificaciones>
             <div class="text-center py-12 bg-gray-50 dark:bg-gray-800/30 rounded-lg">
               <span class="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-600">workspace_premium</span>
               <p class="text-gray-500 dark:text-gray-400 mt-4">No tienes certificaciones registradas</p>
               <p class="text-sm text-gray-400 dark:text-gray-500 mt-2">Contacta al administrador para agregar tus certificaciones</p>
             </div>
-          </div>
+          </ng-template>
         </div>
       </div>
     </div>

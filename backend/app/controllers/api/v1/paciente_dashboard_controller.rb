@@ -85,7 +85,7 @@ module Api
             nombre_completo: cita.medico.usuario.nombre_completo,
             nombre_profesional: cita.medico.nombre_profesional,
             especialidad: cita.medico.especialidad_principal&.nombre || 'Sin especialidad',
-            foto_url: cita.medico.foto_url,
+            foto_url: absolute_url(cita.medico.usuario.foto_url),
             telefono: cita.medico.usuario.telefono,
             direccion: cita.medico.usuario.direccion
           },
@@ -115,13 +115,14 @@ module Api
           {
             id: medico.id,
             nombre_completo: medico.usuario.nombre_completo,
+            nombre_profesional: medico.nombre_profesional,
             especialidad: medico.especialidad_principal&.nombre || 'Sin especialidad',
             anios_experiencia: medico.anios_experiencia || 0,
             costo_consulta: medico.costo_consulta || 0,
             biografia: medico.biografia&.truncate(100),
-            calificacion: medico.calificacion_promedio,
-            total_reviews: medico.total_resenas,
-            foto_url: medico.foto_url,
+            calificacion_promedio: medico.calificacion_promedio,
+            total_resenas: medico.total_resenas,
+            foto_url: absolute_url(medico.usuario.foto_url),
             certificaciones: medico.certificaciones.pluck(:nombre).take(2),
             disponible_hoy: tiene_horario_disponible_hoy?(medico)
           }

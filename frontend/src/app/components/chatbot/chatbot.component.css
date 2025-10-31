@@ -1,0 +1,100 @@
+/* Animación de entrada del chat */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+/* Scroll suave */
+.scroll-smooth {
+  scroll-behavior: smooth;
+}
+
+/* Estilos del scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Animación de los puntos de carga */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-bounce {
+  animation: bounce 1s infinite;
+}
+
+/* Efecto de pulso para el badge */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Sombra suave para los mensajes */
+.shadow-md {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Efecto hover en el botón flotante */
+button:hover {
+  transform: scale(1.05);
+}
+
+/* Transiciones suaves */
+* {
+  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Estilos para mobile */
+@media (max-width: 640px) {
+  .fixed.bottom-6.right-6 {
+    bottom: 1rem;
+    right: 1rem;
+  }
+}

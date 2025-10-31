@@ -1,0 +1,41 @@
+/* Material Icons */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body,
+  .printable-area {
+    margin: 0;
+    padding: 0;
+    background-color: #ffffff !important;
+  }
+
+  .printable-area > * {
+    box-shadow: none !important;
+    border: none !important;
+    page-break-inside: avoid;
+  }
+
+  /* Asegurar que los gráficos se impriman correctamente */
+  canvas {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+}
+
+/* Smooth transitions */
+button, tr {
+  transition: all 0.2s ease;
+}
+
+/* Chart containers */
+canvas {
+  max-width: 100%;
+  height: auto;
+}

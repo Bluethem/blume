@@ -1,0 +1,170 @@
+<div class="w-full max-w-5xl mx-auto">
+  <!-- Header -->
+  <header class="mb-6">
+    <div class="flex items-center justify-between">
+      <h1 class="text-4xl font-black tracking-tight text-gray-900 dark:text-white">Notificaciones</h1>
+      <button (click)="marcarTodasLeidas()"
+              class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+        <span class="material-symbols-outlined text-lg">done_all</span>
+        Marcar todas como leídas
+      </button>
+    </div>
+  </header>
+
+  <!-- Filters -->
+  <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+    <div class="flex flex-col md:flex-row gap-4">
+      <!-- Filtro por tipo -->
+      <div class="flex-1">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tipo</label>
+        <div class="flex flex-wrap gap-2">
+          <button (click)="cambiarFiltroTipo('todas')"
+                  [class.bg-primary]="filtroTipo === 'todas'"
+                  [class.text-white]="filtroTipo === 'todas'"
+                  [class.bg-gray-100]="filtroTipo !== 'todas'"
+                  [class.text-gray-700]="filtroTipo !== 'todas'"
+                  [class.dark:bg-gray-700]="filtroTipo !== 'todas'"
+                  [class.dark:text-gray-300]="filtroTipo !== 'todas'"
+                  class="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors">
+            Todas
+          </button>
+          <button (click)="cambiarFiltroTipo('cita_creada')"
+                  [class.bg-primary]="filtroTipo === 'cita_creada'"
+                  [class.text-white]="filtroTipo === 'cita_creada'"
+                  [class.bg-gray-100]="filtroTipo !== 'cita_creada'"
+                  [class.text-gray-700]="filtroTipo !== 'cita_creada'"
+                  class="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors">
+            Cita Creada
+          </button>
+          <button (click)="cambiarFiltroTipo('cita_confirmada')"
+                  [class.bg-primary]="filtroTipo === 'cita_confirmada'"
+                  [class.text-white]="filtroTipo === 'cita_confirmada'"
+                  [class.bg-gray-100]="filtroTipo !== 'cita_confirmada'"
+                  [class.text-gray-700]="filtroTipo !== 'cita_confirmada'"
+                  class="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors">
+            Cita Confirmada
+          </button>
+          <button (click)="cambiarFiltroTipo('cita_cancelada')"
+                  [class.bg-primary]="filtroTipo === 'cita_cancelada'"
+                  [class.text-white]="filtroTipo === 'cita_cancelada'"
+                  [class.bg-gray-100]="filtroTipo !== 'cita_cancelada'"
+                  [class.text-gray-700]="filtroTipo !== 'cita_cancelada'"
+                  class="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors">
+            Cita Cancelada
+          </button>
+          <button (click)="cambiarFiltroTipo('recordatorio')"
+                  [class.bg-primary]="filtroTipo === 'recordatorio'"
+                  [class.text-white]="filtroTipo === 'recordatorio'"
+                  [class.bg-gray-100]="filtroTipo !== 'recordatorio'"
+                  [class.text-gray-700]="filtroTipo !== 'recordatorio'"
+                  class="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors">
+            Recordatorio
+          </button>
+        </div>
+      </div>
+
+      <!-- Filtro por estado -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Estado</label>
+        <div class="flex gap-2">
+          <button (click)="cambiarFiltroEstado('todas')"
+                  [class.bg-primary]="filtroEstado === 'todas'"
+                  [class.text-white]="filtroEstado === 'todas'"
+                  [class.bg-gray-100]="filtroEstado !== 'todas'"
+                  [class.text-gray-700]="filtroEstado !== 'todas'"
+                  class="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors">
+            Todas
+          </button>
+          <button (click)="cambiarFiltroEstado('no_leidas')"
+                  [class.bg-primary]="filtroEstado === 'no_leidas'"
+                  [class.text-white]="filtroEstado === 'no_leidas'"
+                  [class.bg-gray-100]="filtroEstado !== 'no_leidas'"
+                  [class.text-gray-700]="filtroEstado !== 'no_leidas'"
+                  class="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors">
+            No leídas
+          </button>
+          <button (click)="cambiarFiltroEstado('leidas')"
+                  [class.bg-primary]="filtroEstado === 'leidas'"
+                  [class.text-white]="filtroEstado === 'leidas'"
+                  [class.bg-gray-100]="filtroEstado !== 'leidas'"
+                  [class.text-gray-700]="filtroEstado !== 'leidas'"
+                  class="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors">
+            Leídas
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex justify-center items-center py-20">
+    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+  </div>
+
+  <!-- Notificaciones List -->
+  <div *ngIf="!loading" class="space-y-3">
+    <div *ngFor="let notificacion of notificaciones"
+         (click)="marcarComoLeida(notificacion)"
+         [class.bg-primary/5]="!notificacion.leida"
+         [class.border-primary/20]="!notificacion.leida"
+         class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 cursor-pointer hover:shadow-md transition-all">
+      <div class="flex items-start gap-4">
+        <!-- Icono -->
+        <div [class]="getColorClase(notificacion.tipo)"
+             class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center">
+          <span class="material-symbols-outlined">{{ getIcono(notificacion.tipo) }}</span>
+        </div>
+
+        <!-- Contenido -->
+        <div class="flex-1 min-w-0">
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex-1">
+              <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-1">
+                {{ notificacion.titulo }}
+                <span *ngIf="!notificacion.leida"
+                      class="inline-block w-2 h-2 bg-primary rounded-full ml-2"></span>
+              </h3>
+              <p class="text-sm text-gray-600 dark:text-gray-400">{{ notificacion.mensaje }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-500 mt-2">{{ getTimeAgo(notificacion.created_at) }}</p>
+            </div>
+
+            <!-- Botón eliminar -->
+            <button (click)="eliminar(notificacion.id); $event.stopPropagation()"
+                    class="text-gray-400 hover:text-red-500 transition-colors p-1">
+              <span class="material-symbols-outlined text-lg">close</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="notificaciones.length === 0"
+         class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
+      <span class="material-symbols-outlined text-6xl text-gray-400 mb-4">notifications_off</span>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No hay notificaciones</h3>
+      <p class="text-sm text-gray-600 dark:text-gray-400">No tienes notificaciones con estos filtros</p>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!loading && notificaciones.length > 0"
+       class="flex items-center justify-between mt-6">
+    <p class="text-sm text-gray-600 dark:text-gray-400">
+      Mostrando {{ (currentPage - 1) * perPage + 1 }}-{{ Math.min(currentPage * perPage, totalCount) }} de {{ totalCount }}
+    </p>
+
+    <div class="flex gap-2">
+      <button (click)="previousPage()"
+              [disabled]="currentPage === 1"
+              class="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+        Anterior
+      </button>
+      <button (click)="nextPage()"
+              [disabled]="currentPage === totalPages"
+              class="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+        Siguiente
+      </button>
+    </div>
+  </div>
+</div>

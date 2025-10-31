@@ -76,4 +76,15 @@ class ApplicationController < ActionController::API
       total_pages: (total.to_f / per_page).ceil
     }
   end
+
+  # Helper para obtener la URL base del servidor (http://localhost:3000)
+  def base_url
+    "#{request.protocol}#{request.host_with_port}"
+  end
+
+  # Helper para convertir URLs relativas a absolutas
+  def absolute_url(relative_url)
+    return relative_url if relative_url.nil? || relative_url.start_with?('http://', 'https://')
+    "#{base_url}#{relative_url}"
+  end
 end

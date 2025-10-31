@@ -214,22 +214,38 @@ module Api
         params.require(:password).permit(:current_password, :new_password, :new_password_confirmation)
       end
 
+      def paciente_params
+        return {} unless params[:paciente].present?
+        params.require(:paciente).permit(
+          :fecha_nacimiento,
+          :genero,
+          :tipo_documento,
+          :numero_documento,
+          :grupo_sanguineo,
+          :alergias,
+          :observaciones
+        )
+      end
+
+      def medico_params
+        return {} unless params[:medico].present?
+        params.require(:medico).permit(
+          :numero_colegiatura,
+          :anios_experiencia,
+          :biografia,
+          :costo_consulta
+        )
+      end
+
       def create_user_profile(user)
         case user.rol
         when 'paciente'
           Paciente.create!(
-            usuario_id: user.id,
-            fecha_nacimiento: params[:fecha_nacimiento],
-            genero: params[:genero],
-            tipo_documento: params[:tipo_documento],
-            numero_documento: params[:numero_documento]
+            paciente_params.merge(usuario_id: user.id)
           )
         when 'medico'
           Medico.create!(
-            usuario_id: user.id,
-            numero_colegiatura: params[:numero_colegiatura],
-            anos_experiencia: params[:anos_experiencia] || 0,
-            biografia: params[:biografia]
+            medico_params.merge(usuario_id: user.id, anios_experiencia: medico_params[:anios_experiencia] || 0)
           )
         else
           # Para administradores no se crea perfil adicional
@@ -237,6 +253,7 @@ module Api
         end
       rescue => e
         Rails.logger.error("Error creating profile: #{e.message}")
+        Rails.logger.error("Backtrace: #{e.backtrace.first(5).join("\n")}")
         nil
       end
 
@@ -251,7 +268,8 @@ module Api
           direccion: user.direccion,
           rol: user.rol,
           activo: user.activo,
-          foto_url: user.foto_perfil_url,
+          es_super_admin: user.es_super_admin || false,
+          foto_url: absolute_url(user.foto_url),
           created_at: user.created_at
         }
 

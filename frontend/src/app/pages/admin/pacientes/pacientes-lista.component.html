@@ -1,0 +1,218 @@
+<div class="w-full max-w-7xl mx-auto">
+  <!-- Header -->
+  <header class="mb-6">
+    <h1 class="text-4xl font-black leading-tight tracking-tight text-gray-900 dark:text-white">
+      Gestión de Pacientes
+    </h1>
+  </header>
+
+  <!-- Search and Actions -->
+  <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+    <!-- Top Bar: Search and Export -->
+    <div class="flex flex-col md:flex-row justify-between gap-4 mb-4">
+      <div class="flex-1">
+        <label class="flex flex-col min-w-40 h-12 w-full">
+          <div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+            <div class="text-gray-500 flex bg-gray-50 dark:bg-gray-900 items-center justify-center pl-4 rounded-l-lg border-y border-l border-gray-300 dark:border-gray-700">
+              <span class="material-symbols-outlined">search</span>
+            </div>
+            <input (input)="onSearchChange($any($event.target).value)"
+                   [(ngModel)]="searchTerm"
+                   class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 h-full placeholder:text-gray-500 px-4 border-l-0 text-base"
+                   placeholder="Buscar por nombre, email..."
+                   type="text"/>
+          </div>
+        </label>
+      </div>
+      <div class="flex items-center justify-end gap-3">
+        <button (click)="exportToExcel()"
+                class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 bg-primary text-white gap-2 text-sm font-bold px-5 hover:bg-primary/90">
+          <span class="material-symbols-outlined text-base">download</span>
+          <span class="truncate">Exportar a Excel</span>
+        </button>
+        <button (click)="crearPaciente()"
+                class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 bg-primary text-white gap-2 text-sm font-bold px-5 hover:bg-primary/90">
+          <span class="material-symbols-outlined text-base">add</span>
+          <span class="truncate">Nuevo Paciente</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Bottom Bar: Filters -->
+    <div class="flex gap-3 flex-wrap">
+      <button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 pl-4 pr-3 hover:border-primary/50">
+        <p class="text-gray-900 dark:text-white text-sm font-medium">Estado: Todos</p>
+        <span class="material-symbols-outlined text-gray-500 text-xl">expand_more</span>
+      </button>
+      <button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 pl-4 pr-3 hover:border-primary/50">
+        <p class="text-gray-900 dark:text-white text-sm font-medium">Con Alergias</p>
+        <span class="material-symbols-outlined text-gray-500 text-xl">expand_more</span>
+      </button>
+      <button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 pl-4 pr-3 hover:border-primary/50">
+        <p class="text-gray-900 dark:text-white text-sm font-medium">Grupo Sanguíneo</p>
+        <span class="material-symbols-outlined text-gray-500 text-xl">expand_more</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Bulk Actions Bar (Contextual) -->
+  <div *ngIf="hasSelectedPacientes" class="my-4 p-3 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-between">
+    <p class="text-sm font-semibold text-primary">{{ selectedCount }} pacientes seleccionados</p>
+    <div class="flex gap-2">
+      <button (click)="bulkActivate()"
+              class="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-green-700 dark:text-green-300 bg-green-500/10 rounded-md hover:bg-green-500/20">
+        <span class="material-symbols-outlined text-sm">check_circle</span> Activar
+      </button>
+      <button (click)="bulkDeactivate()"
+              class="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-gray-700 dark:text-gray-300 bg-gray-500/10 rounded-md hover:bg-gray-500/20">
+        <span class="material-symbols-outlined text-sm">pause_circle</span> Desactivar
+      </button>
+      <button (click)="bulkDelete()"
+              class="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-red-700 dark:text-red-300 bg-red-500/10 rounded-md hover:bg-red-500/20">
+        <span class="material-symbols-outlined text-sm">delete</span> Eliminar
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center py-20">
+    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+  </div>
+
+  <!-- Patients Table -->
+  <div *ngIf="!loading" class="mt-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left">
+        <thead class="bg-gray-50 dark:bg-gray-900 text-xs uppercase text-gray-600 dark:text-gray-400">
+          <tr>
+            <th class="p-4" scope="col">
+              <input (change)="toggleSelectAll($event)"
+                     [checked]="selectAll"
+                     class="form-checkbox h-4 w-4 rounded text-primary bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-700 focus:ring-primary/50"
+                     type="checkbox"/>
+            </th>
+            <th class="px-6 py-3" scope="col">Nombre Completo</th>
+            <th class="px-6 py-3" scope="col">Contacto</th>
+            <th class="px-6 py-3" scope="col">Grupo Sang.</th>
+            <th class="px-6 py-3" scope="col">Fecha de Registro</th>
+            <th class="px-6 py-3" scope="col">Última Cita</th>
+            <th class="px-6 py-3" scope="col">Estado</th>
+            <th class="px-6 py-3 text-center" scope="col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let paciente of pacientes"
+              class="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/50">
+            <td class="p-4">
+              <input (change)="toggleSelectPaciente(paciente.id, $event)"
+                     [checked]="isPacienteSelected(paciente.id)"
+                     class="form-checkbox h-4 w-4 rounded text-primary bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-700 focus:ring-primary/50"
+                     type="checkbox"/>
+            </td>
+            <td class="px-6 py-4 font-medium whitespace-nowrap">
+              <div class="flex items-center gap-3">
+                <img [src]="paciente.foto_url || 'https://ui-avatars.com/api/?name=' + paciente.nombre_completo + '&background=EA2A33&color=fff'"
+                     [alt]="'Avatar de ' + paciente.nombre_completo"
+                     class="w-10 h-10 rounded-full object-cover"/>
+                <div class="flex flex-col">
+                  <span class="text-gray-900 dark:text-white">{{ paciente.nombre_completo }}</span>
+                  <div *ngIf="paciente.tiene_alergias" class="flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                    <span class="material-symbols-outlined text-base">warning</span>
+                    <span class="text-xs font-semibold">Alergias</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4 text-gray-600 dark:text-gray-400">
+              <div>{{ paciente.email }}</div>
+              <div class="text-xs">{{ paciente.telefono || 'Sin teléfono' }}</div>
+            </td>
+            <td class="px-6 py-4">
+              <span *ngIf="paciente.grupo_sanguineo"
+                    class="bg-primary/10 text-primary text-xs font-bold px-2.5 py-1 rounded-full">
+                {{ paciente.grupo_sanguineo }}
+              </span>
+              <span *ngIf="!paciente.grupo_sanguineo" class="text-gray-400 text-xs">-</span>
+            </td>
+            <td class="px-6 py-4 text-gray-600 dark:text-gray-400">{{ paciente.fecha_registro }}</td>
+            <td class="px-6 py-4 text-gray-600 dark:text-gray-400">{{ paciente.ultima_cita || 'Sin citas' }}</td>
+            <td class="px-6 py-4">
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input [checked]="paciente.activo"
+                       (change)="toggleEstado(paciente, $event)"
+                       class="sr-only peer"
+                       type="checkbox"/>
+                <div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 rounded-full peer peer-focus:ring-2 peer-focus:ring-primary/50 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+              </label>
+            </td>
+            <td class="px-6 py-4">
+              <div class="flex justify-center items-center gap-2">
+                <button (click)="verPaciente(paciente)"
+                        class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+                        title="Ver">
+                  <span class="material-symbols-outlined text-xl text-gray-700 dark:text-gray-300">visibility</span>
+                </button>
+                <button (click)="editarPaciente(paciente)"
+                        class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+                        title="Editar">
+                  <span class="material-symbols-outlined text-xl text-gray-700 dark:text-gray-300">edit</span>
+                </button>
+                <button (click)="deletePaciente(paciente)"
+                        class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+                        title="Eliminar">
+                  <span class="material-symbols-outlined text-xl text-primary">delete</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Empty State -->
+          <tr *ngIf="pacientes.length === 0">
+            <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+              <span class="material-symbols-outlined text-6xl">groups</span>
+              <p class="mt-4 text-lg">No se encontraron pacientes</p>
+              <p class="text-sm text-gray-400">Intenta ajustar los filtros de búsqueda</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <nav *ngIf="pacientes.length > 0" aria-label="Table navigation" class="flex items-center justify-between p-4">
+      <span class="text-sm font-normal text-gray-600 dark:text-gray-400">
+        Mostrando <span class="font-semibold text-gray-900 dark:text-white">{{ (currentPage - 1) * perPage + 1 }}-{{ Math.min(currentPage * perPage, totalCount) }}</span>
+        de <span class="font-semibold text-gray-900 dark:text-white">{{ totalCount }}</span>
+      </span>
+      <ul class="inline-flex -space-x-px text-sm h-8">
+        <li>
+          <button (click)="changePage(currentPage - 1)"
+                  [disabled]="currentPage === 1"
+                  [class.opacity-50]="currentPage === 1"
+                  [class.cursor-not-allowed]="currentPage === 1"
+                  class="flex items-center justify-center px-3 h-8 ml-0 leading-tight text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-l-lg hover:bg-gray-100 dark:hover:bg-gray-900">
+            Anterior
+          </button>
+        </li>
+        <li *ngFor="let page of pages">
+          <button (click)="changePage(page)"
+                  [class.bg-primary/20]="page === currentPage"
+                  [class.border-primary/20]="page === currentPage"
+                  [class.text-primary]="page === currentPage"
+                  class="flex items-center justify-center px-3 h-8 leading-tight text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-900">
+            {{ page }}
+          </button>
+        </li>
+        <li>
+          <button (click)="changePage(currentPage + 1)"
+                  [disabled]="currentPage === totalPages"
+                  [class.opacity-50]="currentPage === totalPages"
+                  [class.cursor-not-allowed]="currentPage === totalPages"
+                  class="flex items-center justify-center px-3 h-8 leading-tight text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-r-lg hover:bg-gray-100 dark:hover:bg-gray-900">
+            Siguiente
+          </button>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>

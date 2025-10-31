@@ -15,12 +15,20 @@ class Api::V1::MedicoPerfilController < ApplicationController
       apellido: usuario.apellido,
       email: usuario.email,
       telefono: usuario.telefono,
-      foto_url: usuario.foto_perfil_url,
+      foto_url: absolute_url(usuario.foto_url),
       numero_colegiatura: medico.numero_colegiatura,
       especialidad: especialidad_obj&.nombre || 'No especificada',
       especialidad_id: especialidad_obj&.id,
       anios_experiencia: medico.anios_experiencia || 0,
-      biografia: medico.biografia
+      biografia: medico.biografia,
+      certificaciones: medico.medico_certificaciones.includes(:certificacion).map do |mc|
+        {
+          id: mc.certificacion.id,
+          nombre: mc.certificacion.nombre,
+          institucion: mc.certificacion.institucion_emisora,
+          fecha_obtencion: mc.fecha_obtencion || mc.created_at
+        }
+      end
     }
     
     render_success(perfil)
@@ -68,7 +76,7 @@ class Api::V1::MedicoPerfilController < ApplicationController
       apellido: usuario.apellido,
       email: usuario.email,
       telefono: usuario.telefono,
-      foto_url: usuario.foto_perfil_url,
+      foto_url: absolute_url(usuario.foto_url),
       numero_colegiatura: medico.numero_colegiatura,
       especialidad: especialidad_obj&.nombre || 'No especificada',
       especialidad_id: especialidad_obj&.id,
@@ -80,6 +88,52 @@ class Api::V1::MedicoPerfilController < ApplicationController
   rescue => e
     Rails.logger.error("Error al actualizar perfil: #{e.message}")
     render_error('Error al actualizar perfil', status: :internal_server_error)
+  end
+
+  # POST /api/v1/medico/perfil/upload_foto
+  def upload_foto
+    unless params[:foto].present?
+      return render_error('No se proporcionó ninguna imagen')
+    end
+
+    foto = params[:foto]
+    
+    # Validar tipo de archivo
+    unless foto.content_type.start_with?('image/')
+      return render_error('El archivo debe ser una imagen')
+    end
+
+    # Validar tamaño (máx 5MB)
+    if foto.size > 5.megabytes
+      return render_error('La imagen no debe superar los 5MB')
+    end
+
+    # Crear directorio si no existe
+    uploads_dir = Rails.root.join('public', 'uploads', 'avatars')
+    FileUtils.mkdir_p(uploads_dir) unless File.directory?(uploads_dir)
+
+    # Generar nombre único
+    extension = File.extname(foto.original_filename)
+    filename = "#{current_user.id}_#{Time.current.to_i}#{extension}"
+    filepath = uploads_dir.join(filename)
+
+    # Guardar archivo
+    File.open(filepath, 'wb') do |file|
+      file.write(foto.read)
+    end
+
+    # Actualizar URL en base de datos (guardar URL relativa)
+    foto_url = "/uploads/avatars/#{filename}"
+    current_user.update(foto_url: foto_url)
+
+    # Devolver URL completa al frontend
+    render_success({
+      message: 'Foto de perfil actualizada exitosamente',
+      foto_url: absolute_url(foto_url)
+    })
+  rescue => e
+    Rails.logger.error("Error uploading foto: #{e.message}")
+    render_error('Error al subir la imagen')
   end
 
   private

@@ -114,37 +114,49 @@ export class PerfilMedicoComponent implements OnInit {
   }
 
   // Helpers
-  get estrellas(): number[] {
-    const calificacion = this.medico?.calificacion || 0;
-    return Array(5).fill(0).map((_, i) => i < Math.floor(calificacion) ? 1 : 0);
+  get estrellas(): { llena: boolean; media: boolean; vacia: boolean }[] {
+    const calificacion = this.medico?.calificacion_promedio || 0;
+    const estrellas: { llena: boolean; media: boolean; vacia: boolean }[] = [];
+    
+    for (let i = 1; i <= 5; i++) {
+      if (calificacion >= i) {
+        // Estrella llena
+        estrellas.push({ llena: true, media: false, vacia: false });
+      } else if (calificacion >= i - 0.5) {
+        // Media estrella
+        estrellas.push({ llena: false, media: true, vacia: false });
+      } else {
+        // Estrella vacía
+        estrellas.push({ llena: false, media: false, vacia: true });
+      }
+    }
+    
+    return estrellas;
   }
 
   get tieneMediaEstrella(): boolean {
-    const calificacion = this.medico?.calificacion || 0;
+    const calificacion = this.medico?.calificacion_promedio || 0;
     return calificacion % 1 >= 0.5;
   }
 
   get certificacionesFormateadas(): Certificacion[] {
-    // Por ahora retornamos datos de ejemplo
-    // TODO: Implementar cuando el backend tenga las certificaciones
-    return [
-      {
-        nombre: 'Especialista en Cardiología Intervencionista',
-        institucion: 'Universidad Nacional'
-      },
-      {
-        nombre: 'Miembro de la Sociedad de Cardiología',
-        institucion: 'Sociedad Peruana de Cardiología'
-      }
-    ];
+    // Retornar las certificaciones reales del médico
+    return this.medico?.certificaciones?.map((cert: any) => ({
+      nombre: cert.nombre,
+      institucion: cert.institucion
+    })) || [];
   }
 
   cargarValoraciones(medicoId: string): void {
     this.loadingValoraciones = true;
     this.valoracionesService.getValoracionesMedico(medicoId, { per_page: 10 }).subscribe({
-      next: (response) => {
+      next: (response: any) => {
         if (response.success && response.data) {
           this.valoraciones = response.data;
+        }
+        // Las estadísticas vienen en el mismo response
+        if (response.estadisticas) {
+          this.estadisticas = response.estadisticas;
         }
         this.loadingValoraciones = false;
       },
@@ -199,10 +211,19 @@ export class PerfilMedicoComponent implements OnInit {
     return `Hace ${Math.floor(dias / 365)} años`;
   }
 
-  estrellasPorCalificacion(calificacion: number): { llenas: number; vacia: boolean } {
-    return {
-      llenas: Math.floor(calificacion),
-      vacia: calificacion < 5
-    };
+  estrellasPorCalificacion(calificacion: number): { llena: boolean; media: boolean; vacia: boolean }[] {
+    const estrellas: { llena: boolean; media: boolean; vacia: boolean }[] = [];
+    
+    for (let i = 1; i <= 5; i++) {
+      if (calificacion >= i) {
+        estrellas.push({ llena: true, media: false, vacia: false });
+      } else if (calificacion >= i - 0.5) {
+        estrellas.push({ llena: false, media: true, vacia: false });
+      } else {
+        estrellas.push({ llena: false, media: false, vacia: true });
+      }
+    }
+    
+    return estrellas;
   }
 }

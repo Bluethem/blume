@@ -204,11 +204,11 @@
 
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <div 
-            class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12"
-            [style.background-image]="'url(' + (cita.medico?.foto_url || 'https://ui-avatars.com/api/?name=' + cita.medico?.nombre_completo) + ')'"
-            [attr.data-alt]="cita.medico?.nombre_completo"
-          ></div>
+          <img 
+            [src]="cita.medico?.foto_url || 'https://ui-avatars.com/api/?name=' + (cita.medico?.nombre_completo || 'Medico') + '&size=96&background=B71C1C&color=fff'"
+            [alt]="'Foto de ' + (cita.medico?.nombre_completo || 'Médico')"
+            class="rounded-full size-12 object-cover border-2 border-gray-200 dark:border-gray-700"
+          />
           <div>
             <p class="font-semibold">{{ cita.medico?.nombre_profesional }}</p>
             <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">

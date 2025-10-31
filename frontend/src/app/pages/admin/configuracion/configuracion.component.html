@@ -1,0 +1,146 @@
+<div class="w-full max-w-[1400px] mx-auto">
+  <!-- Header -->
+  <header class="mb-8">
+    <h1 class="text-4xl font-black tracking-tight text-gray-900 dark:text-white">Configuración del Sistema</h1>
+  </header>
+
+  <!-- Messages -->
+  <div *ngIf="mensajeExito" class="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+    <p class="text-green-600 dark:text-green-400">{{ mensajeExito }}</p>
+  </div>
+  <div *ngIf="mensajeError" class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+    <p class="text-red-600 dark:text-red-400">{{ mensajeError }}</p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="mb-6 border-b border-gray-200 dark:border-gray-700">
+    <nav class="-mb-px flex space-x-6" aria-label="Tabs">
+      <button (click)="cambiarTab('general')"
+              [class.border-primary]="tabActual === 'general'"
+              [class.text-primary]="tabActual === 'general'"
+              [class.border-transparent]="tabActual !== 'general'"
+              class="shrink-0 border-b-2 px-1 pb-4 text-sm font-semibold">General</button>
+      <button (click)="cambiarTab('citas')"
+              [class.border-primary]="tabActual === 'citas'"
+              [class.text-primary]="tabActual === 'citas'"
+              class="shrink-0 border-b-2 px-1 pb-4 text-sm font-semibold">Citas</button>
+      <button *ngIf="puedeVerPermisos" (click)="cambiarTab('permisos')"
+              [class.border-primary]="tabActual === 'permisos'"
+              class="shrink-0 border-b-2 px-1 pb-4 text-sm font-semibold">Permisos</button>
+      <button *ngIf="puedeVerIntegraciones" (click)="cambiarTab('integraciones')"
+              [class.border-primary]="tabActual === 'integraciones'"
+              class="shrink-0 border-b-2 px-1 pb-4 text-sm font-semibold">Integraciones</button>
+      <button (click)="cambiarTab('apariencia')"
+              [class.border-primary]="tabActual === 'apariencia'"
+              class="shrink-0 border-b-2 px-1 pb-4 text-sm font-semibold">Apariencia</button>
+    </nav>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex justify-center items-center py-20">
+    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+  </div>
+
+  <!-- Content Tabs -->
+  <div *ngIf="!loading">
+    <!-- GENERAL TAB -->
+    <div *ngIf="tabActual === 'general'" class="space-y-6">
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium mb-1">Nombre del sistema</label>
+            <input [(ngModel)]="valores['sistema_nombre']" class="w-full rounded-lg border-gray-300 dark:border-gray-600" type="text"/>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Zona horaria <span *ngIf="!esSuperAdmin" class="text-xs text-gray-400">(Solo Super Admin)</span></label>
+            <select [(ngModel)]="valores['sistema_timezone']" [disabled]="!esSuperAdmin" class="w-full rounded-lg">
+              <option value="America/Lima">Lima</option>
+              <option value="America/Mexico_City">Ciudad de México</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-end gap-3">
+        <button (click)="restablecerCategoria()" class="px-4 py-2 border rounded-lg">Restablecer</button>
+        <button (click)="guardarCategoria()" class="px-4 py-2 bg-primary text-white rounded-lg">Guardar</button>
+      </div>
+    </div>
+
+    <!-- CITAS TAB -->
+    <div *ngIf="tabActual === 'citas'" class="space-y-6">
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium mb-1">Duración (minutos)</label>
+            <input [(ngModel)]="valores['citas_duracion_default']" class="w-full rounded-lg" type="number"/>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Tiempo mínimo cancelar (horas)</label>
+            <input [(ngModel)]="valores['citas_tiempo_minimo_cancelar']" class="w-full rounded-lg" type="number"/>
+          </div>
+        </div>
+        <div class="mt-6">
+          <label class="block text-sm font-medium mb-1">Recordatorio por Email</label>
+          <input [(ngModel)]="valores['citas_recordatorio_email']" type="checkbox"/>
+        </div>
+      </div>
+      <div class="flex justify-end gap-3">
+        <button (click)="restablecerCategoria()" class="px-4 py-2 border rounded-lg">Restablecer</button>
+        <button (click)="guardarCategoria()" class="px-4 py-2 bg-primary text-white rounded-lg">Guardar</button>
+      </div>
+    </div>
+
+    <!-- PERMISOS TAB -->
+    <div *ngIf="tabActual === 'permisos' && puedeVerPermisos" class="space-y-6">
+      <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 p-4 rounded-lg mb-4">
+        <p class="text-sm font-semibold text-yellow-800">⚠️ Sección Solo Super Administrador</p>
+      </div>
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-xl">
+        <div *ngFor="let config of getConfiguracionesPorCategoria('permisos')" class="flex justify-between items-center p-4 border-b">
+          <p>{{ config.descripcion }}</p>
+          <input [(ngModel)]="valores[config.clave]" type="checkbox"/>
+        </div>
+      </div>
+      <div class="flex justify-end gap-3">
+        <button (click)="guardarCategoria()" class="px-4 py-2 bg-primary text-white rounded-lg">Guardar</button>
+      </div>
+    </div>
+
+    <!-- INTEGRACIONES TAB -->
+    <div *ngIf="tabActual === 'integraciones' && puedeVerIntegraciones" class="space-y-6">
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-xl">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div *ngFor="let config of getConfiguracionesPorCategoria('integraciones')">
+            <label class="block text-sm font-medium mb-1">{{ config.descripcion }}</label>
+            <input [(ngModel)]="valores[config.clave]" class="w-full rounded-lg" type="text"/>
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-end gap-3">
+        <button (click)="guardarCategoria()" class="px-4 py-2 bg-primary text-white rounded-lg">Guardar</button>
+      </div>
+    </div>
+
+    <!-- APARIENCIA TAB -->
+    <div *ngIf="tabActual === 'apariencia'" class="space-y-6">
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-xl">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium mb-1">Tema</label>
+            <select [(ngModel)]="valores['apariencia_tema_default']" class="w-full rounded-lg">
+              <option value="light">Claro</option>
+              <option value="dark">Oscuro</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Color primario</label>
+            <input [(ngModel)]="valores['apariencia_color_primario']" class="w-full rounded-lg" type="color"/>
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-end gap-3">
+        <button (click)="guardarCategoria()" class="px-4 py-2 bg-primary text-white rounded-lg">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>

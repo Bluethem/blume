@@ -1,0 +1,163 @@
+<div class="w-full max-w-5xl mx-auto">
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex justify-center items-center py-20">
+    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!loading && cita">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+      <div class="flex items-center gap-4">
+        <button (click)="volver()"
+                class="flex items-center justify-center h-10 w-10 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
+          <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Detalle de Cita</h1>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">ID: {{ cita.id }}</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <button (click)="editar()"
+                class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+          <span class="material-symbols-outlined text-lg">edit</span>
+          Editar
+        </button>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div *ngIf="mensajeExito" class="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+      <p class="text-green-600 dark:text-green-400">{{ mensajeExito }}</p>
+    </div>
+    <div *ngIf="mensajeError" class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+      <p class="text-red-600 dark:text-red-400">{{ mensajeError }}</p>
+    </div>
+
+    <!-- Estado -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <span [class]="getEstadoClase(cita.estado)"
+                class="px-4 py-2 text-sm font-semibold rounded-lg">
+            {{ cita.estado_display }}
+          </span>
+          <span class="text-sm text-gray-600 dark:text-gray-400">
+            Creada: {{ formatFecha(cita.created_at) }}
+          </span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button *ngIf="cita.estado === 'pendiente'"
+                  (click)="confirmar()"
+                  [disabled]="procesando"
+                  class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50">
+            <span class="material-symbols-outlined text-lg">check_circle</span>
+            Confirmar
+          </button>
+          <button *ngIf="cita.estado === 'confirmada'"
+                  (click)="completar()"
+                  [disabled]="procesando"
+                  class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50">
+            <span class="material-symbols-outlined text-lg">task_alt</span>
+            Completar
+          </button>
+          <button *ngIf="cita.estado !== 'cancelada'"
+                  (click)="cancelar()"
+                  [disabled]="procesando"
+                  class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50">
+            <span class="material-symbols-outlined text-lg">cancel</span>
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Información del Paciente -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">person</span>
+          Información del Paciente
+        </h2>
+        <div class="space-y-3">
+          <div>
+            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Nombre</label>
+            <p class="text-gray-900 dark:text-white">{{ cita.paciente.nombre }}</p>
+          </div>
+          <div>
+            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Email</label>
+            <p class="text-gray-900 dark:text-white">{{ cita.paciente.email }}</p>
+          </div>
+          <div>
+            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Teléfono</label>
+            <p class="text-gray-900 dark:text-white">{{ cita.paciente.telefono || 'No registrado' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información del Médico -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">medical_services</span>
+          Información del Médico
+        </h2>
+        <div class="space-y-3">
+          <div>
+            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Nombre</label>
+            <p class="text-gray-900 dark:text-white">{{ cita.medico.nombre }}</p>
+          </div>
+          <div>
+            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Especialidad</label>
+            <p class="text-gray-900 dark:text-white">{{ cita.medico.especialidad || 'N/A' }}</p>
+          </div>
+          <div>
+            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Email</label>
+            <p class="text-gray-900 dark:text-white">{{ cita.medico.email }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detalles de la Cita -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mt-6">
+      <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary">event</span>
+        Detalles de la Cita
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Fecha</label>
+          <p class="text-gray-900 dark:text-white">{{ formatFecha(cita.fecha_hora_inicio) }}</p>
+        </div>
+        <div>
+          <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Hora</label>
+          <p class="text-gray-900 dark:text-white">
+            {{ formatHora(cita.fecha_hora_inicio) }} - {{ formatHora(cita.fecha_hora_fin) }}
+            <span class="text-sm text-gray-500">({{ cita.duracion_minutos }} minutos)</span>
+          </p>
+        </div>
+        <div>
+          <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Motivo de Consulta</label>
+          <p class="text-gray-900 dark:text-white">{{ cita.motivo_consulta }}</p>
+        </div>
+        <div>
+          <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Costo</label>
+          <p class="text-gray-900 dark:text-white text-lg font-semibold">${{ cita.costo.toFixed(2) }}</p>
+        </div>
+        <div *ngIf="cita.observaciones" class="md:col-span-2">
+          <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Observaciones</label>
+          <p class="text-gray-900 dark:text-white">{{ cita.observaciones }}</p>
+        </div>
+        <div *ngIf="cita.diagnostico" class="md:col-span-2">
+          <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Diagnóstico</label>
+          <p class="text-gray-900 dark:text-white">{{ cita.diagnostico }}</p>
+        </div>
+        <div *ngIf="cita.motivo_cancelacion" class="md:col-span-2">
+          <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Motivo de Cancelación</label>
+          <p class="text-red-600 dark:text-red-400">{{ cita.motivo_cancelacion }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

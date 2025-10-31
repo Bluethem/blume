@@ -14,6 +14,10 @@
 #  activo                  :boolean          default(TRUE), not null
 #  reset_password_token    :string
 #  reset_password_sent_at  :datetime
+#  foto_url                :string
+#  es_super_admin          :boolean          default(FALSE), not null
+#  ultimo_acceso           :datetime
+#  creado_por_id           :uuid
 #  created_at              :datetime         not null
 #  updated_at              :datetime         not null
 #
@@ -36,6 +40,10 @@ class Usuario < ApplicationRecord
   has_one :medico, dependent: :destroy
   has_many :notificaciones, dependent: :destroy
   has_many :citas_canceladas, class_name: 'Cita', foreign_key: 'cancelada_por_id'
+  
+  # Asociaciones de auditoría
+  belongs_to :creado_por, class_name: 'Usuario', optional: true
+  has_many :usuarios_creados, class_name: 'Usuario', foreign_key: 'creado_por_id', dependent: :nullify
 
   # Validaciones
   validates :email, presence: true, 
@@ -55,14 +63,27 @@ class Usuario < ApplicationRecord
   scope :activos, -> { where(activo: true) }
   scope :inactivos, -> { where(activo: false) }
   scope :por_rol, ->(rol) { where(rol: rol) }
+  scope :super_admins, -> { where(es_super_admin: true) }
+  scope :admins_regulares, -> { where(rol: :administrador, es_super_admin: false) }
 
   # Métodos de instancia
   def nombre_completo
     "#{nombre} #{apellido}"
   end
   
-  def foto_perfil_url
-    foto_url.presence || "https://ui-avatars.com/api/?name=#{nombre_completo.gsub(' ', '+')}&size=200&background=B71C1C&color=fff"
+  def foto_perfil_url(host: nil)
+    if foto_url.present?
+      # Si la URL ya es completa (comienza con http), devolverla tal cual
+      if foto_url.start_with?('http://', 'https://')
+        foto_url
+      else
+        # Si hay un host, construir URL completa
+        host ? "#{host}#{foto_url}" : foto_url
+      end
+    else
+      # URL de avatar generado por defecto
+      "https://ui-avatars.com/api/?name=#{nombre_completo.gsub(' ', '+')}&size=200&background=B71C1C&color=fff"
+    end
   end
   
   def paciente?
@@ -83,6 +104,22 @@ class Usuario < ApplicationRecord
 
   def desactivar!
     update(activo: false)
+  end
+  
+  def super_admin?
+    es_super_admin == true
+  end
+  
+  def admin?
+    es_administrador?
+  end
+  
+  def puede_gestionar_admins?
+    super_admin?
+  end
+  
+  def registrar_acceso!
+    update_column(:ultimo_acceso, Time.current)
   end
 
   # Generar token de reset de contraseña

@@ -1,0 +1,166 @@
+<!-- Loading State -->
+<div *ngIf="loading" class="flex justify-center items-center min-h-[400px]">
+  <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+</div>
+
+<!-- Dashboard Content -->
+<div *ngIf="!loading && dashboardData">
+  <!-- Stats Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="flex flex-col gap-2 rounded-xl p-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+      <p class="text-gray-600 dark:text-gray-400 text-base font-medium leading-normal">Total Usuarios</p>
+      <p class="text-gray-900 dark:text-white tracking-tight text-3xl font-bold leading-tight">
+        {{ dashboardData.estadisticas_generales.total_usuarios }}
+      </p>
+      <p class="text-green-500 text-sm font-medium leading-normal">
+        +{{ dashboardData.estadisticas_usuarios.nuevos_usuarios_semana }} esta semana
+      </p>
+    </div>
+
+    <div class="flex flex-col gap-2 rounded-xl p-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+      <p class="text-gray-600 dark:text-gray-400 text-base font-medium leading-normal">Médicos Activos</p>
+      <p class="text-gray-900 dark:text-white tracking-tight text-3xl font-bold leading-tight">
+        {{ dashboardData.estadisticas_usuarios.medicos_activos }}
+      </p>
+      <p class="text-gray-600 dark:text-gray-400 text-sm font-medium leading-normal">
+        {{ dashboardData.estadisticas_generales.total_medicos }} total
+      </p>
+    </div>
+
+    <div class="flex flex-col gap-2 rounded-xl p-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+      <p class="text-gray-600 dark:text-gray-400 text-base font-medium leading-normal">Pacientes Registrados</p>
+      <p class="text-gray-900 dark:text-white tracking-tight text-3xl font-bold leading-tight">
+        {{ dashboardData.estadisticas_generales.total_pacientes }}
+      </p>
+      <p class="text-green-500 text-sm font-medium leading-normal">
+        +{{ dashboardData.estadisticas_usuarios.nuevos_usuarios_mes }} este mes
+      </p>
+    </div>
+
+    <div class="flex flex-col gap-2 rounded-xl p-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+      <p class="text-gray-600 dark:text-gray-400 text-base font-medium leading-normal">Citas del Mes</p>
+      <p class="text-gray-900 dark:text-white tracking-tight text-3xl font-bold leading-tight">
+        {{ dashboardData.estadisticas_generales.citas_mes }}
+      </p>
+      <p class="text-blue-500 text-sm font-medium leading-normal">
+        {{ dashboardData.estadisticas_generales.citas_hoy }} hoy
+      </p>
+    </div>
+  </div>
+
+  <!-- Charts Placeholder -->
+  <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-8">
+    <div class="lg:col-span-3 flex flex-col gap-4 rounded-xl border border-gray-200 dark:border-gray-700 p-6 bg-white dark:bg-gray-800">
+      <p class="text-gray-900 dark:text-white text-lg font-semibold leading-normal">Citas por mes (últimos 6 meses)</p>
+      <div class="flex items-center justify-center min-h-[220px] text-gray-400">
+        <div class="text-center">
+          <span class="material-symbols-outlined text-6xl">insert_chart</span>
+          <p class="mt-2">Gráfico en desarrollo</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="lg:col-span-2 flex flex-col gap-4 rounded-xl border border-gray-200 dark:border-gray-700 p-6 bg-white dark:bg-gray-800">
+      <p class="text-gray-900 dark:text-white text-lg font-semibold leading-normal">Estadísticas de Usuarios</p>
+      <div class="space-y-4">
+        <div>
+          <div class="flex justify-between text-sm mb-1">
+            <span class="text-gray-600 dark:text-gray-400">Pacientes Activos</span>
+            <span class="font-semibold text-gray-900 dark:text-white">{{ dashboardData.estadisticas_usuarios.pacientes_activos }}</span>
+          </div>
+          <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div class="bg-green-500 h-2 rounded-full" 
+                 [style.width]="(dashboardData.estadisticas_usuarios.pacientes_activos / dashboardData.estadisticas_generales.total_pacientes * 100) + '%'"></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex justify-between text-sm mb-1">
+            <span class="text-gray-600 dark:text-gray-400">Médicos Activos</span>
+            <span class="font-semibold text-gray-900 dark:text-white">{{ dashboardData.estadisticas_usuarios.medicos_activos }}</span>
+          </div>
+          <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div class="bg-blue-500 h-2 rounded-full" 
+                 [style.width]="(dashboardData.estadisticas_usuarios.medicos_activos / dashboardData.estadisticas_generales.total_medicos * 100) + '%'"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity & Today's Appointments -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Actividad Reciente -->
+    <div class="lg:col-span-1">
+      <h2 class="text-gray-900 dark:text-white text-xl font-bold leading-tight tracking-tight mb-4">Actividad Reciente</h2>
+      <div class="space-y-4">
+        <div *ngFor="let actividad of dashboardData.actividad_reciente" class="flex items-start gap-3">
+          <div [ngClass]="getActividadIcono(actividad.tipo).color" 
+               class="rounded-full size-8 flex items-center justify-center flex-shrink-0">
+            <span class="material-symbols-outlined text-base">{{ getActividadIcono(actividad.tipo).icono }}</span>
+          </div>
+          <div class="flex-1">
+            <p class="text-gray-900 dark:text-white text-sm" [innerHTML]="actividad.descripcion"></p>
+            <p class="text-gray-600 dark:text-gray-400 text-xs">{{ formatearFecha(actividad.fecha) }}</p>
+          </div>
+        </div>
+
+        <div *ngIf="dashboardData.actividad_reciente.length === 0" class="text-center py-8 text-gray-500">
+          <span class="material-symbols-outlined text-4xl">history</span>
+          <p class="mt-2">No hay actividad reciente</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Citas de Hoy -->
+    <div class="lg:col-span-2">
+      <h2 class="text-gray-900 dark:text-white text-xl font-bold leading-tight tracking-tight mb-4">Citas de Hoy</h2>
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm text-left text-gray-600 dark:text-gray-400">
+            <thead class="text-xs text-gray-600 dark:text-gray-400 uppercase bg-gray-50 dark:bg-gray-900">
+              <tr>
+                <th scope="col" class="px-6 py-3">Hora</th>
+                <th scope="col" class="px-6 py-3">Paciente</th>
+                <th scope="col" class="px-6 py-3">Médico</th>
+                <th scope="col" class="px-6 py-3">Estado</th>
+                <th scope="col" class="px-6 py-3">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cita of dashboardData.citas_recientes" 
+                  class="border-b border-gray-200 dark:border-gray-700">
+                <td class="px-6 py-4 text-gray-900 dark:text-white font-medium">
+                  {{ formatearHora(cita.fecha_hora) }}
+                </td>
+                <td class="px-6 py-4 text-gray-900 dark:text-white">{{ cita.paciente }}</td>
+                <td class="px-6 py-4">{{ cita.medico }}</td>
+                <td class="px-6 py-4">
+                  <span [ngClass]="getEstadoBadge(cita.estado)" 
+                        class="px-2 py-1 text-xs font-medium rounded-full">
+                    {{ cita.estado | titlecase }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 flex gap-2">
+                  <button class="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined text-lg">visibility</span>
+                  </button>
+                  <button class="text-gray-600 dark:text-gray-400 hover:text-red-500 transition-colors">
+                    <span class="material-symbols-outlined text-lg">cancel</span>
+                  </button>
+                </td>
+              </tr>
+
+              <tr *ngIf="dashboardData.citas_recientes.length === 0">
+                <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                  <span class="material-symbols-outlined text-4xl">event_busy</span>
+                  <p class="mt-2">No hay citas programadas para hoy</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

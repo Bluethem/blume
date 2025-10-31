@@ -1,0 +1,161 @@
+<div class="w-full max-w-4xl mx-auto">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-8">
+    <div class="flex items-center gap-4">
+      <button (click)="cancelar()"
+              class="flex items-center justify-center h-10 w-10 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700">
+        <span class="material-symbols-outlined">arrow_back</span>
+      </button>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+        {{ esEdicion ? 'Editar Cita' : 'Nueva Cita' }}
+      </h1>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="mensajeExito" class="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+    <p class="text-green-600 dark:text-green-400">{{ mensajeExito }}</p>
+  </div>
+  <div *ngIf="mensajeError" class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+    <p class="text-red-600 dark:text-red-400">{{ mensajeError }}</p>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex justify-center items-center py-20">
+    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+  </div>
+
+  <!-- Formulario -->
+  <div *ngIf="!loading" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+    <form (submit)="$event.preventDefault(); guardar()">
+      <div class="space-y-6">
+        <!-- Paciente y Médico -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Paciente <span class="text-red-500">*</span>
+            </label>
+            <input [(ngModel)]="formData.paciente_id"
+                   name="paciente_id"
+                   class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-primary focus:border-primary"
+                   placeholder="ID del paciente"
+                   type="text"
+                   required/>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Por ahora ingresa el ID del paciente. La búsqueda interactiva se implementará próximamente.
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Médico <span class="text-red-500">*</span>
+            </label>
+            <input [(ngModel)]="formData.medico_id"
+                   name="medico_id"
+                   class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-primary focus:border-primary"
+                   placeholder="ID del médico"
+                   type="text"
+                   required/>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Por ahora ingresa el ID del médico. La búsqueda interactiva se implementará próximamente.
+            </p>
+          </div>
+        </div>
+
+        <!-- Fecha y Hora -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Fecha y Hora de Inicio <span class="text-red-500">*</span>
+            </label>
+            <input [(ngModel)]="formData.fecha_hora_inicio"
+                   name="fecha_hora_inicio"
+                   class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-primary focus:border-primary"
+                   type="datetime-local"
+                   required/>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Fecha y Hora de Fin
+            </label>
+            <input [(ngModel)]="formData.fecha_hora_fin"
+                   name="fecha_hora_fin"
+                   class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-primary focus:border-primary"
+                   type="datetime-local"/>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Si no se especifica, se calculará automáticamente (+30 minutos)
+            </p>
+          </div>
+        </div>
+
+        <!-- Motivo y Costo -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Motivo de Consulta <span class="text-red-500">*</span>
+            </label>
+            <input [(ngModel)]="formData.motivo_consulta"
+                   name="motivo_consulta"
+                   class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-primary focus:border-primary"
+                   placeholder="Ej: Chequeo general, Dolor de cabeza..."
+                   type="text"
+                   required/>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Costo (USD)
+            </label>
+            <input [(ngModel)]="formData.costo"
+                   name="costo"
+                   class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-primary focus:border-primary"
+                   placeholder="0.00"
+                   type="number"
+                   step="0.01"
+                   min="0"/>
+          </div>
+        </div>
+
+        <!-- Observaciones -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Observaciones
+          </label>
+          <textarea [(ngModel)]="formData.observaciones"
+                    name="observaciones"
+                    class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-primary focus:border-primary"
+                    placeholder="Observaciones sobre la cita..."
+                    rows="3"></textarea>
+        </div>
+
+        <!-- Diagnóstico -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Diagnóstico
+          </label>
+          <textarea [(ngModel)]="formData.diagnostico"
+                    name="diagnostico"
+                    class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-primary focus:border-primary"
+                    placeholder="Diagnóstico (si aplica)..."
+                    rows="3"></textarea>
+        </div>
+      </div>
+
+      <!-- Botones -->
+      <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <button type="button"
+                (click)="cancelar()"
+                [disabled]="guardando"
+                class="px-6 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50">
+          Cancelar
+        </button>
+        <button type="submit"
+                [disabled]="guardando"
+                class="px-6 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          {{ guardando ? 'Guardando...' : (esEdicion ? 'Actualizar Cita' : 'Crear Cita') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,252 @@
+<div class="relative flex min-h-screen w-full">
+  <!-- SideNavBar -->
+  <aside class="sticky top-0 h-screen flex flex-col w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800">
+    <!-- Logo -->
+    <div class="flex items-center gap-3 p-6 flex-shrink-0">
+      <img src="/images/apple-touch-icon.png" 
+      alt="Logo Blume" 
+      class="w-8 h-8 object-contain">
+      <h1 class="text-gray-900 dark:text-white text-xl font-bold">blume - Admin</h1>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex flex-col gap-2 p-4 flex-1 overflow-y-auto">
+      <a routerLink="/admin/dashboard" 
+         routerLinkActive="bg-primary/10 text-primary"
+         class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-primary/10 hover:text-primary transition-colors">
+        <span class="material-symbols-outlined">dashboard</span>
+        <p class="text-sm font-medium">Dashboard</p>
+      </a>
+
+      <a routerLink="/admin/medicos" 
+         routerLinkActive="bg-primary/10 text-primary"
+         class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-primary/10 hover:text-primary transition-colors">
+        <span class="material-symbols-outlined">medical_services</span>
+        <p class="text-sm font-medium">Médicos</p>
+      </a>
+
+      <a routerLink="/admin/pacientes" 
+         routerLinkActive="bg-primary/10 text-primary"
+         class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-primary/10 hover:text-primary transition-colors">
+        <span class="material-symbols-outlined">personal_injury</span>
+        <p class="text-sm font-medium">Pacientes</p>
+      </a>
+
+      <a routerLink="/admin/citas" 
+         routerLinkActive="bg-primary/10 text-primary"
+         class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-primary/10 hover:text-primary transition-colors">
+        <span class="material-symbols-outlined">calendar_month</span>
+        <p class="text-sm font-medium">Citas</p>
+      </a>
+
+      <a routerLink="/admin/certificaciones" 
+         routerLinkActive="bg-primary/10 text-primary"
+         class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-primary/10 hover:text-primary transition-colors">
+        <span class="material-symbols-outlined">workspace_premium</span>
+        <p class="text-sm font-medium">Certificaciones</p>
+      </a>
+
+      <a routerLink="/admin/reportes" 
+         routerLinkActive="bg-primary/10 text-primary"
+         class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-primary/10 hover:text-primary transition-colors">
+        <span class="material-symbols-outlined">bar_chart</span>
+        <p class="text-sm font-medium">Reportes</p>
+      </a>
+
+      <!-- SOLO SUPER ADMIN: Administradores -->
+      <a *ngIf="isSuperAdmin" 
+         routerLink="/admin/administradores" 
+         routerLinkActive="bg-primary/10 text-primary"
+         class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-primary/10 hover:text-primary transition-colors">
+        <span class="material-symbols-outlined">admin_panel_settings</span>
+        <p class="text-sm font-medium">Administradores</p>
+      </a>
+
+      <!-- Configuración (acceso diferenciado) -->
+      <a routerLink="/admin/configuracion" 
+         routerLinkActive="bg-primary/10 text-primary"
+         class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-primary/10 hover:text-primary transition-colors">
+        <span class="material-symbols-outlined">settings</span>
+        <p class="text-sm font-medium">Configuración</p>
+        <span *ngIf="isSuperAdmin" class="ml-auto text-xs bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 px-2 py-0.5 rounded-full">Full</span>
+      </a>
+    </nav>
+
+    <!-- Logout Button -->
+    <div class="p-4 flex-shrink-0 border-t border-gray-200 dark:border-gray-800">
+      <button (click)="logout()"
+              class="flex w-full cursor-pointer items-center justify-center gap-3 overflow-hidden rounded-lg h-10 px-4 bg-primary/10 text-primary text-sm font-bold leading-normal tracking-wide hover:bg-primary/20 transition-colors">
+        <span class="material-symbols-outlined">logout</span>
+        <span class="truncate">Cerrar Sesión</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-900">
+    <!-- Top Header -->
+    <header class="sticky top-0 z-10 flex items-center justify-between h-16 px-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <div class="flex items-center gap-4">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+          Bienvenido, {{ currentUser?.nombre }}
+        </h2>
+        <span *ngIf="isSuperAdmin" 
+              class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+          Super Admin
+        </span>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <!-- Dark Mode Toggle -->
+        <button (click)="toggleDarkMode()"
+                class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                title="Toggle Dark Mode">
+          <span class="material-symbols-outlined text-gray-600 dark:text-gray-400">
+            {{ isDarkMode ? 'light_mode' : 'dark_mode' }}
+          </span>
+        </button>
+
+        <!-- Notifications -->
+        <div class="relative">
+          <button (click)="toggleNotifications()"
+                  data-notif-button
+                  class="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  title="Notificaciones">
+            <span class="material-symbols-outlined text-gray-600 dark:text-gray-400">notifications</span>
+            <span *ngIf="unreadNotificationsCount > 0"
+                  class="absolute top-1 right-1 flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
+              {{ unreadNotificationsCount }}
+            </span>
+          </button>
+
+          <!-- Notifications Dropdown -->
+          <div *ngIf="notificationsOpen"
+               data-notif-dropdown
+               class="absolute right-0 mt-2 w-96 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50">
+            <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Notificaciones</h3>
+              <button (click)="markAllAsRead()"
+                      class="text-xs text-primary hover:text-primary/80 font-medium">
+                Marcar todas como leídas
+              </button>
+            </div>
+
+            <div class="max-h-96 overflow-y-auto">
+              <div *ngFor="let notification of notifications"
+                   (click)="onNotificationClick(notification)"
+                   [ngClass]="{
+                     'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-l-primary': !notification.leida,
+                     'bg-white dark:bg-gray-800': notification.leida
+                   }"
+                   class="p-4 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-all duration-200">
+                <div class="flex items-start gap-3">
+                  <span [ngClass]="{
+                    'text-red-500': notification.tipo === 'cita_cancelada',
+                    'text-green-500': notification.tipo === 'cita_confirmada',
+                    'text-blue-500': notification.tipo === 'cita_creada',
+                    'text-orange-500': notification.tipo === 'recordatorio',
+                    'text-gray-500': !['cita_cancelada', 'cita_confirmada', 'cita_creada', 'recordatorio'].includes(notification.tipo)
+                  }" class="material-symbols-outlined text-2xl">
+                    {{ getNotificationIcon(notification.tipo) }}
+                  </span>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                      <p [ngClass]="{
+                        'font-semibold text-gray-900 dark:text-white': !notification.leida,
+                        'font-medium text-gray-700 dark:text-gray-300': notification.leida
+                      }" class="text-sm">{{ notification.titulo }}</p>
+                      <span *ngIf="!notification.leida"
+                            class="flex-shrink-0 w-2 h-2 bg-primary rounded-full animate-pulse"></span>
+                    </div>
+                    <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">{{ notification.mensaje }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-500 mt-1.5">{{ getTimeAgo(notification.created_at) }}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div *ngIf="notifications.length === 0"
+                   class="p-8 text-center text-gray-500 dark:text-gray-400">
+                <span class="material-symbols-outlined text-6xl">notifications_off</span>
+                <p class="mt-2">No hay notificaciones</p>
+              </div>
+            </div>
+
+            <div class="p-3 bg-gray-50 dark:bg-gray-900 text-center">
+              <a routerLink="/admin/notificaciones" 
+                 (click)="toggleNotifications()"
+                 class="text-sm text-primary hover:text-primary/80 font-medium cursor-pointer">
+                Ver todas las notificaciones
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- User Menu -->
+        <div class="relative">
+          <button (click)="toggleUserMenu()"
+                  data-user-menu-button
+                  class="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+            <!-- Foto de perfil o iniciales -->
+            <img *ngIf="currentUser?.foto_url; else initials"
+                 [src]="currentUser?.foto_url"
+                 [alt]="'Foto de ' + currentUser?.nombre"
+                 class="w-8 h-8 rounded-full object-cover border-2 border-primary/20" />
+            <ng-template #initials>
+              <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <span class="text-sm font-semibold text-primary">
+                  {{ currentUser?.nombre?.charAt(0) }}{{ currentUser?.apellido?.charAt(0) }}
+                </span>
+              </div>
+            </ng-template>
+            <span class="material-symbols-outlined text-gray-600 dark:text-gray-400">
+              {{ userMenuOpen ? 'expand_less' : 'expand_more' }}
+            </span>
+          </button>
+
+          <!-- User Dropdown -->
+          <div *ngIf="userMenuOpen"
+               data-user-menu-dropdown
+               class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50">
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+              <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ currentUser?.nombre_completo }}</p>
+              <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">{{ currentUser?.email }}</p>
+              <span class="inline-block mt-2 px-2 py-1 text-xs font-semibold rounded-full"
+                    [class]="isSuperAdmin ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'">
+                {{ isSuperAdmin ? 'Super Administrador' : 'Administrador' }}
+              </span>
+            </div>
+
+            <div class="p-2">
+              <a routerLink="/admin/perfil"
+                 class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                <span class="material-symbols-outlined text-gray-600 dark:text-gray-400">person</span>
+                <span class="text-sm text-gray-700 dark:text-gray-300">Mi Perfil</span>
+              </a>
+              <a routerLink="/admin/configuracion"
+                 class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                <span class="material-symbols-outlined text-gray-600 dark:text-gray-400">settings</span>
+                <span class="text-sm text-gray-700 dark:text-gray-300">Configuración</span>
+              </a>
+            </div>
+
+            <div class="border-t border-gray-200 dark:border-gray-700 p-2">
+              <button (click)="logout()"
+                      class="flex items-center gap-3 w-full px-3 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-red-600 dark:text-red-400">
+                <span class="material-symbols-outlined">logout</span>
+                <span class="text-sm font-medium">Cerrar Sesión</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <div class="flex-1 p-8 overflow-y-auto">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+
+  <!-- Chatbot -->
+  <app-chatbot></app-chatbot>
+</div>

@@ -71,7 +71,13 @@ class Api::V1::MedicoCitasController < ApplicationController
 
   # PUT /api/v1/medico/citas/:id/completar
   def completar
+    Rails.logger.info("🏥 Intentando completar cita #{@cita.id}")
+    Rails.logger.info("📊 Estado actual: #{@cita.estado}")
+    Rails.logger.info("⏰ Fecha cita: #{@cita.fecha_hora_inicio}, Ahora: #{Time.current}")
+    Rails.logger.info("✅ ¿Puede completarse?: #{@cita.puede_completarse?}")
+    
     unless @cita.puede_completarse?
+      Rails.logger.error("❌ Cita no puede completarse - Estado: #{@cita.estado}, Fecha: #{@cita.fecha_hora_inicio}")
       return render_error('La cita no puede ser completada', status: :unprocessable_entity)
     end
     
@@ -79,13 +85,18 @@ class Api::V1::MedicoCitasController < ApplicationController
     @cita.estado = :completada
     @cita.fecha_atencion = Time.current
     
+    Rails.logger.info("💾 Guardando cita con: #{completar_params.inspect}")
+    
     if @cita.save
+      Rails.logger.info("✅ Cita completada exitosamente")
       render_success(cita_json(@cita))
     else
+      Rails.logger.error("❌ Errores al guardar: #{@cita.errors.full_messages.join(', ')}")
       render_error('No se pudo completar la cita', errors: @cita.errors.full_messages, status: :unprocessable_entity)
     end
   rescue => e
     Rails.logger.error("Error al completar cita: #{e.message}")
+    Rails.logger.error("Backtrace: #{e.backtrace.first(5).join("\n")}")
     render_error('Error al completar la cita', status: :internal_server_error)
   end
 
@@ -171,7 +182,7 @@ class Api::V1::MedicoCitasController < ApplicationController
       paciente: {
         id: cita.paciente.id,
         nombre_completo: cita.paciente.usuario.nombre_completo,
-        foto_url: cita.paciente.usuario.foto_perfil_url,
+        foto_url: absolute_url(cita.paciente.usuario.foto_url),
         edad: cita.paciente.edad,
         telefono: cita.paciente.usuario.telefono
       },

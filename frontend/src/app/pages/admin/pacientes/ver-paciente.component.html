@@ -1,0 +1,186 @@
+<div class="w-full max-w-7xl mx-auto">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center py-20">
+    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!loading && paciente">
+    <!-- Header -->
+    <header class="flex flex-wrap justify-between gap-3 mb-8">
+      <div class="flex min-w-72 flex-col gap-2">
+        <button (click)="goBack()"
+                class="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-primary mb-2">
+          <span class="material-symbols-outlined">arrow_back</span>
+          <span>Volver a lista</span>
+        </button>
+        <h1 class="text-4xl font-black leading-tight tracking-tight text-gray-900 dark:text-white">
+          Ver Paciente
+        </h1>
+        <p class="text-gray-600 dark:text-gray-400 text-base">
+          {{ paciente.usuario.nombre }} {{ paciente.usuario.apellido }}
+        </p>
+      </div>
+      <div class="flex items-start gap-3">
+        <button (click)="editarPaciente()"
+                class="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+          <span class="material-symbols-outlined">edit</span>
+          <span>Editar Paciente</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Columna Izquierda -->
+      <div class="flex flex-col gap-8">
+        <!-- Información Personal -->
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+          <h2 class="text-gray-900 dark:text-white text-xl font-bold mb-5">Información Personal</h2>
+          
+          <!-- Avatar y Estado -->
+          <div class="flex items-center gap-4 mb-6 pb-6 border-b border-gray-200 dark:border-gray-700">
+            <img [src]="paciente.usuario.foto_url || 'https://ui-avatars.com/api/?name=' + paciente.usuario.nombre + '+' + paciente.usuario.apellido + '&background=EA2A33&color=fff'"
+                 [alt]="paciente.usuario.nombre + ' ' + paciente.usuario.apellido"
+                 class="w-20 h-20 rounded-full object-cover border-4 border-gray-100 dark:border-gray-700"/>
+            <div class="flex-1">
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                {{ paciente.usuario.nombre }} {{ paciente.usuario.apellido }}
+              </h3>
+              <div class="flex items-center gap-2 mt-1">
+                <span [class]="paciente.usuario.activo ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'"
+                      class="text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                  {{ paciente.usuario.activo ? 'Activo' : 'Inactivo' }}
+                </span>
+                <span *ngIf="paciente.alergias" class="bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400 text-xs font-semibold px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                  <span class="material-symbols-outlined text-sm">warning</span>
+                  Alergias
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Datos Personales -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Email</p>
+              <p class="text-gray-900 dark:text-white">{{ paciente.usuario.email }}</p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Teléfono</p>
+              <p class="text-gray-900 dark:text-white">{{ paciente.usuario.telefono || 'No registrado' }}</p>
+            </div>
+            <div class="sm:col-span-2">
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Dirección</p>
+              <p class="text-gray-900 dark:text-white">{{ paciente.usuario.direccion || 'No registrada' }}</p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Fecha de Nacimiento</p>
+              <p class="text-gray-900 dark:text-white">{{ formatearFecha(paciente.fecha_nacimiento) }}</p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Edad</p>
+              <p class="text-gray-900 dark:text-white">{{ calcularEdad(paciente.fecha_nacimiento) }} años</p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Género</p>
+              <p class="text-gray-900 dark:text-white">{{ paciente.genero }}</p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Tipo de Documento</p>
+              <p class="text-gray-900 dark:text-white">{{ paciente.tipo_documento }}</p>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Número de Documento</p>
+              <p class="text-gray-900 dark:text-white">{{ paciente.numero_documento }}</p>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- Estadísticas -->
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+          <h2 class="text-gray-900 dark:text-white text-xl font-bold mb-5">Estadísticas</h2>
+          
+          <div class="grid grid-cols-3 gap-4">
+            <div class="text-center p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+              <p class="text-2xl font-bold text-primary">{{ paciente.estadisticas.total_citas }}</p>
+              <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Total Citas</p>
+            </div>
+            <div class="text-center p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+              <p class="text-2xl font-bold text-green-600">{{ paciente.estadisticas.citas_completadas }}</p>
+              <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Completadas</p>
+            </div>
+            <div class="text-center p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+              <p class="text-2xl font-bold text-blue-600">
+                {{ paciente.estadisticas.proxima_cita ? '✓' : '-' }}
+              </p>
+              <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Próxima Cita</p>
+            </div>
+          </div>
+          
+          <div *ngIf="paciente.estadisticas.proxima_cita" class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <p class="text-sm font-medium text-blue-900 dark:text-blue-300">
+              Próxima cita: {{ formatearFecha(paciente.estadisticas.proxima_cita) }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna Derecha -->
+      <div class="flex flex-col gap-8">
+        <!-- Información Médica -->
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+          <h2 class="text-gray-900 dark:text-white text-xl font-bold mb-5">Información Médica</h2>
+          
+          <div class="grid grid-cols-1 gap-4">
+            <!-- Grupo Sanguíneo -->
+            <div>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Grupo Sanguíneo</p>
+              <div>
+                <span *ngIf="paciente.grupo_sanguineo"
+                      class="inline-block bg-primary/10 text-primary text-sm font-bold px-3 py-1 rounded-full">
+                  {{ paciente.grupo_sanguineo }}
+                </span>
+                <span *ngIf="!paciente.grupo_sanguineo" class="text-gray-500">No registrado</span>
+              </div>
+            </div>
+
+            <!-- Alergias -->
+            <div>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1 flex items-center gap-2">
+                <span class="material-symbols-outlined text-amber-600">warning</span>
+                Alergias
+              </p>
+              <div class="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <p class="text-gray-900 dark:text-white whitespace-pre-wrap">
+                  {{ paciente.alergias || 'No se han registrado alergias' }}
+                </p>
+              </div>
+            </div>
+
+
+            <!-- Observaciones -->
+            <div>
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Observaciones</p>
+              <div class="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <p class="text-gray-900 dark:text-white whitespace-pre-wrap">
+                  {{ paciente.observaciones || 'No hay observaciones adicionales' }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="!loading && !paciente" class="text-center py-20">
+    <span class="material-symbols-outlined text-6xl text-gray-400">error</span>
+    <p class="mt-4 text-lg text-gray-600 dark:text-gray-400">No se pudo cargar la información del paciente</p>
+    <button (click)="goBack()"
+            class="mt-4 px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">
+      Volver a lista
+    </button>
+  </div>
+</div>

@@ -140,7 +140,7 @@ class Api::V1::MedicoPacientesController < ApplicationController
       id: paciente.id,
       nombre_completo: paciente.usuario.nombre_completo,
       numero_documento: paciente.numero_documento,
-      foto_url: paciente.usuario.foto_perfil_url,
+      foto_url: absolute_url(paciente.usuario.foto_url),
       telefono: paciente.usuario.telefono,
       edad: paciente.edad
     }
@@ -153,7 +153,7 @@ class Api::V1::MedicoPacientesController < ApplicationController
       id: paciente.id,
       nombre_completo: paciente.usuario.nombre_completo,
       numero_documento: paciente.numero_documento,
-      foto_url: paciente.usuario.foto_perfil_url,
+      foto_url: absolute_url(paciente.usuario.foto_url),
       telefono: paciente.usuario.telefono,
       edad: paciente.edad,
       grupo_sanguineo: paciente.grupo_sanguineo,
@@ -171,7 +171,7 @@ class Api::V1::MedicoPacientesController < ApplicationController
       nombre_completo: paciente.usuario.nombre_completo,
       numero_documento: paciente.numero_documento,
       tipo_documento: paciente.tipo_documento,
-      foto_url: paciente.usuario.foto_perfil_url,
+      foto_url: absolute_url(paciente.usuario.foto_url),
       telefono: paciente.usuario.telefono,
       email: paciente.usuario.email,
       edad: paciente.edad,

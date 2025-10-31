@@ -338,6 +338,7 @@ module Api
           disponible_hoy: medico.disponible_hoy?,
           calificacion_promedio: medico.calificacion_promedio,
           total_resenas: medico.total_resenas,
+          foto_url: absolute_url(medico.usuario.foto_url),
           especialidad_principal: especialidad_principal ? {
             id: especialidad_principal.id,
             nombre: especialidad_principal.nombre
@@ -356,9 +357,7 @@ module Api
           response.merge!({
             especialidad: especialidad_principal&.nombre || 'General',
             biografia: medico.biografia&.truncate(150),
-            total_reviews: 0, # Implementar reviews reales después
-            foto_url: nil,
-            disponible_hoy: tiene_horario_hoy?(medico)
+            total_reviews: 0 # Implementar reviews reales después
           })
         end
 
@@ -369,11 +368,12 @@ module Api
             total_citas: medico.citas.count,
             pacientes_atendidos: medico.citas.select(:paciente_id).distinct.count,
             created_at: medico.created_at,
-            certificaciones: medico.certificaciones.map do |cert|
+            certificaciones: medico.medico_certificaciones.includes(:certificacion).map do |mc|
               {
-                id: cert.id,
-                nombre: cert.nombre,
-                institucion: cert.institucion_emisora
+                id: mc.certificacion.id,
+                nombre: mc.certificacion.nombre,
+                institucion: mc.certificacion.institucion_emisora,
+                fecha_obtencion: mc.fecha_obtencion || mc.created_at
               }
             end,
             horarios_atencion: agrupar_horarios(medico)

@@ -1,0 +1,172 @@
+<div class="flex flex-col max-w-7xl mx-auto flex-1">
+  <!-- Header -->
+  <div class="flex flex-wrap justify-between items-center gap-4 p-4">
+    <h1 class="text-4xl font-black leading-tight tracking-tight text-gray-900 dark:text-white">
+      Gestión de Médicos
+    </h1>
+    <div class="flex items-center gap-4">
+      <button (click)="exportToExcel()"
+              class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+        <span class="material-symbols-outlined text-lg">download</span>
+        Exportar a Excel
+      </button>
+      <button (click)="openCreateModal()"
+              class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-primary text-white hover:bg-primary/90 transition-colors">
+        <span class="material-symbols-outlined text-lg">add</span>
+        Agregar Médico
+      </button>
+    </div>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="flex justify-between gap-2 px-4 py-3 items-center border-y border-gray-200 dark:border-gray-700 my-4">
+    <div class="flex gap-2 items-center">
+      <button class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+        <span class="material-symbols-outlined">tune</span>
+      </button>
+      <label class="flex flex-col min-w-40 !h-10 max-w-64">
+        <div class="flex w-full flex-1 items-stretch rounded-lg h-full">
+          <div class="flex items-center justify-center pl-3 pr-2 border border-r-0 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-l-lg">
+            <span class="material-symbols-outlined text-gray-500">search</span>
+          </div>
+          <input (input)="onSearchChange($any($event.target).value)"
+                 [(ngModel)]="searchTerm"
+                 class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-sm focus:outline-0 focus:ring-2 focus:ring-primary/50 border border-l-0 border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 h-full placeholder:text-gray-500 px-2"
+                 placeholder="Buscar por nombre o especialidad..."
+                 type="text"/>
+        </div>
+      </label>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex justify-center items-center py-20">
+    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+  </div>
+
+  <!-- Table -->
+  <div *ngIf="!loading" class="px-4 py-3">
+    <div class="flex overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+      <table class="w-full text-left">
+        <thead class="bg-gray-100 dark:bg-gray-900">
+          <tr>
+            <th class="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 w-14">Avatar</th>
+            <th class="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 min-w-[150px]">Nombre Completo</th>
+            <th class="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 min-w-[120px]">Especialidad</th>
+            <th class="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">N° Colegiatura</th>
+            <th class="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">N° Certificaciones</th>
+            <th class="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300">Citas del Mes</th>
+            <th class="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 text-center">Estado</th>
+            <th class="px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+          <tr *ngFor="let medico of medicos" 
+              class="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+            <td class="h-[72px] px-4 py-2 w-14">
+              <img [src]="medico.foto_url || 'https://ui-avatars.com/api/?name=' + medico.nombre_completo + '&background=EF4444&color=fff'"
+                   [alt]="'Avatar de ' + medico.nombre_completo"
+                   class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-10 h-10 object-cover">
+            </td>
+            <td class="h-[72px] px-4 py-2 font-medium text-gray-900 dark:text-white">
+              {{ medico.nombre_completo }}
+            </td>
+            <td class="h-[72px] px-4 py-2 text-gray-600 dark:text-gray-400">
+              {{ medico.especialidad_principal || 'Sin especialidad' }}
+            </td>
+            <td class="h-[72px] px-4 py-2 text-gray-600 dark:text-gray-400">
+              {{ medico.numero_colegiatura }}
+            </td>
+            <td class="h-[72px] px-4 py-2 text-center text-gray-600 dark:text-gray-400">
+              {{ medico.total_certificaciones }}
+            </td>
+            <td class="h-[72px] px-4 py-2 text-center text-gray-600 dark:text-gray-400">
+              {{ medico.citas_mes }}
+            </td>
+            <td class="h-[72px] px-4 py-2 w-[120px] text-center">
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input [checked]="medico.activo"
+                       (change)="toggleEstado(medico, $event)"
+                       class="sr-only peer"
+                       type="checkbox"/>
+                <div class="w-11 h-6 bg-gray-300 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/30 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+              </label>
+            </td>
+            <td class="h-[72px] px-4 py-2 w-40 text-center">
+              <button (click)="verMedico(medico)"
+                      class="p-2 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors"
+                      title="Ver detalles">
+                <span class="material-symbols-outlined text-blue-600 dark:text-blue-400">visibility</span>
+              </button>
+              <button (click)="openEditModal(medico)"
+                      class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                      title="Editar">
+                <span class="material-symbols-outlined text-gray-700 dark:text-gray-300">edit</span>
+              </button>
+              <button (click)="deleteMedico(medico)"
+                      class="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors"
+                      title="Eliminar">
+                <span class="material-symbols-outlined text-red-600 dark:text-red-400">delete</span>
+              </button>
+            </td>
+          </tr>
+
+          <!-- Empty State -->
+          <tr *ngIf="medicos.length === 0">
+            <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+              <span class="material-symbols-outlined text-6xl">medical_services</span>
+              <p class="mt-4 text-lg">No se encontraron médicos</p>
+              <p class="text-sm text-gray-400">Intenta ajustar los filtros de búsqueda</p>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!loading && medicos.length > 0" class="flex items-center justify-center p-4 gap-2">
+    <button (click)="changePage(currentPage - 1)"
+            [disabled]="currentPage === 1"
+            [class.opacity-50]="currentPage === 1"
+            [class.cursor-not-allowed]="currentPage === 1"
+            class="flex size-10 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+      <span class="material-symbols-outlined text-lg">chevron_left</span>
+    </button>
+
+    <button *ngFor="let page of pages"
+            (click)="changePage(page)"
+            [class.bg-primary/20]="page === currentPage"
+            [class.text-primary]="page === currentPage"
+            [class.font-bold]="page === currentPage"
+            class="text-sm flex size-10 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+      {{ page }}
+    </button>
+
+    <button (click)="changePage(currentPage + 1)"
+            [disabled]="currentPage === totalPages"
+            [class.opacity-50]="currentPage === totalPages"
+            [class.cursor-not-allowed]="currentPage === totalPages"
+            class="flex size-10 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+      <span class="material-symbols-outlined text-lg">chevron_right</span>
+    </button>
+  </div>
+</div>
+
+<!-- Modal Placeholder (se implementará después) -->
+<div *ngIf="showModal" class="fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+    <div class="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
+      <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+        {{ modalMode === 'create' ? 'Agregar Médico' : 'Editar Médico' }}
+      </h3>
+      <button (click)="closeModal()"
+              class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="p-6 overflow-y-auto flex-1">
+      <p class="text-gray-600">Formulario en desarrollo...</p>
+    </div>
+  </div>
+</div>

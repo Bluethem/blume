@@ -1,0 +1,247 @@
+<div class="w-full max-w-5xl mx-auto">
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex justify-center items-center py-20">
+    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!loading && perfil">
+    <!-- Header con Avatar -->
+    <div class="bg-gradient-to-r from-primary/10 to-primary/5 dark:from-primary/20 dark:to-primary/10 rounded-xl p-8 mb-6">
+      <div class="flex items-center gap-6">
+        <!-- Avatar -->
+        <div class="relative">
+          <img *ngIf="perfil.foto_url; else avatarPlaceholder"
+               [src]="perfil.foto_url" 
+               [alt]="'Foto de ' + perfil.nombre_completo"
+               class="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-gray-800 shadow-lg" />
+          <ng-template #avatarPlaceholder>
+            <div class="w-24 h-24 rounded-full bg-primary/20 flex items-center justify-center border-4 border-white dark:border-gray-800 shadow-lg">
+              <span class="text-3xl font-bold text-primary">{{ iniciales }}</span>
+            </div>
+          </ng-template>
+          
+          <label class="absolute bottom-0 right-0 bg-white dark:bg-gray-800 rounded-full p-2 shadow-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                 [class.opacity-50]="subiendoFoto"
+                 [class.pointer-events-none]="subiendoFoto">
+            <span class="material-symbols-outlined text-gray-600 dark:text-gray-400 text-lg">
+              {{ subiendoFoto ? 'hourglass_empty' : 'photo_camera' }}
+            </span>
+            <input (change)="subirFoto($event)" type="file" accept="image/jpeg,image/png,image/jpg" class="hidden" [disabled]="subiendoFoto"/>
+          </label>
+        </div>
+
+        <!-- Info -->
+        <div class="flex-1">
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            {{ perfil.nombre_completo }}
+          </h1>
+          <div class="flex items-center gap-3 flex-wrap">
+            <span *ngIf="esSuperAdmin" 
+                  class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
+              <span class="material-symbols-outlined text-base">verified_user</span>
+              Super Administrador
+            </span>
+            <span *ngIf="!esSuperAdmin"
+                  class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+              <span class="material-symbols-outlined text-base">admin_panel_settings</span>
+              Administrador
+            </span>
+            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+              <span class="w-2 h-2 rounded-full bg-green-600"></span>
+              Activo
+            </span>
+          </div>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            Miembro desde {{ perfil.created_at | date:'MMMM yyyy' }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div *ngIf="mensajeExito" class="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+      <p class="text-green-600 dark:text-green-400">{{ mensajeExito }}</p>
+    </div>
+    <div *ngIf="mensajeError" class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+      <p class="text-red-600 dark:text-red-400">{{ mensajeError }}</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="mb-6 border-b border-gray-200 dark:border-gray-700">
+      <nav class="-mb-px flex space-x-6" aria-label="Tabs">
+        <button (click)="cambiarTab('informacion')"
+                [class.border-primary]="tabActual === 'informacion'"
+                [class.text-primary]="tabActual === 'informacion'"
+                [class.border-transparent]="tabActual !== 'informacion'"
+                [class.text-gray-500]="tabActual !== 'informacion'"
+                class="shrink-0 border-b-2 px-1 pb-4 text-sm font-semibold flex items-center gap-2">
+          <span class="material-symbols-outlined text-lg">person</span>
+          Información Personal
+        </button>
+        <button (click)="cambiarTab('seguridad')"
+                [class.border-primary]="tabActual === 'seguridad'"
+                [class.text-primary]="tabActual === 'seguridad'"
+                [class.border-transparent]="tabActual !== 'seguridad'"
+                [class.text-gray-500]="tabActual !== 'seguridad'"
+                class="shrink-0 border-b-2 px-1 pb-4 text-sm font-semibold flex items-center gap-2">
+          <span class="material-symbols-outlined text-lg">lock</span>
+          Seguridad
+        </button>
+      </nav>
+    </div>
+
+    <!-- TAB: Información Personal -->
+    <div *ngIf="tabActual === 'informacion'">
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">Información Personal</h2>
+        
+        <form (submit)="$event.preventDefault(); guardarPerfil()" class="space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Nombre -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Nombre <span class="text-red-500">*</span>
+              </label>
+              <input [(ngModel)]="formData.nombre"
+                     name="nombre"
+                     class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-primary focus:border-primary"
+                     type="text"
+                     required/>
+            </div>
+
+            <!-- Apellido -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Apellido <span class="text-red-500">*</span>
+              </label>
+              <input [(ngModel)]="formData.apellido"
+                     name="apellido"
+                     class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-primary focus:border-primary"
+                     type="text"
+                     required/>
+            </div>
+
+            <!-- Email -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Email <span class="text-red-500">*</span>
+              </label>
+              <input [(ngModel)]="formData.email"
+                     name="email"
+                     class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-primary focus:border-primary"
+                     type="email"
+                     required/>
+            </div>
+
+            <!-- Teléfono -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Teléfono
+              </label>
+              <input [(ngModel)]="formData.telefono"
+                     name="telefono"
+                     class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-primary focus:border-primary"
+                     type="tel"/>
+            </div>
+
+            <!-- Dirección -->
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Dirección
+              </label>
+              <input [(ngModel)]="formData.direccion"
+                     name="direccion"
+                     class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-primary focus:border-primary"
+                     type="text"/>
+            </div>
+          </div>
+
+          <!-- Botones -->
+          <div class="flex justify-end gap-3 pt-4">
+            <button type="button"
+                    (click)="loadPerfil()"
+                    [disabled]="guardando"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              Cancelar
+            </button>
+            <button type="submit"
+                    [disabled]="guardando"
+                    class="px-6 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              {{ guardando ? 'Guardando...' : 'Guardar Cambios' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- TAB: Seguridad -->
+    <div *ngIf="tabActual === 'seguridad'">
+      <!-- Messages de Password -->
+      <div *ngIf="mensajePassword" class="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+        <p class="text-green-600 dark:text-green-400">{{ mensajePassword }}</p>
+      </div>
+      <div *ngIf="errorPassword" class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+        <p class="text-red-600 dark:text-red-400">{{ errorPassword }}</p>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Cambiar Contraseña</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
+          Actualiza tu contraseña para mantener tu cuenta segura.
+        </p>
+        
+        <form (submit)="$event.preventDefault(); cambiarPassword()" class="space-y-6">
+          <div class="space-y-4">
+            <!-- Contraseña Actual -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Contraseña Actual <span class="text-red-500">*</span>
+              </label>
+              <input [(ngModel)]="passwordData.password_actual"
+                     name="password_actual"
+                     class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-primary focus:border-primary"
+                     type="password"
+                     required/>
+            </div>
+
+            <!-- Nueva Contraseña -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Nueva Contraseña <span class="text-red-500">*</span>
+              </label>
+              <input [(ngModel)]="passwordData.password_nuevo"
+                     name="password_nuevo"
+                     class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-primary focus:border-primary"
+                     type="password"
+                     minlength="6"
+                     required/>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Mínimo 6 caracteres</p>
+            </div>
+
+            <!-- Confirmar Nueva Contraseña -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Confirmar Nueva Contraseña <span class="text-red-500">*</span>
+              </label>
+              <input [(ngModel)]="passwordData.password_confirmacion"
+                     name="password_confirmacion"
+                     class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-primary focus:border-primary"
+                     type="password"
+                     required/>
+            </div>
+          </div>
+
+          <!-- Botones -->
+          <div class="flex justify-end gap-3 pt-4">
+            <button type="submit"
+                    [disabled]="cambiandoPassword"
+                    class="px-6 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              {{ cambiandoPassword ? 'Cambiando...' : 'Cambiar Contraseña' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

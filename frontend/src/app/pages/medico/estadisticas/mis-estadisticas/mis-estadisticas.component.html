@@ -133,56 +133,60 @@
             </p>
           </div>
           <div class="flex h-72 w-full items-center justify-center">
-            <svg class="transform -rotate-90" height="200" viewBox="0 0 36 36" width="200">
-              <!-- Background circle -->
-              <circle class="stroke-current text-gray-200 dark:text-gray-700"
-                      cx="18"
-                      cy="18"
-                      fill="none"
-                      r="15.915"
-                      stroke-width="3.8">
-              </circle>
+            <div class="relative inline-flex items-center justify-center">
+              <svg class="transform -rotate-90" height="200" viewBox="0 0 36 36" width="200">
+                <!-- Background circle -->
+                <circle class="stroke-current text-gray-200 dark:text-gray-700"
+                        cx="18"
+                        cy="18"
+                        fill="none"
+                        r="15.915"
+                        stroke-width="3.8">
+                </circle>
+                
+                <!-- Completadas (primary) -->
+                <circle class="stroke-current text-primary"
+                        cx="18"
+                        cy="18"
+                        fill="none"
+                        r="15.915"
+                        [attr.stroke-dasharray]="getCirclePath(calcularPorcentajeCompletadas())"
+                        stroke-width="3.8">
+                </circle>
+                
+                <!-- Canceladas (blue) -->
+                <circle class="stroke-current text-blue-400"
+                        cx="18"
+                        cy="18"
+                        fill="none"
+                        r="15.915"
+                        [attr.stroke-dasharray]="getCirclePath(calcularPorcentajeCanceladas())"
+                        [attr.stroke-dashoffset]="getCircleOffset(calcularPorcentajeCompletadas())"
+                        stroke-width="3.8">
+                </circle>
+                
+                <!-- No asistió (teal) -->
+                <circle class="stroke-current text-teal-400"
+                        cx="18"
+                        cy="18"
+                        fill="none"
+                        r="15.915"
+                        [attr.stroke-dasharray]="getCirclePath(calcularPorcentajeNoAsistio())"
+                        [attr.stroke-dashoffset]="getCircleOffset(calcularPorcentajeCompletadas() + calcularPorcentajeCanceladas())"
+                        stroke-width="3.8">
+                </circle>
+              </svg>
               
-              <!-- Completadas (primary) -->
-              <circle class="stroke-current text-primary"
-                      cx="18"
-                      cy="18"
-                      fill="none"
-                      r="15.915"
-                      [attr.stroke-dasharray]="getCirclePath(calcularPorcentajeCompletadas())"
-                      stroke-width="3.8">
-              </circle>
-              
-              <!-- Canceladas (blue) -->
-              <circle class="stroke-current text-blue-400"
-                      cx="18"
-                      cy="18"
-                      fill="none"
-                      r="15.915"
-                      [attr.stroke-dasharray]="getCirclePath(calcularPorcentajeCanceladas())"
-                      [attr.stroke-dashoffset]="getCircleOffset(calcularPorcentajeCompletadas())"
-                      stroke-width="3.8">
-              </circle>
-              
-              <!-- No asistió (teal) -->
-              <circle class="stroke-current text-teal-400"
-                      cx="18"
-                      cy="18"
-                      fill="none"
-                      r="15.915"
-                      [attr.stroke-dasharray]="getCirclePath(calcularPorcentajeNoAsistio())"
-                      [attr.stroke-dashoffset]="getCircleOffset(calcularPorcentajeCompletadas() + calcularPorcentajeCanceladas())"
-                      stroke-width="3.8">
-              </circle>
-              
-              <!-- Center text -->
-              <text class="transform rotate-90 origin-center text-5xl font-bold fill-current text-gray-900 dark:text-white"
-                    text-anchor="middle"
-                    x="18"
-                    y="20.35">
-                {{ estadisticas.total_citas_atendidas }}
-              </text>
-            </svg>
+              <!-- Center text - positioned absolutely over the SVG -->
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <span class="text-5xl font-bold text-gray-900 dark:text-white">
+                  {{ estadisticas.total_citas_atendidas }}
+                </span>
+                <span class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Total
+                </span>
+              </div>
+            </div>
           </div>
           <!-- Legend -->
           <div class="flex flex-col gap-2 text-sm">

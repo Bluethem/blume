@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_10_30_002711) do
+ActiveRecord::Schema[8.1].define(version: 2025_10_30_165235) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -47,6 +47,18 @@ ActiveRecord::Schema[8.1].define(version: 2025_10_30_002711) do
     t.index ["medico_id"], name: "index_citas_on_medico_id"
     t.index ["paciente_id"], name: "index_citas_on_paciente_id"
     t.check_constraint "fecha_hora_fin > fecha_hora_inicio", name: "check_fecha_fin_mayor_inicio"
+  end
+
+  create_table "configuracion_sistemas", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "categoria", null: false
+    t.string "clave", null: false
+    t.datetime "created_at", null: false
+    t.text "descripcion"
+    t.boolean "solo_super_admin", default: false, null: false
+    t.datetime "updated_at", null: false
+    t.text "valor"
+    t.index ["categoria"], name: "index_configuracion_sistemas_on_categoria"
+    t.index ["clave"], name: "index_configuracion_sistemas_on_clave", unique: true
   end
 
   create_table "especialidades", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -145,9 +157,11 @@ ActiveRecord::Schema[8.1].define(version: 2025_10_30_002711) do
   create_table "usuarios", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.boolean "activo", default: true, null: false
     t.string "apellido", null: false
+    t.integer "creado_por_id"
     t.datetime "created_at", null: false
     t.text "direccion"
     t.string "email", null: false
+    t.boolean "es_super_admin", default: false, null: false
     t.string "foto_url"
     t.string "nombre", null: false
     t.string "password_digest", null: false
@@ -155,8 +169,12 @@ ActiveRecord::Schema[8.1].define(version: 2025_10_30_002711) do
     t.string "reset_password_token"
     t.integer "rol", default: 0, null: false
     t.string "telefono"
+    t.datetime "ultimo_acceso"
     t.datetime "updated_at", null: false
+    t.index ["activo"], name: "index_usuarios_on_activo"
+    t.index ["creado_por_id"], name: "index_usuarios_on_creado_por_id"
     t.index ["email"], name: "index_usuarios_on_email", unique: true
+    t.index ["es_super_admin"], name: "index_usuarios_on_es_super_admin"
     t.index ["reset_password_token"], name: "index_usuarios_on_reset_password_token", unique: true
     t.index ["rol"], name: "index_usuarios_on_rol"
   end

@@ -1,0 +1,51 @@
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-gray-50 dark:bg-gray-900">
+  <div class="layout-container flex h-full grow flex-col">
+    <div class="flex flex-1 justify-center p-4 sm:p-5">
+      <div class="layout-content-container flex flex-col max-w-[960px] flex-1 items-center justify-center">
+        <div class="flex flex-col items-center gap-6 p-4 text-center w-full max-w-lg">
+          
+          <!-- Error 404 -->
+          <p class="text-primary text-4xl sm:text-5xl font-black leading-tight tracking-[-0.033em]">
+            Error 404
+          </p>
+          
+          <div class="flex flex-col items-center gap-6">
+            <!-- Ilustración -->
+            <div class="bg-center bg-no-repeat aspect-square bg-contain w-full max-w-[280px]" 
+                 style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBtKgGjkGr_JHNTmZzyTX7I3UMR_yCakVaOptRnpxHof1OmWjDmInoqHlx8B7WxeilwZQ-JZtrfjtwm9sX42wdolnugyF2Nq0VwAVaUtgAGLDyrpY3D9_J7dM4Rk1Kme7PqpGSr2kPGwCS0-x9s0xOvYcta8zbCaVnBtoHF0bHerBb313KXxH21f7yvg2sYNpaDDQg4ME5kclNYUyBktbbyApjI4-KKzATVs_nYuk_xVpKcIKhXp89jISisPlpZ6UP-fCcXOuUYj1s");'>
+            </div>
+            
+            <!-- Mensaje -->
+            <div class="flex max-w-md flex-col items-center gap-2">
+              <p class="text-gray-900 dark:text-gray-100 text-lg sm:text-xl font-bold leading-tight tracking-[-0.015em]">
+                ¡Oops! Parece que te perdiste.
+              </p>
+              <p class="text-gray-700 dark:text-gray-300 text-sm sm:text-base font-normal leading-normal">
+                No pudimos encontrar la página que buscas. Puedes intentar regresar a la página anterior o ir a la página de inicio.
+              </p>
+            </div>
+            
+            <!-- Botones -->
+            <div class="flex flex-col sm:flex-row gap-3 w-full max-w-sm">
+              <button (click)="goHome()"
+                      class="flex flex-1 min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-6 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] hover:bg-primary/90 transition-colors duration-200">
+                <span class="truncate">Ir a la Página de Inicio</span>
+              </button>
+              
+              <button (click)="goBack()"
+                      class="flex flex-1 min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-6 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm font-medium leading-normal tracking-[0.015em] hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200">
+                <span class="truncate">Volver Atrás</span>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Reportar problema -->
+          <p (click)="reportProblem()"
+             class="text-gray-600 dark:text-gray-400 text-sm font-normal leading-normal pb-3 pt-1 text-center underline cursor-pointer hover:text-primary transition-colors">
+            Reportar este problema
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

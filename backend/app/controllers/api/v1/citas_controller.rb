@@ -43,6 +43,8 @@ module Api
 
         # Validar disponibilidad del médico
         unless horario_disponible?(@cita)
+          Rails.logger.error("Horario no disponible para cita: #{@cita.inspect}")
+          Rails.logger.error("Fecha inicio: #{@cita.fecha_hora_inicio}, Día semana: #{@cita.fecha_hora_inicio.wday}")
           render_error('El médico no está disponible en ese horario')
           return
         end
@@ -310,11 +312,47 @@ module Api
       end
 
       def horario_disponible?(cita)
-        HorarioDisponible.exists?(
+        # Obtener el día de la semana (0 = Domingo, 6 = Sábado)
+        dia_semana = cita.fecha_hora_inicio.wday
+        
+        # Buscar horarios del médico para ese día (puede tener múltiples bloques)
+        horarios = HorarioMedico.where(
           medico_id: cita.medico_id,
-          dia_semana: cita.fecha_hora_inicio.wday,
+          dia_semana: dia_semana,
           activo: true
         )
+        
+        Rails.logger.info("🔍 Validando horario - Día: #{dia_semana}, Horarios encontrados: #{horarios.count}")
+        
+        if horarios.empty?
+          Rails.logger.error("❌ No hay horarios configurados para el médico en día #{dia_semana}")
+          return false
+        end
+        
+        # Extraer solo la hora y minuto de las fechas de la cita
+        hora_inicio_cita = cita.fecha_hora_inicio.strftime('%H:%M:%S')
+        hora_fin_cita = cita.fecha_hora_fin.strftime('%H:%M:%S')
+        
+        Rails.logger.info("⏰ Cita - Inicio: #{hora_inicio_cita}, Fin: #{hora_fin_cita}")
+        
+        # Verificar si la cita cae dentro de alguno de los horarios del médico
+        resultado = horarios.any? do |horario|
+          horario_inicio = horario.hora_inicio.strftime('%H:%M:%S')
+          horario_fin = horario.hora_fin.strftime('%H:%M:%S')
+          
+          Rails.logger.info("📅 Horario médico - Inicio: #{horario_inicio}, Fin: #{horario_fin}")
+          
+          # Comparar como strings
+          inicio_valido = hora_inicio_cita >= horario_inicio
+          fin_valido = hora_fin_cita <= horario_fin
+          
+          Rails.logger.info("✓ Inicio válido: #{inicio_valido}, Fin válido: #{fin_valido}")
+          
+          inicio_valido && fin_valido
+        end
+        
+        Rails.logger.info("📊 Resultado final: #{resultado}")
+        resultado
       end
 
       def existe_conflicto?(cita, excluir_id: nil)
@@ -331,7 +369,8 @@ module Api
       def crear_notificacion_nueva_cita(cita)
         Notificacion.create(
           usuario_id: cita.medico.usuario_id,
-          tipo: :cita_nueva,
+          cita_id: cita.id,
+          tipo: :cita_creada,
           titulo: 'Nueva cita programada',
           mensaje: "Nueva cita con #{cita.paciente.nombre_completo} para el #{cita.fecha_hora_inicio.strftime('%d/%m/%Y %H:%M')}"
         )
@@ -341,6 +380,7 @@ module Api
         # Notificar al paciente
         Notificacion.create(
           usuario_id: cita.paciente.usuario_id,
+          cita_id: cita.id,
           tipo: "cita_#{nuevo_estado}".to_sym,
           titulo: "Cita #{nuevo_estado}",
           mensaje: "Su cita del #{cita.fecha_hora_inicio.strftime('%d/%m/%Y %H:%M')} ha sido #{nuevo_estado}"
@@ -352,7 +392,8 @@ module Api
         [cita.paciente.usuario_id, cita.medico.usuario_id].each do |usuario_id|
           Notificacion.create(
             usuario_id: usuario_id,
-            tipo: :cita_reprogramada,
+            cita_id: cita.id,
+            tipo: :recordatorio,
             titulo: 'Cita reprogramada',
             mensaje: "La cita ha sido reprogramada para el #{cita.fecha_hora_inicio.strftime('%d/%m/%Y %H:%M')}"
           )
@@ -389,7 +430,7 @@ module Api
             nombre_completo: cita.medico.nombre_completo,
             nombre_profesional: cita.medico.nombre_profesional,
             numero_colegiatura: cita.medico.numero_colegiatura,
-            foto_url: nil,
+            foto_url: absolute_url(cita.medico.usuario.foto_url),
             especialidad: cita.medico.especialidad_principal&.nombre || 'General',
             especialidades: cita.medico.especialidades.map { |e| e.nombre }
           }

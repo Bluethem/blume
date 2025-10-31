@@ -28,11 +28,11 @@
       <div class="bg-card-light dark:bg-card-dark p-6 rounded-xl shadow-sm">
         <div class="flex flex-col sm:flex-row items-center gap-6">
           <div class="flex-shrink-0">
-            <div 
-              class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-36 w-36"
-              [style.background-image]="'url(' + medico.foto_url + ')'"
-              [attr.data-alt]="'Foto de perfil del ' + medico.nombre_profesional"
-            ></div>
+            <img 
+              [src]="medico.foto_url || 'https://ui-avatars.com/api/?name=' + (medico.nombre_completo || 'Medico') + '&size=288&background=B71C1C&color=fff'"
+              [alt]="'Foto de perfil del ' + (medico.nombre_profesional || 'Médico')"
+              class="rounded-full h-36 w-36 object-cover border-4 border-gray-200 dark:border-gray-700"
+            />
           </div>
           
           <div class="flex-1 text-center sm:text-left">
@@ -55,12 +55,13 @@
             
             <div class="flex items-center justify-center sm:justify-start gap-2 mt-3 text-secondary-button dark:text-gray-400">
               <div class="flex text-yellow-500">
-                <span *ngFor="let estrella of estrellas" class="material-symbols-outlined">
-                  {{ estrella ? 'star' : 'star_border' }}
+                <span *ngFor="let estrella of estrellas" class="material-symbols-outlined" [class.filled]="estrella.llena">
+                  <ng-container *ngIf="estrella.llena">star</ng-container>
+                  <ng-container *ngIf="estrella.media">star_half</ng-container>
+                  <ng-container *ngIf="estrella.vacia">star_border</ng-container>
                 </span>
-                <span *ngIf="tieneMediaEstrella" class="material-symbols-outlined">star_half</span>
               </div>
-              <p class="text-sm">{{ medico.calificacion }} ({{ medico.total_reviews || 0 }} reseñas)</p>
+              <p class="text-sm">{{ medico.calificacion_promedio || 0 }} ({{ medico.total_resenas || 0 }} reseñas)</p>
             </div>
           </div>
         </div>
@@ -139,7 +140,8 @@
 
             <div>
               <h2 class="text-2xl font-bold text-text-light dark:text-text-dark mb-4">Certificaciones</h2>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div *ngIf="certificacionesFormateadas.length > 0; else noCertificaciones" 
+                   class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div 
                   *ngFor="let cert of certificacionesFormateadas"
                   class="bg-card-light dark:bg-card-dark p-4 rounded-lg border border-gray-200 dark:border-gray-700"
@@ -148,6 +150,12 @@
                   <p class="text-sm text-secondary-button dark:text-gray-400 mt-1">{{ cert.institucion }}</p>
                 </div>
               </div>
+              <ng-template #noCertificaciones>
+                <div class="bg-card-light dark:bg-card-dark p-8 rounded-lg border border-gray-200 dark:border-gray-700 text-center">
+                  <span class="material-symbols-outlined text-6xl text-gray-300 dark:text-gray-600">workspace_premium</span>
+                  <p class="text-gray-500 dark:text-gray-400 mt-4">No hay certificaciones registradas</p>
+                </div>
+              </ng-template>
             </div>
           </div>
 
@@ -219,10 +227,12 @@
                     </div>
                     <div class="flex text-yellow-500 my-1">
                       <span 
-                        *ngFor="let i of [1,2,3,4,5]"
+                        *ngFor="let estrella of estrellasPorCalificacion(resena.calificacion)"
                         class="material-symbols-outlined text-base"
                       >
-                        {{ i <= resena.calificacion ? 'star' : 'star_border' }}
+                        <ng-container *ngIf="estrella.llena">star</ng-container>
+                        <ng-container *ngIf="estrella.media">star_half</ng-container>
+                        <ng-container *ngIf="estrella.vacia">star_border</ng-container>
                       </span>
                     </div>
                     <p class="text-secondary-button dark:text-gray-400" *ngIf="resena.comentario">{{ resena.comentario }}</p>

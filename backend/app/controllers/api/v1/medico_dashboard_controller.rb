@@ -44,7 +44,7 @@ class Api::V1::MedicoDashboardController < ApplicationController
       nombre_profesional: medico.nombre_profesional,
       numero_colegiatura: medico.numero_colegiatura,
       especialidad: medico.especialidad_principal&.nombre || 'Sin especialidad',
-      foto_url: medico.foto_url
+      foto_url: absolute_url(medico.usuario.foto_url)
     }
   end
 
@@ -84,7 +84,7 @@ class Api::V1::MedicoDashboardController < ApplicationController
           id: cita.paciente.id,
           nombre_completo: cita.paciente.usuario.nombre_completo,
           edad: cita.paciente.edad,
-          foto_url: cita.paciente.usuario.foto_perfil_url
+          foto_url: absolute_url(cita.paciente.usuario.foto_url)
         }
       }
     end
@@ -133,7 +133,7 @@ class Api::V1::MedicoDashboardController < ApplicationController
         {
           id: paciente.id,
           nombre_completo: paciente.usuario.nombre_completo,
-          foto_url: paciente.usuario.foto_perfil_url,
+          foto_url: absolute_url(paciente.usuario.foto_url),
           ultima_cita: ultima_cita&.fecha_hora_inicio&.strftime('%d de %B, %Y'),
           ultima_cita_fecha: ultima_cita&.fecha_hora_inicio,
           total_citas: medico.citas.where(paciente_id: paciente.id).count

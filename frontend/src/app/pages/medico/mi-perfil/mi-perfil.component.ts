@@ -5,6 +5,13 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { environment } from '../../../../environments/environment';
 
+interface Certificacion {
+  id: string;
+  nombre: string;
+  institucion: string;
+  fecha_obtencion: string;
+}
+
 interface PerfilMedico {
   id: string;
   nombre: string;
@@ -16,6 +23,7 @@ interface PerfilMedico {
   especialidad: string;
   anios_experiencia: number;
   biografia?: string;
+  certificaciones?: Certificacion[];
 }
 
 interface ApiResponse<T> {
@@ -137,19 +145,39 @@ export class MiPerfilComponent implements OnInit {
           return;
         }
         
-        // TODO: Implementar subida al servidor
-        const reader = new FileReader();
-        reader.onload = (event: any) => {
-          // Mostrar preview temporal
-          if (this.perfil) {
-            this.perfil.foto_url = event.target.result;
-          }
-          alert('Subida de foto al servidor pendiente de implementación');
-        };
-        reader.readAsDataURL(file);
+        // Subir foto al servidor
+        this.subirFotoServidor(file);
       }
     };
     input.click();
+  }
+
+  private subirFotoServidor(file: File): void {
+    const formData = new FormData();
+    formData.append('foto', file);
+
+    this.loading = true;
+
+    this.http.post<ApiResponse<{ foto_url: string; message: string }>>(
+      `${this.apiUrl}/medico/perfil/upload_foto`,
+      formData
+    ).subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          // Actualizar la foto en el perfil
+          if (this.perfil) {
+            this.perfil.foto_url = response.data.foto_url;
+          }
+          alert('✅ ' + (response.data.message || 'Foto actualizada exitosamente'));
+        }
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error al subir foto:', error);
+        alert('❌ Error al subir la foto: ' + (error.error?.message || 'Error desconocido'));
+        this.loading = false;
+      }
+    });
   }
 
   guardarCambios(): void {

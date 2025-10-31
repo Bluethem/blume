@@ -1,15 +1,16 @@
 import { Component, OnInit, inject, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { NotificacionesService } from '../../../services/notificaciones.service';
 import { ThemeService } from '../../../services/theme.service';
 import { Notificacion } from '../../../models';
+import { ChatbotComponent } from '../../../components/chatbot/chatbot.component';
 
 @Component({
   selector: 'app-medico-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, ChatbotComponent],
   templateUrl: './medico-layout.component.html',
   styleUrls: ['./medico-layout.component.css']
 })

@@ -1,12 +1,11 @@
 
-module Api
-  module V1
-    class NotificacionesController < ApplicationController
-      before_action :set_notificacion, only: [:show, :marcar_leida]
+class Api::V1::NotificacionesController < ApplicationController
+  before_action :authenticate_request!
+  before_action :set_notificacion, only: [:show, :marcar_leida, :destroy]
 
-      # GET /api/v1/notificaciones
-      def index
-        @notificaciones = current_user.notificaciones.order(created_at: :desc)
+  # GET /api/v1/notificaciones
+  def index
+    @notificaciones = @current_user.notificaciones.order(created_at: :desc)
 
         # Filtros
         if params[:leida].present?
@@ -29,70 +28,88 @@ module Api
 
         render_success({
           notificaciones: paginated_notificaciones.map { |n| notificacion_response(n) },
-          total: total,
-          no_leidas: current_user.notificaciones.where(leida: false).count,
-          page: page,
-          per_page: per_page,
-          total_pages: total_pages
+          no_leidas: @current_user.notificaciones.where(leida: false).count,
+          meta: {
+            current_page: page,
+            total_pages: total_pages,
+            total_count: total,
+            per_page: per_page
+          }
         })
-      end
+  rescue => e
+    Rails.logger.error("Error al listar notificaciones: #{e.message}")
+    render_error('Error al cargar notificaciones', status: :internal_server_error)
+  end
 
-      # GET /api/v1/notificaciones/:id
-      def show
-        render_success(notificacion_response(@notificacion))
-      end
+  # GET /api/v1/notificaciones/:id
+  def show
+    render_success(notificacion_response(@notificacion))
+  end
 
-      # PUT /api/v1/notificaciones/:id/marcar_leida
-      def marcar_leida
-        if @notificacion.update(leida: true, fecha_leida: Time.current)
-          render_success(
-            notificacion_response(@notificacion),
-            message: 'Notificación marcada como leída'
-          )
-        else
-          render_error('Error al marcar la notificación')
-        end
-      end
+  # PUT /api/v1/notificaciones/:id/marcar_leida
+  def marcar_leida
+    if @notificacion.update(leida: true, fecha_leida: Time.current)
+      render_success(
+        notificacion_response(@notificacion),
+        message: 'Notificación marcada como leída'
+      )
+    else
+      render_error('Error al marcar la notificación')
+    end
+  end
 
-      # PUT /api/v1/notificaciones/marcar_todas_leidas
-      def marcar_todas_leidas
-        count = current_user.notificaciones.where(leida: false).update_all(
-          leida: true,
-          fecha_leida: Time.current
-        )
+  # PUT /api/v1/notificaciones/marcar_todas_leidas
+  def marcar_todas_leidas
+    count = @current_user.notificaciones.where(leida: false).update_all(
+      leida: true,
+      fecha_leida: Time.current
+    )
 
-        render_success(
-          { notificaciones_actualizadas: count },
-          message: "#{count} notificaciones marcadas como leídas"
-        )
-      end
+    render_success(
+      { notificaciones_actualizadas: count },
+      message: "#{count} notificaciones marcadas como leídas"
+    )
+  end
 
-      # GET /api/v1/notificaciones/no_leidas (ya lo tienes, mejorar)
-      def no_leidas
-        @notificaciones = current_user.notificaciones
-                                      .where(leida: false)
-                                      .order(created_at: :desc)
-                                      .limit(20)
+  # GET /api/v1/notificaciones/no_leidas
+  def no_leidas
+    @notificaciones = @current_user.notificaciones
+                                  .where(leida: false)
+                                  .order(created_at: :desc)
+                                  .limit(20)
 
-        render_success({
-          notificaciones: @notificaciones.map { |n| notificacion_response(n) },
-          total: @notificaciones.count
-        })
-      end
+    render_success({
+      notificaciones: @notificaciones.map { |n| notificacion_response(n) },
+      total: @notificaciones.count
+    })
+  end
 
-      private
+  # DELETE /api/v1/notificaciones/:id
+  def destroy
+    if @notificacion.destroy
+      render_success({}, message: 'Notificación eliminada exitosamente')
+    else
+      render_error('No se pudo eliminar la notificación', status: :unprocessable_entity)
+    end
+  rescue => e
+    Rails.logger.error("Error al eliminar notificación: #{e.message}")
+    render_error('Error al eliminar la notificación', status: :internal_server_error)
+  end
 
-      def set_notificacion
-        @notificacion = current_user.notificaciones.find(params[:id])
-      rescue ActiveRecord::RecordNotFound
-        render_error('Notificación no encontrada', status: :not_found)
-      end
+  private
+
+  def set_notificacion
+    @notificacion = @current_user.notificaciones.find(params[:id])
+  rescue ActiveRecord::RecordNotFound
+    render_error('Notificación no encontrada', status: :not_found)
+  end
 
       # MEJORAR: Agregar más datos a la respuesta
       def notificacion_response(notificacion)
-        {
+        response = {
           id: notificacion.id,
           tipo: notificacion.tipo,
+          tipo_display: notificacion.tipo.to_s.humanize,
           titulo: notificacion.titulo,
           mensaje: notificacion.mensaje,
           leida: notificacion.leida,
@@ -103,6 +120,17 @@ module Api
           icono: icono_notificacion(notificacion.tipo),
           color: color_notificacion(notificacion.tipo)
         }
+
+        # Generar enlace dinámico según el tipo de notificación
+        if notificacion.cita_id.present?
+          response[:enlace] = "/admin/citas"
+          response[:datos_adicionales] = { cita_id: notificacion.cita_id }
+        else
+          response[:enlace] = nil
+          response[:datos_adicionales] = nil
+        end
+
+        response
       end
 
       # NUEVO HELPER: Calcular tiempo relativo
@@ -128,13 +156,9 @@ module Api
       def icono_notificacion(tipo)
         tipos_iconos = {
           'cita_creada' => 'event_available',
-          'cita_nueva' => 'event_available',
           'cita_confirmada' => 'check_circle',
           'cita_cancelada' => 'cancel',
-          'cita_reprogramada' => 'update',
-          'recordatorio' => 'alarm',
-          'mensaje' => 'mail',
-          'sistema' => 'info'
+          'recordatorio' => 'alarm'
         }
         tipos_iconos[tipo.to_s] || 'notifications'
       end
@@ -143,16 +167,10 @@ module Api
       def color_notificacion(tipo)
         tipos_colores = {
           'cita_creada' => 'blue',
-          'cita_nueva' => 'blue',
           'cita_confirmada' => 'green',
           'cita_cancelada' => 'red',
-          'cita_reprogramada' => 'orange',
-          'recordatorio' => 'orange',
-          'mensaje' => 'purple',
-          'sistema' => 'gray'
+          'recordatorio' => 'orange'
         }
         tipos_colores[tipo.to_s] || 'gray'
       end
-    end
-  end
 end

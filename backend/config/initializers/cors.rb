@@ -6,7 +6,11 @@
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
     # En desarrollo permite localhost en diferentes puertos
-    origins 'localhost:4200', 
+    origins 'http://localhost:4200', 
+            'http://localhost:3000',
+            'http://127.0.0.1:4200',
+            'http://127.0.0.1:3000',
+            'localhost:4200', 
             'localhost:3000',
             '127.0.0.1:4200',
             '127.0.0.1:3000'

@@ -78,6 +78,27 @@ class Cita < ApplicationRecord
     ((fecha_hora_fin - fecha_hora_inicio) / 60).to_i
   end
 
+  # ✅ Métodos de conveniencia para verificar estados (sin prefijo)
+  def pendiente?
+    estado_pendiente?
+  end
+
+  def confirmada?
+    estado_confirmada?
+  end
+
+  def cancelada?
+    estado_cancelada?
+  end
+
+  def completada?
+    estado_completada?
+  end
+
+  def no_asistio?
+    estado_no_asistio?
+  end
+
   # ✅ Métodos de verificación de permisos
   def puede_cancelarse?
     (estado_pendiente? || estado_confirmada?) && fecha_hora_inicio > Time.current
@@ -88,7 +109,9 @@ class Cita < ApplicationRecord
   end
 
   def puede_completarse?
-    estado_confirmada? && fecha_hora_inicio < Time.current
+    # Permitir completar citas pendientes o confirmadas
+    # Sin validar la fecha (útil para demo/testing)
+    estado_pendiente? || estado_confirmada?
   end
   
   def puede_cancelar?(usuario)

@@ -1,0 +1,202 @@
+<div class="max-w-7xl mx-auto">
+  <!-- Loading -->
+  <div *ngIf="loading" class="flex items-center justify-center py-20">
+    <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!loading && medico">
+    <!-- Header -->
+    <div class="mb-6 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <button (click)="volver()"
+                class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+          <span class="material-symbols-outlined text-gray-600 dark:text-gray-400">arrow_back</span>
+        </button>
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Detalles del Médico</h1>
+          <p class="text-gray-600 dark:text-gray-400">Información completa del médico</p>
+        </div>
+      </div>
+      <button (click)="editar()"
+              class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+        <span class="material-symbols-outlined">edit</span>
+        Editar
+      </button>
+    </div>
+
+    <!-- Main Card -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      <!-- Header with Avatar -->
+      <div class="bg-gradient-to-r from-primary/10 to-primary/5 dark:from-primary/20 dark:to-primary/10 p-8 rounded-t-xl">
+        <div class="flex items-start gap-6">
+          <!-- Avatar -->
+          <img [src]="fotoPerfil"
+               [alt]="'Foto de ' + nombreCompleto"
+               class="w-32 h-32 rounded-full object-cover border-4 border-white dark:border-gray-800 shadow-lg" />
+          
+          <!-- Info -->
+          <div class="flex-1">
+            <div class="flex items-start justify-between mb-2">
+              <div>
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+                  {{ medico.usuario.nombre }} {{ medico.usuario.apellido }}
+                </h2>
+                <p class="text-lg text-primary font-semibold">
+                  {{ especialidadPrincipal }}
+                </p>
+              </div>
+              <span *ngIf="medico.usuario.activo"
+                    class="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 text-sm font-medium rounded-full">
+                Activo
+              </span>
+              <span *ngIf="!medico.usuario.activo"
+                    class="px-3 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 text-sm font-medium rounded-full">
+                Inactivo
+              </span>
+            </div>
+            
+            <!-- Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+              <div class="bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
+                <p class="text-xs text-gray-600 dark:text-gray-400">Años de Experiencia</p>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ medico.anios_experiencia }}</p>
+              </div>
+              <div class="bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
+                <p class="text-xs text-gray-600 dark:text-gray-400">Citas Totales</p>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ medico.estadisticas.total_citas }}</p>
+              </div>
+              <div class="bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
+                <p class="text-xs text-gray-600 dark:text-gray-400">Citas Este Mes</p>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ medico.estadisticas.citas_mes }}</p>
+              </div>
+              <div class="bg-white/50 dark:bg-gray-800/50 rounded-lg p-3">
+                <p class="text-xs text-gray-600 dark:text-gray-400">Calificación</p>
+                <p class="text-2xl font-bold text-yellow-500">{{ medico.estadisticas.calificacion_promedio || 0 }} ⭐</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Details -->
+      <div class="p-8 space-y-8">
+        <!-- Información Personal -->
+        <section>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">person</span>
+            Información Personal
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-1">
+              <p class="text-sm text-gray-500 dark:text-gray-400">Email</p>
+              <p class="text-gray-900 dark:text-white font-medium">{{ medico.usuario.email }}</p>
+            </div>
+            <div class="space-y-1">
+              <p class="text-sm text-gray-500 dark:text-gray-400">Teléfono</p>
+              <p class="text-gray-900 dark:text-white font-medium">{{ medico.usuario.telefono || 'No especificado' }}</p>
+            </div>
+            <div class="space-y-1 md:col-span-2">
+              <p class="text-sm text-gray-500 dark:text-gray-400">Dirección</p>
+              <p class="text-gray-900 dark:text-white font-medium">{{ medico.usuario.direccion || 'No especificada' }}</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Información Profesional -->
+        <section>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">work</span>
+            Información Profesional
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-1">
+              <p class="text-sm text-gray-500 dark:text-gray-400">Número de Colegiatura</p>
+              <p class="text-gray-900 dark:text-white font-medium">{{ medico.numero_colegiatura }}</p>
+            </div>
+            <div class="space-y-1">
+              <p class="text-sm text-gray-500 dark:text-gray-400">Costo de Consulta</p>
+              <p class="text-gray-900 dark:text-white font-medium">S/. {{ medico.costo_consulta }}</p>
+            </div>
+            <div *ngIf="medico.biografia" class="space-y-1 md:col-span-2">
+              <p class="text-sm text-gray-500 dark:text-gray-400">Biografía</p>
+              <p class="text-gray-900 dark:text-white">{{ medico.biografia }}</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Especialidades -->
+        <section>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">medical_services</span>
+            Especialidades
+          </h3>
+          <div class="flex flex-wrap gap-2">
+            <span *ngFor="let esp of medico.especialidades"
+                  [class]="esp.es_principal ? 
+                    'px-4 py-2 bg-primary text-white rounded-full text-sm font-medium' : 
+                    'px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-sm'">
+              {{ esp.nombre }}
+              <span *ngIf="esp.es_principal" class="ml-1">⭐</span>
+            </span>
+          </div>
+          <p *ngIf="medico.especialidades.length === 0" class="text-gray-500 dark:text-gray-400 text-sm">
+            No hay especialidades registradas
+          </p>
+        </section>
+
+        <!-- Certificaciones -->
+        <section>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">workspace_premium</span>
+            Certificaciones
+          </h3>
+          <div class="space-y-3">
+            <div *ngFor="let cert of medico.certificaciones"
+                 class="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-600">
+              <span class="material-symbols-outlined text-primary mt-1">verified</span>
+              <div class="flex-1">
+                <p class="font-semibold text-gray-900 dark:text-white">{{ cert.nombre }}</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">{{ cert.institucion }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                  Fecha de obtención: {{ formatearFecha(cert.fecha_obtencion) }}
+                </p>
+              </div>
+            </div>
+          </div>
+          <p *ngIf="medico.certificaciones.length === 0" class="text-gray-500 dark:text-gray-400 text-sm">
+            No hay certificaciones registradas
+          </p>
+        </section>
+
+        <!-- Estadísticas Detalladas -->
+        <section>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">analytics</span>
+            Estadísticas Detalladas
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <p class="text-sm text-blue-600 dark:text-blue-400 mb-1">Total de Citas</p>
+              <p class="text-3xl font-bold text-blue-900 dark:text-blue-100">{{ medico.estadisticas.total_citas }}</p>
+            </div>
+            <div class="p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg border border-green-200 dark:border-green-800">
+              <p class="text-sm text-green-600 dark:text-green-400 mb-1">Citas Este Mes</p>
+              <p class="text-3xl font-bold text-green-900 dark:text-green-100">{{ medico.estadisticas.citas_mes }}</p>
+            </div>
+            <div class="p-4 bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+              <p class="text-sm text-yellow-600 dark:text-yellow-400 mb-1">Calificación Promedio</p>
+              <p class="text-3xl font-bold text-yellow-900 dark:text-yellow-100">
+                {{ medico.estadisticas.calificacion_promedio || 0 }}
+                <span class="text-lg">/ 5</span>
+              </p>
+              <p class="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
+                ({{ medico.estadisticas.total_resenas }} reseñas)
+              </p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>

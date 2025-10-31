@@ -3,7 +3,7 @@
 module Api
   module V1
     class ValoracionesController < ApplicationController
-      before_action :authenticate_user!
+      before_action :authenticate_request!
       before_action :set_medico, only: [:index, :create]
       before_action :set_valoracion, only: [:show, :update, :destroy]
       before_action :authorize_paciente!, only: [:create, :update, :destroy]
@@ -26,6 +26,11 @@ module Api
         render json: {
           success: true,
           data: @valoraciones.map { |v| valoracion_json(v) },
+          estadisticas: {
+            calificacion_promedio: @medico.calificacion_promedio,
+            total_valoraciones: @medico.total_resenas,
+            distribucion: @medico.distribucion_calificaciones
+          },
           meta: {
             page: page,
             per_page: per_page,
@@ -169,7 +174,7 @@ module Api
       end
 
       def authorize_paciente!
-        unless current_user.paciente?
+        unless current_user.es_paciente?
           render json: {
             success: false,
             error: 'Solo los pacientes pueden realizar esta acción'

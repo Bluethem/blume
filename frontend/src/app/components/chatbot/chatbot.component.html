@@ -1,0 +1,120 @@
+<!-- Botón flotante para abrir el chat -->
+<button *ngIf="!isOpen" 
+        (click)="toggleChat()"
+        class="fixed bottom-6 right-6 z-50 w-16 h-16 bg-primary text-white rounded-full shadow-lg hover:bg-primary/90 transition-all hover:scale-110 flex items-center justify-center group"
+        aria-label="Abrir chatbot">
+  <span class="material-symbols-outlined text-3xl">chat</span>
+  <!-- Badge de notificación (opcional) -->
+  <span class="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
+</button>
+
+<!-- Ventana de chat -->
+<div *ngIf="isOpen" 
+     class="fixed bottom-6 right-6 z-50 w-full sm:w-96 h-[600px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl flex flex-col border border-gray-200 dark:border-gray-700 animate-slide-up mx-4 sm:mx-0">
+  
+  <!-- Header -->
+  <div class="p-4 bg-gradient-to-r from-primary to-primary/80 text-white rounded-t-2xl flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+        <span class="material-symbols-outlined text-2xl">smart_toy</span>
+      </div>
+      <div>
+        <h3 class="font-bold text-lg">Asistente Blume</h3>
+        <p class="text-xs text-white/80">En línea</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button (click)="limpiarChat()" 
+              class="hover:bg-white/20 rounded-lg p-2 transition-colors"
+              title="Limpiar chat">
+        <span class="material-symbols-outlined text-xl">refresh</span>
+      </button>
+      <button (click)="toggleChat()" 
+              class="hover:bg-white/20 rounded-lg p-2 transition-colors"
+              title="Cerrar">
+        <span class="material-symbols-outlined text-xl">close</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mensajes -->
+  <div #messagesContainer 
+       class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900 scroll-smooth">
+    <div *ngFor="let msg of messages" 
+         [class]="msg.role === 'user' ? 'flex justify-end' : 'flex justify-start'">
+      
+      <!-- Mensaje del usuario -->
+      <div *ngIf="msg.role === 'user'" 
+           class="flex items-end gap-2 max-w-[85%]">
+        <div class="bg-primary text-white rounded-2xl rounded-br-sm px-4 py-3 shadow-md">
+          <p class="text-sm whitespace-pre-wrap break-words">{{ msg.content }}</p>
+          <p class="text-xs text-white/70 mt-1">{{ msg.timestamp | date:'shortTime' }}</p>
+        </div>
+        <div class="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
+          <span class="material-symbols-outlined text-primary text-lg">person</span>
+        </div>
+      </div>
+
+      <!-- Mensaje del asistente -->
+      <div *ngIf="msg.role === 'assistant'" 
+           class="flex items-end gap-2 max-w-[85%]">
+        <div class="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
+          <span class="material-symbols-outlined text-primary text-lg">smart_toy</span>
+        </div>
+        <div class="bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-2xl rounded-bl-sm px-4 py-3 shadow-md border border-gray-200 dark:border-gray-700">
+          <p class="text-sm whitespace-pre-wrap break-words">{{ msg.content }}</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ msg.timestamp | date:'shortTime' }}</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Indicador de escritura -->
+    <div *ngIf="loading" class="flex justify-start">
+      <div class="flex items-end gap-2 max-w-[85%]">
+        <div class="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
+          <span class="material-symbols-outlined text-primary text-lg">smart_toy</span>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-2xl rounded-bl-sm px-4 py-3 shadow-md border border-gray-200 dark:border-gray-700">
+          <div class="flex gap-1">
+            <div class="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
+            <div class="w-2 h-2 bg-primary rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+            <div class="w-2 h-2 bg-primary rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sugerencias rápidas (opcional) -->
+  <div *ngIf="messages.length === 1 && !loading" 
+       class="px-4 pb-2 flex gap-2 overflow-x-auto">
+    <button (click)="inputMessage = '¿Cómo agendar una cita?'; enviarMensaje($event)"
+            class="text-xs px-3 py-2 bg-primary/10 text-primary rounded-full hover:bg-primary/20 transition-colors whitespace-nowrap">
+      ¿Cómo agendar una cita?
+    </button>
+    <button (click)="inputMessage = '¿Dónde veo mi historial?'; enviarMensaje($event)"
+            class="text-xs px-3 py-2 bg-primary/10 text-primary rounded-full hover:bg-primary/20 transition-colors whitespace-nowrap">
+      Ver historial
+    </button>
+  </div>
+
+  <!-- Input -->
+  <div class="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-b-2xl">
+    <form (submit)="enviarMensaje($event)" class="flex gap-2">
+      <input [(ngModel)]="inputMessage"
+             name="message"
+             placeholder="Escribe tu pregunta..."
+             [disabled]="loading"
+             class="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 disabled:cursor-not-allowed"
+             autocomplete="off">
+      <button type="submit" 
+              [disabled]="loading || !inputMessage.trim()"
+              class="bg-primary text-white rounded-lg px-4 py-3 hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center">
+        <span class="material-symbols-outlined">send</span>
+      </button>
+    </form>
+    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
+      Asistente virtual impulsado por IA
+    </p>
+  </div>
+</div>

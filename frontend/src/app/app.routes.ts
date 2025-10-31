@@ -175,52 +175,126 @@ export const routes: Routes = [
     ]
   },
 
-  /*
-  // ==================== DASHBOARD ADMIN (NO IMPLEMENTADO) ====================
+  // ==================== DASHBOARD ADMIN ====================
   {
     path: 'admin',
     canActivate: [roleGuard],
     data: { role: 'administrador' },
-    loadComponent: () => import('./pages/dashboard/admin/admin-dashboard.component')
-      .then(m => m.AdminDashboardComponent)
-  },
-
-  // ==================== RUTAS DE MÉDICOS (COMPARTIDAS - NO IMPLEMENTADAS) ====================
-  {
-    path: 'medicos',
-    canActivate: [authGuard],
+    loadComponent: () => import('./pages/admin/admin-layout/admin-layout.component')
+      .then(m => m.AdminLayoutComponent),
     children: [
       {
-        path: '',
-        loadComponent: () => import('./pages/medicos/lista/medicos-lista.component')
+        path: 'dashboard',
+        loadComponent: () => import('./pages/admin/dashboard/dashboard.component')
+          .then(m => m.AdminDashboardComponent)
+      },
+      {
+        path: 'medicos',
+        loadComponent: () => import('./pages/admin/medicos/medicos-lista.component')
           .then(m => m.MedicosListaComponent)
       },
       {
-        path: ':id',
-        loadComponent: () => import('./pages/medicos/detalle/medico-detalle.component')
-          .then(m => m.MedicoDetalleComponent)
+        path: 'medicos/crear',
+        loadComponent: () => import('./pages/admin/medicos/crear-medico.component')
+          .then(m => m.CrearMedicoComponent)
       },
       {
-        path: ':id/agendar',
-        loadComponent: () => import('./pages/medicos/agendar/agendar-cita.component')
-          .then(m => m.AgendarCitaComponent)
+        path: 'medicos/ver/:id',
+        loadComponent: () => import('./pages/admin/medicos/ver-medico.component')
+          .then(m => m.VerMedicoComponent)
+      },
+      {
+        path: 'medicos/editar/:id',
+        loadComponent: () => import('./pages/admin/medicos/editar-medico.component')
+          .then(m => m.EditarMedicoComponent)
+      },
+      {
+        path: 'pacientes',
+        loadComponent: () => import('./pages/admin/pacientes/pacientes-lista.component')
+          .then(m => m.PacientesListaComponent)
+      },
+      {
+        path: 'pacientes/crear',
+        loadComponent: () => import('./pages/admin/pacientes/crear-paciente.component')
+          .then(m => m.CrearPacienteComponent)
+      },
+      {
+        path: 'pacientes/editar/:id',
+        loadComponent: () => import('./pages/admin/pacientes/editar-paciente.component')
+          .then(m => m.EditarPacienteComponent)
+      },
+      {
+        path: 'pacientes/ver/:id',
+        loadComponent: () => import('./pages/admin/pacientes/ver-paciente.component')
+          .then(m => m.VerPacienteComponent)
+      },
+      {
+        path: 'certificaciones',
+        loadComponent: () => import('./pages/admin/certificaciones/certificaciones-lista.component')
+          .then(m => m.CertificacionesListaComponent)
+      },
+      {
+        path: 'administradores',
+        loadComponent: () => import('./pages/admin/administradores/administradores-lista.component')
+          .then(m => m.AdministradoresListaComponent)
+      },
+      {
+        path: 'administradores/ver/:id',
+        loadComponent: () => import('./pages/admin/administradores/ver-administrador.component')
+          .then(m => m.VerAdministradorComponent)
+      },
+      {
+        path: 'reportes',
+        loadComponent: () => import('./pages/admin/reportes/reportes.component')
+          .then(m => m.ReportesComponent)
+      },
+      {
+        path: 'configuracion',
+        loadComponent: () => import('./pages/admin/configuracion/configuracion.component')
+          .then(m => m.ConfiguracionComponent)
+      },
+      {
+        path: 'perfil',
+        loadComponent: () => import('./pages/admin/perfil/perfil.component')
+          .then(m => m.AdminPerfilComponent)
+      },
+      {
+        path: 'notificaciones',
+        loadComponent: () => import('./pages/admin/notificaciones/notificaciones.component')
+          .then(m => m.AdminNotificacionesComponent)
+      },
+      {
+        path: 'citas',
+        loadComponent: () => import('./pages/admin/citas/citas.component')
+          .then(m => m.AdminCitasComponent)
+      },
+      {
+        path: 'citas/ver/:id',
+        loadComponent: () => import('./pages/admin/citas/ver-cita.component')
+          .then(m => m.VerCitaComponent)
+      },
+      {
+        path: 'citas/nueva',
+        loadComponent: () => import('./pages/admin/citas/form-cita.component')
+          .then(m => m.FormCitaComponent)
+      },
+      {
+        path: 'citas/editar/:id',
+        loadComponent: () => import('./pages/admin/citas/form-cita.component')
+          .then(m => m.FormCitaComponent)
+      },
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
       }
     ]
   },
 
-  // ==================== NOTIFICACIONES (COMPARTIDA - NO IMPLEMENTADA) ====================
-  {
-    path: 'notificaciones',
-    canActivate: [authGuard],
-    loadComponent: () => import('./pages/notificaciones/notificaciones.component')
-      .then(m => m.NotificacionesComponent)
-  },
-
-  // ==================== 404 (NO IMPLEMENTADO) ====================
+  // ==================== 404 - PÁGINA NO ENCONTRADA ====================
   {
     path: '**',
     loadComponent: () => import('./pages/not-found/not-found.component')
       .then(m => m.NotFoundComponent)
   }
-  */
 ];

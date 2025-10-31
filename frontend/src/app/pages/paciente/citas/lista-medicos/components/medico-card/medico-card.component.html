@@ -5,11 +5,11 @@
     <div class="flex items-center gap-4 mb-4">
       <div class="relative">
         <!-- Foto -->
-        <div 
-          class="w-20 h-20 bg-center bg-no-repeat bg-cover rounded-full"
-          [style.background-image]="'url(' + medico.foto_url + ')'"
-          [attr.data-alt]="medico.nombre_completo"
-        ></div>
+        <img 
+          [src]="medico.foto_url || 'https://ui-avatars.com/api/?name=' + (medico.nombre_completo || 'Medico') + '&size=160&background=B71C1C&color=fff'"
+          [alt]="'Foto de ' + (medico.nombre_completo || 'Médico')"
+          class="w-20 h-20 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
+        />
         
         <!-- Indicador de disponibilidad -->
         <div 

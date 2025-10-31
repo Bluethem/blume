@@ -15,7 +15,7 @@ module Api
           telefono: current_user.telefono,
           direccion: current_user.direccion,
           rol: current_user.rol,
-          foto_url: current_user.foto_perfil_url
+          foto_url: absolute_url(current_user.foto_url)
         })
       end
 
@@ -31,7 +31,7 @@ module Api
               email: current_user.email,
               telefono: current_user.telefono,
               direccion: current_user.direccion,
-              foto_url: current_user.foto_perfil_url
+              foto_url: absolute_url(current_user.foto_url)
             }
           })
         else
@@ -71,13 +71,14 @@ module Api
           file.write(foto.read)
         end
 
-        # Actualizar URL en base de datos
+        # Actualizar URL en base de datos (guardar URL relativa)
         foto_url = "/uploads/avatars/#{filename}"
         current_user.update(foto_url: foto_url)
 
+        # Devolver URL completa al frontend
         render_success({
           message: 'Foto de perfil actualizada exitosamente',
-          foto_url: current_user.foto_perfil_url
+          foto_url: absolute_url(foto_url)
         })
       rescue => e
         Rails.logger.error("Error uploading foto: #{e.message}")

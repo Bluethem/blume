@@ -87,10 +87,11 @@
       <div class="p-4 border-b border-gray-200 dark:border-gray-700 mb-6">
         <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Profesional Seleccionado</h3>
         <div class="flex items-center gap-4">
-          <div 
-            class="w-16 h-16 bg-center bg-no-repeat bg-cover rounded-full"
-            [style.background-image]="'url(' + (medicoSeleccionado.foto_url || 'https://ui-avatars.com/api/?name=' + medicoSeleccionado.nombre_completo) + ')'">
-          </div>
+          <img 
+            [src]="medicoSeleccionado.foto_url || 'https://ui-avatars.com/api/?name=' + (medicoSeleccionado.nombre_completo || 'Medico') + '&size=128&background=B71C1C&color=fff'"
+            [alt]="'Foto de ' + (medicoSeleccionado.nombre_profesional || 'Médico')"
+            class="w-16 h-16 rounded-full object-cover border-2 border-gray-200 dark:border-gray-700"
+          />
           <div class="flex-1">
             <p class="text-gray-900 dark:text-white text-lg font-bold leading-normal">
               {{ medicoSeleccionado.nombre_profesional }}
