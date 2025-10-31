@@ -5,7 +5,7 @@ import { environment } from '../../environments/environment';
 import { Especialidad } from '../models';
 
 interface ApiResponse<T> {
-  status: 'success' | 'error';
+  success: boolean;
   data: T;
   message?: string;
   meta?: {

@@ -27,9 +27,17 @@ export class PacienteFormComponent implements OnInit {
   showDeleteConfirm = false;
 
   // Opciones de selección
-  tiposDocumento = ['DNI', 'Pasaporte', 'NIE', 'Carnet de Extranjería'];
+  tiposDocumento = [
+    { value: 'dni', label: 'DNI' },
+    { value: 'pasaporte', label: 'Pasaporte' },
+    { value: 'carnet_extranjeria', label: 'Carnet de Extranjería' }
+  ];
   gruposSanguineos = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-  generos = ['Masculino', 'Femenino', 'Otro'];
+  generos = [
+    { value: 'masculino', label: 'Masculino' },
+    { value: 'femenino', label: 'Femenino' },
+    { value: 'otro', label: 'Otro' }
+  ];
 
   ngOnInit(): void {
     if (this.pacienteId) {
@@ -58,9 +66,9 @@ export class PacienteFormComponent implements OnInit {
       
       // Información del Paciente
       numero_documento: ['', [Validators.required]],
-      tipo_documento: ['DNI', [Validators.required]],
+      tipo_documento: ['dni', [Validators.required]],
       fecha_nacimiento: ['', [Validators.required]],
-      genero: ['Masculino', [Validators.required]],
+      genero: ['masculino', [Validators.required]],
       grupo_sanguineo: [''],
       alergias: [''],
       observaciones: ['']

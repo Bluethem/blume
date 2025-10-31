@@ -18,7 +18,9 @@ export class MedicosService {
   getMedicos(params?: {
     q?: string;
     especialidad_id?: string;
-    tarifa_max?: number;
+    costo_max?: number;
+    experiencia_min?: number;
+    disponible_hoy?: boolean;
     orden?: 'nombre' | 'experiencia' | 'precio_asc' | 'precio_desc';
     page?: number;
     per_page?: number;

@@ -133,11 +133,11 @@
           <div class="flex items-center gap-6 mt-3">
             <label *ngFor="let genero of generos" class="flex items-center gap-2 cursor-pointer">
               <input formControlName="genero"
-                     [value]="genero"
+                     [value]="genero.value"
                      class="form-radio h-4 w-4 text-primary bg-gray-50 dark:bg-gray-900 border-gray-300 dark:border-gray-700 focus:ring-primary/50"
                      name="genero"
                      type="radio"/>
-              <span class="text-sm text-gray-700 dark:text-gray-300">{{ genero }}</span>
+              <span class="text-sm text-gray-700 dark:text-gray-300">{{ genero.label }}</span>
             </label>
           </div>
         </div>
@@ -198,7 +198,7 @@
           <select formControlName="tipo_documento"
                   class="form-select w-full rounded-lg border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-primary/50 focus:border-primary"
                   id="tipo_documento">
-            <option *ngFor="let tipo of tiposDocumento" [value]="tipo">{{ tipo }}</option>
+            <option *ngFor="let tipo of tiposDocumento" [value]="tipo.value">{{ tipo.label }}</option>
           </select>
         </div>
 

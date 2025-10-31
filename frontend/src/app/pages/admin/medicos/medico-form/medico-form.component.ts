@@ -36,8 +36,8 @@ export class MedicoFormComponent implements OnInit {
   isEditMode = false;
   showDeleteConfirm = false;
 
-  // Especialidades y certificaciones disponibles
-  especialidades: any[] = [];
+  // Especialidades y certificaciones disponibles (catálogos)
+  especialidadesDisponibles: any[] = [];
   certificacionesDisponibles: any[] = [];
 
   ngOnInit(): void {
@@ -51,6 +51,9 @@ export class MedicoFormComponent implements OnInit {
     
     if (this.medicoId) {
       this.loadMedico();
+    } else {
+      // En modo creación, agregar una especialidad vacía por defecto
+      this.addEspecialidad();
     }
   }
 
@@ -69,14 +72,20 @@ export class MedicoFormComponent implements OnInit {
       
       // Información Profesional
       numero_colegiatura: ['', [Validators.required]],
-      especialidad_principal_id: ['', [Validators.required]],
       anios_experiencia: [0, [Validators.required, Validators.min(0)]],
       costo_consulta: [0, [Validators.required, Validators.min(0)]],
       biografia: [''],
       
+      // Especialidades (dinámicas)
+      especialidades: this.fb.array([], Validators.required),
+      
       // Certificaciones
       certificaciones: this.fb.array([])
     });
+  }
+
+  get especialidades(): FormArray {
+    return this.medicoForm.get('especialidades') as FormArray;
   }
 
   get certificaciones(): FormArray {
@@ -111,9 +120,9 @@ export class MedicoFormComponent implements OnInit {
 
   loadEspecialidades(): void {
     this.especialidadesService.getEspecialidades().subscribe({
-      next: (response) => {
-        if (response.status === 'success' && response.data) {
-          this.especialidades = response.data;
+      next: (response: any) => {
+        if (response.success && response.data) {
+          this.especialidadesDisponibles = response.data;
         }
       },
       error: (error) => {
@@ -151,11 +160,13 @@ export class MedicoFormComponent implements OnInit {
       biografia: data.biografia
     });
 
-    // Especialidad principal
-    const especialidadPrincipal = data.especialidades.find((e: any) => e.es_principal);
-    if (especialidadPrincipal) {
-      this.medicoForm.patchValue({
-        especialidad_principal_id: especialidadPrincipal.id
+    // Especialidades
+    if (data.especialidades && data.especialidades.length > 0) {
+      data.especialidades.forEach((esp: any) => {
+        this.addEspecialidad({
+          especialidad_id: esp.id,
+          es_principal: esp.es_principal
+        });
       });
     }
 
@@ -163,16 +174,36 @@ export class MedicoFormComponent implements OnInit {
     if (data.certificaciones && data.certificaciones.length > 0) {
       data.certificaciones.forEach((cert: any) => {
         this.addCertificacion({
-          id: cert.id,
+          certificacion_id: cert.id,
           fecha_obtencion: cert.fecha_obtencion
         });
       });
     }
   }
 
+  addEspecialidad(esp?: any): void {
+    const espGroup = this.fb.group({
+      especialidad_id: [esp?.especialidad_id || '', Validators.required],
+      es_principal: [esp?.es_principal || false]
+    });
+
+    this.especialidades.push(espGroup);
+  }
+
+  removeEspecialidad(index: number): void {
+    this.especialidades.removeAt(index);
+  }
+
+  marcarComoPrincipal(index: number): void {
+    // Desmarcar todas las especialidades como principal
+    this.especialidades.controls.forEach((control, i) => {
+      control.patchValue({ es_principal: i === index });
+    });
+  }
+
   addCertificacion(cert?: any): void {
     const certGroup = this.fb.group({
-      certificacion_id: [cert?.id || '', Validators.required],
+      certificacion_id: [cert?.certificacion_id || '', Validators.required],
       fecha_obtencion: [cert?.fecha_obtencion || '']
     });
 
@@ -183,10 +214,25 @@ export class MedicoFormComponent implements OnInit {
     this.certificaciones.removeAt(index);
   }
 
+  getNombreEspecialidad(especialidadId: string): string {
+    const esp = this.especialidadesDisponibles.find(e => e.id === especialidadId);
+    return esp?.nombre || 'Especialidad desconocida';
+  }
+
+  get tieneEspecialidadPrincipal(): boolean {
+    return this.especialidades.controls.some(control => control.value.es_principal === true);
+  }
+
   onSubmit(): void {
     if (this.medicoForm.invalid) {
       this.markFormGroupTouched(this.medicoForm);
       alert('Por favor complete todos los campos requeridos');
+      return;
+    }
+
+    // Validar que haya al menos una especialidad marcada como principal
+    if (!this.tieneEspecialidadPrincipal) {
+      alert('Debe marcar al menos una especialidad como principal');
       return;
     }
 
@@ -203,11 +249,8 @@ export class MedicoFormComponent implements OnInit {
   prepareFormData(): any {
     const formValue = this.medicoForm.value;
     
-    // Preparar especialidades
-    const especialidades = [{
-      especialidad_id: formValue.especialidad_principal_id,
-      es_principal: true
-    }];
+    // Preparar especialidades desde el FormArray
+    const especialidades = formValue.especialidades || [];
 
     // Preparar certificaciones (si las hay y tienen id de certificación)
     const certificaciones = formValue.certificaciones || [];

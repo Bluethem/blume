@@ -60,7 +60,7 @@ export class ListaMedicosComponent implements OnInit {
   cargarEspecialidades(): void {
     this.especialidadesService.getEspecialidades().subscribe({
         next: (response) => {
-        if (response.status === 'success') {
+        if (response.success) {
             this.especialidades = response.data;
         }
         },
