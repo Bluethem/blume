@@ -9,6 +9,7 @@ interface FiltrosMedicos {
   especialidad_id?: string;
   costo_max?: number;
   experiencia_min?: number;
+  calificacion_min?: number;
   disponible_hoy?: boolean;
   orden: 'nombre' | 'experiencia' | 'precio_asc' | 'precio_desc';
 }
@@ -33,13 +34,18 @@ export class FiltrosMedicosComponent implements OnInit {
   especialidadSeleccionada = '';
   costoMaximo?: number;
   experienciaMinima?: number;
+  calificacionMinima?: number;
   soloDisponiblesHoy = false;
   ordenSeleccionado: string = 'nombre';
+
+  // Key para localStorage
+  private readonly STORAGE_KEY = 'blume_filtros_medicos';
 
   // Dropdown states
   dropdownEspecialidad = false;
   dropdownDisponibilidad = false;
   dropdownCosto = false;
+  dropdownCalificacion = false;
   dropdownOrden = false;
   private closeTimers: any = {};
 
@@ -61,6 +67,15 @@ export class FiltrosMedicosComponent implements OnInit {
     { label: 'Mínimo 20 años', value: 20 }
   ];
 
+  // Opciones de calificación
+  opcionesCalificacion = [
+    { label: 'Todas', value: undefined, stars: 0 },
+    { label: '3+ estrellas', value: 3, stars: 3 },
+    { label: '4+ estrellas', value: 4, stars: 4 },
+    { label: '4.5+ estrellas', value: 4.5, stars: 4.5 },
+    { label: '5 estrellas', value: 5, stars: 5 }
+  ];
+
   // Opciones de ordenamiento
   opcionesOrden = [
     { label: 'Nombre (A-Z)', value: 'nombre' },
@@ -70,12 +85,16 @@ export class FiltrosMedicosComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    // Inicializar con valores actuales si existen
+    // ✅ Cargar filtros guardados de localStorage
+    this.cargarFiltrosGuardados();
+    
+    // Inicializar con valores actuales si existen (prioridad a props)
     if (this.filtrosActivos) {
       this.searchTerm = this.filtrosActivos.q || '';
       this.especialidadSeleccionada = this.filtrosActivos.especialidad_id || '';
       this.costoMaximo = this.filtrosActivos.costo_max;
       this.experienciaMinima = this.filtrosActivos.experiencia_min;
+      this.calificacionMinima = this.filtrosActivos.calificacion_min; // ✅ NUEVO
       this.soloDisponiblesHoy = this.filtrosActivos.disponible_hoy || false;
       this.ordenSeleccionado = this.filtrosActivos.orden || 'nombre';
     }
@@ -106,6 +125,13 @@ export class FiltrosMedicosComponent implements OnInit {
     this.emitirCambios();
   }
 
+  // ✅ NUEVO: Filtro de calificación
+  seleccionarCalificacion(calificacion?: number): void {
+    this.calificacionMinima = calificacion;
+    this.dropdownCalificacion = false;
+    this.emitirCambios();
+  }
+
   // Filtro de disponibilidad
   toggleDisponibilidad(): void {
     this.soloDisponiblesHoy = !this.soloDisponiblesHoy;
@@ -125,8 +151,13 @@ export class FiltrosMedicosComponent implements OnInit {
     this.especialidadSeleccionada = '';
     this.costoMaximo = undefined;
     this.experienciaMinima = undefined;
+    this.calificacionMinima = undefined; // ✅ NUEVO
     this.soloDisponiblesHoy = false;
     this.ordenSeleccionado = 'nombre';
+    
+    // ✅ Limpiar localStorage
+    localStorage.removeItem(this.STORAGE_KEY);
+    
     this.limpiar.emit();
   }
 
@@ -143,8 +174,11 @@ export class FiltrosMedicosComponent implements OnInit {
   scheduleCloseOrden(): void {
     this.scheduleClose('dropdownOrden');
   }
+  scheduleCloseCalificacion(): void {
+    this.scheduleClose('dropdownCalificacion');
+  }
 
-  private scheduleClose(prop: 'dropdownEspecialidad'|'dropdownDisponibilidad'|'dropdownCosto'|'dropdownOrden'): void {
+  private scheduleClose(prop: 'dropdownEspecialidad'|'dropdownDisponibilidad'|'dropdownCosto'|'dropdownCalificacion'|'dropdownOrden'): void {
     if (this.closeTimers[prop]) {
       clearTimeout(this.closeTimers[prop]);
     }
@@ -159,6 +193,7 @@ export class FiltrosMedicosComponent implements OnInit {
       especialidad_id: this.especialidadSeleccionada || undefined,
       costo_max: this.costoMaximo,
       experiencia_min: this.experienciaMinima,
+      calificacion_min: this.calificacionMinima, // ✅ NUEVO
       disponible_hoy: this.soloDisponiblesHoy || undefined,
       orden: this.ordenSeleccionado as any
     };
@@ -170,7 +205,37 @@ export class FiltrosMedicosComponent implements OnInit {
       }
     });
 
+    // ✅ Guardar en localStorage
+    this.guardarFiltros(filtros);
+
     this.filtrosChange.emit(filtros);
+  }
+
+  // ✅ NUEVO: Guardar filtros en localStorage
+  private guardarFiltros(filtros: Partial<FiltrosMedicos>): void {
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(filtros));
+    } catch (e) {
+      console.error('Error guardando filtros en localStorage:', e);
+    }
+  }
+
+  // ✅ NUEVO: Cargar filtros de localStorage
+  private cargarFiltrosGuardados(): void {
+    try {
+      const stored = localStorage.getItem(this.STORAGE_KEY);
+      if (stored) {
+        const filtros = JSON.parse(stored) as Partial<FiltrosMedicos>;
+        this.especialidadSeleccionada = filtros.especialidad_id || '';
+        this.costoMaximo = filtros.costo_max;
+        this.experienciaMinima = filtros.experiencia_min;
+        this.calificacionMinima = filtros.calificacion_min;
+        this.soloDisponiblesHoy = filtros.disponible_hoy || false;
+        this.ordenSeleccionado = filtros.orden || 'nombre';
+      }
+    } catch (e) {
+      console.error('Error cargando filtros de localStorage:', e);
+    }
   }
 
   // Helpers
@@ -190,6 +255,13 @@ export class FiltrosMedicosComponent implements OnInit {
     return `Mín. ${this.experienciaMinima} años`;
   }
 
+  // ✅ NUEVO: Label para calificación
+  get calificacionLabel(): string {
+    if (!this.calificacionMinima) return 'Calificación';
+    const opcion = this.opcionesCalificacion.find(o => o.value === this.calificacionMinima);
+    return opcion?.label || 'Calificación';
+  }
+
   get ordenLabel(): string {
     const opcion = this.opcionesOrden.find(o => o.value === this.ordenSeleccionado);
     return opcion?.label || 'Ordenar';
@@ -200,6 +272,7 @@ export class FiltrosMedicosComponent implements OnInit {
       this.especialidadSeleccionada ||
       this.costoMaximo ||
       this.experienciaMinima ||
+      this.calificacionMinima || // ✅ NUEVO
       this.soloDisponiblesHoy
     );
   }
@@ -209,6 +282,7 @@ export class FiltrosMedicosComponent implements OnInit {
     this.dropdownEspecialidad = false;
     this.dropdownDisponibilidad = false;
     this.dropdownCosto = false;
+    this.dropdownCalificacion = false; // ✅ NUEVO
     this.dropdownOrden = false;
   }
 }

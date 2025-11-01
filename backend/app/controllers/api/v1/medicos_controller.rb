@@ -13,7 +13,7 @@ module Api
                         .where(usuarios: { activo: true })
 
         # Aplicar filtros si existen
-        if params[:q].present? || params[:especialidad_id].present? || params[:tarifa_max].present? || params[:costo_max].present? || params[:experiencia_min].present? || params[:disponible_hoy].present?
+        if params[:q].present? || params[:especialidad_id].present? || params[:tarifa_max].present? || params[:costo_max].present? || params[:experiencia_min].present? || params[:calificacion_min].present? || params[:disponible_hoy].present?
           @medicos = filter_medicos(@medicos)
         end
 
@@ -274,6 +274,11 @@ module Api
         # Filtro por experiencia mínima
         if params[:experiencia_min].present?
           medicos = medicos.where('anios_experiencia >= ?', params[:experiencia_min])
+        end
+
+        # ✅ Filtro por calificación mínima
+        if params[:calificacion_min].present?
+          medicos = medicos.where('calificacion_promedio >= ?', params[:calificacion_min])
         end
 
         # Filtro por disponibilidad hoy

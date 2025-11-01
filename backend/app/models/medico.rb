@@ -9,6 +9,7 @@
 #  biografia              :text
 #  costo_consulta         :decimal(10, 2)
 #  activo                 :boolean          default(TRUE), not null
+#  calificacion_promedio  :decimal(3, 1)    default(0.0)
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
 #
@@ -134,20 +135,19 @@ class Medico < ApplicationRecord
           .where('fecha_hora_inicio < ? AND fecha_hora_fin > ?', fecha_fin, fecha_hora)
           .exists?
   end
-  def calificacion_promedio
-    return 0.0 if valoraciones.empty?
-    Rails.cache.fetch("medico_#{id}_calificacion", expires_in: 1.hour) do
-      valoraciones.average(:calificacion).to_f.round(1)
-    end
-  end
-
   def total_resenas
     valoraciones.count
   end
   
-  def actualizar_calificacion_promedio
-    Rails.cache.delete("medico_#{id}_calificacion")
-    calificacion_promedio
+  # ✅ Actualizar calificación promedio en la columna de la DB
+  def actualizar_calificacion_promedio!
+    nueva_calificacion = if valoraciones.any?
+      valoraciones.average(:calificacion).to_f.round(1)
+    else
+      0.0
+    end
+    
+    update_column(:calificacion_promedio, nueva_calificacion)
   end
 
   def distribucion_calificaciones

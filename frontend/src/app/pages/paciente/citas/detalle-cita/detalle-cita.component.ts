@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CitasService } from '../../../../services/citas.service';
+import { PdfService } from '../../../../services/pdf.service';
 import { Cita } from '../../../../models';
 import { ModalValoracionComponent } from '../components/modal-valoracion/modal-valoracion.component';
 
@@ -23,10 +24,12 @@ export class DetalleCitaComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private citasService = inject(CitasService);
+  private pdfService = inject(PdfService);
 
   cita: Cita | null = null;
   loading = true;
   error: string | null = null;
+  descargandoPdf = false; // ✅ NUEVO: Estado de descarga
   
   // Modal valoración
   mostrarModalValoracion = false;
@@ -249,5 +252,27 @@ export class DetalleCitaComponent implements OnInit {
   onValoracionExitosa(): void {
     alert('¡Gracias por tu valoración!');
     this.cerrarModalValoracion();
+  }
+
+  // ✅ NUEVO: Descargar PDF de la cita
+  descargarPdf(): void {
+    if (!this.cita) return;
+
+    this.descargandoPdf = true;
+
+    this.pdfService.descargarResumenCita(this.cita.id).subscribe({
+      next: (blob) => {
+        const fecha = new Date(this.cita!.fecha_hora_inicio);
+        const nombreArchivo = `Cita_${fecha.toISOString().split('T')[0]}.pdf`;
+        
+        this.pdfService.descargarArchivo(blob, nombreArchivo);
+        this.descargandoPdf = false;
+      },
+      error: (error) => {
+        console.error('Error al descargar PDF:', error);
+        alert('Error al generar el PDF. Por favor, intenta nuevamente.');
+        this.descargandoPdf = false;
+      }
+    });
   }
 }

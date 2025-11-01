@@ -29,6 +29,27 @@ class Api::V1::MedicoDashboardController < ApplicationController
     })
   end
 
+  # GET /api/v1/medico/estadisticas/exportar
+  def exportar_estadisticas
+    medico = current_user.medico
+    
+    # Obtener parámetros de fecha
+    fecha_inicio = params[:fecha_inicio]&.to_date || 1.month.ago.to_date
+    fecha_fin = params[:fecha_fin]&.to_date || Date.today
+    
+    begin
+      excel = ExcelGeneratorService.generar_estadisticas_medico(medico, fecha_inicio, fecha_fin)
+      
+      send_data excel,
+                filename: "estadisticas_#{medico.nombre_profesional.parameterize}_#{Date.current.strftime('%Y%m%d')}.xlsx",
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                disposition: 'attachment'
+    rescue => e
+      Rails.logger.error("Error generando Excel de estadísticas: #{e.message}")
+      render_error('Error al generar el archivo Excel', status: :internal_server_error)
+    end
+  end
+
   private
 
   def verificar_medico

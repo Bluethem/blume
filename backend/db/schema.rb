@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_10_30_165235) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_01_060122) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -113,11 +113,13 @@ ActiveRecord::Schema[8.1].define(version: 2025_10_30_165235) do
     t.boolean "activo", default: true, null: false
     t.integer "anios_experiencia"
     t.text "biografia"
+    t.decimal "calificacion_promedio", precision: 3, scale: 1, default: "0.0"
     t.decimal "costo_consulta", precision: 10, scale: 2
     t.datetime "created_at", null: false
     t.string "numero_colegiatura", null: false
     t.datetime "updated_at", null: false
     t.uuid "usuario_id", null: false
+    t.index ["calificacion_promedio"], name: "index_medicos_on_calificacion_promedio"
     t.index ["numero_colegiatura"], name: "index_medicos_on_numero_colegiatura", unique: true
     t.index ["usuario_id"], name: "index_medicos_on_usuario_id", unique: true
   end

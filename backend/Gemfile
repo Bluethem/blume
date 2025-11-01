@@ -32,6 +32,10 @@ gem "thruster", require: false
 gem 'jwt'  # Para tokens
 gem 'rack-cors'  # Para CORS con Angular
 gem 'httparty'  # Para hacer requests HTTP a APIs externas (Gemini)
+gem 'prawn'  # Para generar PDFs
+gem 'prawn-table'  # Para tablas en PDFs
+gem 'caxlsx'  # Para generar archivos Excel
+gem 'caxlsx_rails'  # Integración de caxlsx con Rails
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"

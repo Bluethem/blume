@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import { AdminReportesService, DashboardData, CitaDetalle } from '../../../services/admin-reportes.service';
+import { PdfService } from '../../../services/pdf.service';
+import { ExcelService } from '../../../services/excel.service';
 
 Chart.register(...registerables);
 
@@ -18,6 +20,8 @@ export class ReportesComponent implements OnInit, AfterViewInit {
   @ViewChild('pieChartCanvas') pieChartCanvas!: ElementRef<HTMLCanvasElement>;
 
   loading = false;
+  descargandoPdf = false; // ✅ NUEVO
+  descargandoExcel = false; // ✅ NUEVO
   dashboardData: DashboardData | null = null;
   citasDetalle: CitaDetalle[] = [];
   
@@ -35,7 +39,11 @@ export class ReportesComponent implements OnInit, AfterViewInit {
   totalPages = 1;
   perPage = 10;
 
-  constructor(private reportesService: AdminReportesService) {
+  constructor(
+    private reportesService: AdminReportesService,
+    private pdfService: PdfService,
+    private excelService: ExcelService
+  ) {
     // Establecer fechas por defecto (últimos 30 días)
     const today = new Date();
     const thirtyDaysAgo = new Date(today);
@@ -244,29 +252,35 @@ export class ReportesComponent implements OnInit, AfterViewInit {
   }
 
   exportarPDF(): void {
-    this.reportesService.exportar('pdf', this.tipoReporte, this.fechaInicio, this.fechaFin).subscribe({
-      next: (response) => {
-        if (response.success) {
-          alert('Exportación a PDF iniciada. Se enviará un email cuando esté lista.');
-        }
+    this.descargandoPdf = true;
+    
+    this.pdfService.exportarReportesPdf(this.fechaInicio, this.fechaFin).subscribe({
+      next: (blob) => {
+        const nombreArchivo = `Reporte_Citas_${this.fechaInicio}_${this.fechaFin}.pdf`;
+        this.pdfService.descargarArchivo(blob, nombreArchivo);
+        this.descargandoPdf = false;
       },
       error: (error) => {
-        console.error('Error al exportar:', error);
-        alert('Error al exportar a PDF');
+        console.error('Error al exportar PDF:', error);
+        alert('Error al generar el PDF. Por favor, intenta nuevamente.');
+        this.descargandoPdf = false;
       }
     });
   }
 
   exportarExcel(): void {
-    this.reportesService.exportar('excel', this.tipoReporte, this.fechaInicio, this.fechaFin).subscribe({
-      next: (response) => {
-        if (response.success) {
-          alert('Exportación a Excel iniciada. Se enviará un email cuando esté lista.');
-        }
+    this.descargandoExcel = true;
+    
+    this.excelService.exportarReportes('citas', this.fechaInicio, this.fechaFin).subscribe({
+      next: (blob) => {
+        const nombreArchivo = `Reporte_Citas_${this.fechaInicio}_${this.fechaFin}.xlsx`;
+        this.excelService.descargarArchivo(blob, nombreArchivo);
+        this.descargandoExcel = false;
       },
       error: (error) => {
-        console.error('Error al exportar:', error);
-        alert('Error al exportar a Excel');
+        console.error('Error al exportar Excel:', error);
+        alert('Error al generar el archivo Excel. Por favor, intenta nuevamente.');
+        this.descargandoExcel = false;
       }
     });
   }

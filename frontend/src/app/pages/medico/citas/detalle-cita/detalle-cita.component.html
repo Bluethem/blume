@@ -183,11 +183,14 @@
               <span class="truncate">Cancelar Cita</span>
             </button>
 
-            <!-- Descargar Resumen -->
-            <button (click)="descargarResumen()"
-                    class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-11 px-4 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white text-sm font-medium leading-normal gap-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-              <span class="material-symbols-outlined">download</span>
-              <span class="truncate">Descargar Resumen</span>
+            <!-- Descargar Resumen PDF -->
+            <button (click)="descargarPdf()"
+                    [disabled]="descargandoPdf"
+                    class="flex w-full items-center justify-center overflow-hidden rounded-lg h-11 px-4 text-sm font-medium leading-normal gap-2 transition-colors"
+                    [ngClass]="descargandoPdf ? 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed' : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700'">
+              <span class="material-symbols-outlined" *ngIf="!descargandoPdf">download</span>
+              <span class="material-symbols-outlined animate-spin" *ngIf="descargandoPdf">progress_activity</span>
+              <span class="truncate">{{ descargandoPdf ? 'Generando PDF...' : 'Descargar Resumen PDF' }}</span>
             </button>
 
             <!-- Imprimir -->

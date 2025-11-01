@@ -87,6 +87,39 @@
       </div>
     </div>
 
+    <!-- Dropdown Calificación -->
+    <div class="relative">
+      <button 
+        (click)="dropdownCalificacion = !dropdownCalificacion"
+        (blur)="scheduleCloseCalificacion()"
+        class="w-full flex h-12 shrink-0 items-center justify-between rounded-lg bg-background-light dark:bg-background-dark px-4 border transition-colors"
+        [ngClass]="calificacionMinima ? 'border-primary' : 'border-transparent hover:border-primary'"
+      >
+        <p class="text-text-light dark:text-text-dark text-sm font-medium">
+          {{ calificacionLabel }}
+        </p>
+        <span class="material-symbols-outlined text-secondary-button">star</span>
+      </button>
+
+      <!-- Dropdown Menu Calificación -->
+      <div 
+        *ngIf="dropdownCalificacion"
+        class="absolute z-50 mt-2 w-full bg-card-light dark:bg-card-dark rounded-lg shadow-lg border border-border-light dark:border-border-dark"
+      >
+        <button
+          *ngFor="let opcion of opcionesCalificacion"
+          (click)="seleccionarCalificacion(opcion.value)"
+          class="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-sm flex items-center gap-2"
+          [ngClass]="calificacionMinima === opcion.value ? 'bg-primary/10 text-primary font-semibold' : ''"
+        >
+          {{ opcion.label }}
+          <span *ngIf="opcion.stars > 0" class="text-yellow-400">
+            {{ '★'.repeat(opcion.stars) }}
+          </span>
+        </button>
+      </div>
+    </div>
+
     <!-- Dropdown Costo -->
     <div class="relative">
       <button 
@@ -205,6 +238,16 @@
     >
       {{ experienciaLabel }}
       <button (click)="seleccionarExperiencia(undefined)" class="hover:bg-primary/20 rounded-full p-0.5">
+        <span class="material-symbols-outlined" style="font-size: 14px;">close</span>
+      </button>
+    </span>
+
+    <span 
+      *ngIf="calificacionMinima"
+      class="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium"
+    >
+      {{ calificacionLabel }}
+      <button (click)="seleccionarCalificacion(undefined)" class="hover:bg-primary/20 rounded-full p-0.5">
         <span class="material-symbols-outlined" style="font-size: 14px;">close</span>
       </button>
     </span>

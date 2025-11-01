@@ -257,18 +257,18 @@ ng build --configuration production
 
 ## Tecnologías Utilizadas
 
-### ✨ Características Destacadas
+### Características Destacadas
 
 Este proyecto utiliza las **últimas tecnologías modernas** de Rails 8 y Angular 20:
 
-- **🚀 Rails 8.1** - Sin necesidad de Redis gracias a Solid Queue, Solid Cache y Solid Cable
-- **⚡ Angular 20** - Con las últimas mejoras de performance y DX
-- **🎨 TailwindCSS 3.4** - Diseño moderno y responsive
-- **📊 Chart.js 4.5** - Visualización de datos interactiva
-- **🔒 JWT + BCrypt** - Autenticación y seguridad robusta
-- **🐘 PostgreSQL** - Base de datos escalable y confiable
-- **🎯 TypeScript 5.9** - Type-safety en el frontend
-- **📦 Kamal** - Deploy simplificado con Docker
+- **Rails 8.1** - Sin necesidad de Redis gracias a Solid Queue, Solid Cache y Solid Cable
+- **Angular 20** - Con las últimas mejoras de performance y DX
+- **TailwindCSS 3.4** - Diseño moderno y responsive
+- **Chart.js 4.5** - Visualización de datos interactiva
+- **JWT + BCrypt** - Autenticación y seguridad robusta
+- **PostgreSQL** - Base de datos escalable y confiable
+- **TypeScript 5.9** - Type-safety en el frontend
+- **Kamal** - Deploy simplificado con Docker
 
 ### Backend
 - **Ruby on Rails 8.1.0** - Framework web full-stack

@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MedicosService } from '../../../../services/medicos.service';
 import { ValoracionesService } from '../../../../services/valoraciones.service';
-import { Medico, Valoracion, EstadisticasValoraciones } from '../../../../models';
+import { Medico, Valoracion, EstadisticasValoraciones, HorariosDisponibles, SlotHorario, ApiResponse } from '../../../../models';
 
 interface Certificacion {
   nombre: string;
@@ -49,8 +49,11 @@ export class PerfilMedicoComponent implements OnInit {
     hora: ''
   };
 
-  // Horarios de ejemplo (esto vendrá del backend)
-  horariosDisponibles = ['9:00 AM', '10:00 AM', '11:00 AM', '2:00 PM', '3:00 PM', '4:00 PM'];
+  // Horarios disponibles reales del médico
+  horariosDisponibles: SlotHorario[] = [];
+  loadingHorarios = false;
+  fechaMinima = '';
+  fechaMaxima = '';
 
   ngOnInit(): void {
     const medicoId = this.route.snapshot.paramMap.get('id');
@@ -58,10 +61,50 @@ export class PerfilMedicoComponent implements OnInit {
       this.cargarMedico(medicoId);
       this.cargarValoraciones(medicoId);
       this.cargarEstadisticas(medicoId);
+      this.calcularFechasLimites();
     } else {
       this.error = 'ID de médico no válido';
       this.loading = false;
     }
+  }
+
+  calcularFechasLimites(): void {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    this.fechaMinima = tomorrow.toISOString().split('T')[0];
+
+    const maxDate = new Date();
+    maxDate.setDate(maxDate.getDate() + 90); // 3 meses
+    this.fechaMaxima = maxDate.toISOString().split('T')[0];
+  }
+
+  onFechaChange(fecha: string): void {
+    if (fecha && this.medico) {
+      this.citaForm.hora = ''; // Limpiar hora seleccionada
+      this.cargarHorariosDisponibles(fecha);
+    }
+  }
+
+  cargarHorariosDisponibles(fecha: string): void {
+    if (!this.medico) return;
+
+    this.loadingHorarios = true;
+    this.medicosService.getHorariosDisponibles(this.medico.id, fecha).subscribe({
+      next: (response: ApiResponse<HorariosDisponibles>) => {
+        if (response.success && response.data && response.data.slots) {
+          // Filtrar solo slots disponibles
+          this.horariosDisponibles = response.data.slots.filter(slot => slot.disponible);
+        } else {
+          this.horariosDisponibles = [];
+        }
+        this.loadingHorarios = false;
+      },
+      error: (err) => {
+        console.error('Error cargando horarios:', err);
+        this.horariosDisponibles = [];
+        this.loadingHorarios = false;
+      }
+    });
   }
 
   cargarMedico(id: string): void {
@@ -100,12 +143,32 @@ export class PerfilMedicoComponent implements OnInit {
       return;
     }
 
+    // Validar que la hora seleccionada esté disponible
+    const slotSeleccionado = this.horariosDisponibles.find(slot => 
+      this.formatearHoraSlot(slot.fecha_hora_inicio) === this.citaForm.hora
+    );
+
+    if (!slotSeleccionado) {
+      alert('El horario seleccionado ya no está disponible. Por favor, seleccione otro.');
+      return;
+    }
+
+    // Redirigir al flujo completo de agendar cita con datos preseleccionados
     this.router.navigate(['/paciente/citas/nueva'], {
       queryParams: {
         medico_id: this.medico?.id,
         fecha: this.citaForm.fecha,
-        hora: this.citaForm.hora
+        slot_inicio: slotSeleccionado.fecha_hora_inicio,
+        slot_fin: slotSeleccionado.fecha_hora_fin
       }
+    });
+  }
+
+  formatearHoraSlot(fechaHora: string): string {
+    return new Date(fechaHora).toLocaleTimeString('es-ES', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
     });
   }
 

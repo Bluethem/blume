@@ -3,7 +3,7 @@ module Api
     class PacienteCitasController < ApplicationController
       before_action :authenticate_request!
       before_action :require_paciente!
-      before_action :set_cita, only: [:show, :cancelar]
+      before_action :set_cita, only: [:show, :cancelar, :descargar_pdf]
 
       # GET /api/v1/paciente/citas
       def index
@@ -122,6 +122,37 @@ module Api
           )
         else
           render_error('Error al reagendar la cita', errors: nueva_cita.errors.full_messages)
+        end
+      end
+
+      # GET /api/v1/paciente/citas/:id/descargar_pdf
+      def descargar_pdf
+        begin
+          pdf = PdfGeneratorService.generar_resumen_cita(@cita)
+          
+          send_data pdf,
+                    filename: "cita_#{@cita.id}_#{Date.current.strftime('%Y%m%d')}.pdf",
+                    type: 'application/pdf',
+                    disposition: 'attachment'
+        rescue => e
+          Rails.logger.error("Error generando PDF de cita: #{e.message}")
+          render_error('Error al generar el PDF', status: :internal_server_error)
+        end
+      end
+
+      # GET /api/v1/paciente/citas/descargar_historial_pdf
+      def descargar_historial_pdf
+        begin
+          paciente = current_user.paciente
+          pdf = PdfGeneratorService.generar_historial_medico(paciente)
+          
+          send_data pdf,
+                    filename: "historial_medico_#{paciente.id}_#{Date.current.strftime('%Y%m%d')}.pdf",
+                    type: 'application/pdf',
+                    disposition: 'attachment'
+        rescue => e
+          Rails.logger.error("Error generando PDF de historial: #{e.message}")
+          render_error('Error al generar el PDF del historial', status: :internal_server_error)
         end
       end
 

@@ -129,7 +129,7 @@
           </div>
           <div class="flex justify-between items-end mt-4">
             <div>
-              <p class="text-sm text-gray-600 dark:text-gray-300">Costo: ${{ medico.costo_consulta }} MXN</p>
+              <p class="text-sm text-gray-600 dark:text-gray-300">Costo: S/ {{ medico.costo_consulta }}</p>
               <div class="flex items-center text-yellow-500">
                 <span *ngFor="let star of generarEstrellas(medico.calificacion_promedio || 0)" 
                       class="material-symbols-outlined text-yellow-500">

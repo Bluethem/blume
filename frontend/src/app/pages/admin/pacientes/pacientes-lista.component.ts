@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AdminPacientesService, PacienteListItem } from '../../../services/admin-pacientes.service';
+import { ExcelService } from '../../../services/excel.service';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
@@ -14,6 +15,7 @@ import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 })
 export class PacientesListaComponent implements OnInit {
   private pacientesService = inject(AdminPacientesService);
+  private excelService = inject(ExcelService);
   private router = inject(Router);
   
   // Hacer Math disponible en el template
@@ -21,6 +23,7 @@ export class PacientesListaComponent implements OnInit {
   
   pacientes: PacienteListItem[] = [];
   loading = true;
+  descargandoExcel = false; // ✅ NUEVO
   
   // Selección múltiple
   selectedPacientes = new Set<string>();
@@ -237,6 +240,26 @@ export class PacientesListaComponent implements OnInit {
   }
   
   exportToExcel(): void {
-    console.log('Exportar a Excel');
+    this.descargandoExcel = true;
+    
+    // Preparar filtros actuales
+    const filtros: any = {};
+    if (this.searchTerm) {
+      filtros.search = this.searchTerm;
+    }
+    
+    this.excelService.exportarPacientes(filtros).subscribe({
+      next: (blob) => {
+        const fecha = new Date().toISOString().split('T')[0];
+        const nombreArchivo = `Pacientes_${fecha}.xlsx`;
+        this.excelService.descargarArchivo(blob, nombreArchivo);
+        this.descargandoExcel = false;
+      },
+      error: (error) => {
+        console.error('Error al exportar pacientes:', error);
+        alert('Error al generar el archivo Excel. Por favor, intenta nuevamente.');
+        this.descargandoExcel = false;
+      }
+    });
   }
 }

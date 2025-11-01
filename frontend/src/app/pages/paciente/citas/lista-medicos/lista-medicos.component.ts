@@ -13,6 +13,7 @@ interface FiltrosMedicos {
   especialidad_id?: string;
   costo_max?: number;
   experiencia_min?: number;
+  calificacion_min?: number; // ✅ NUEVO
   disponible_hoy?: boolean;
   orden: 'nombre' | 'experiencia' | 'precio_asc' | 'precio_desc';
 }

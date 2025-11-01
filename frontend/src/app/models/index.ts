@@ -55,6 +55,7 @@ export interface Medico {
   nombre_profesional: string;
   email: string;
   telefono: string;
+  direccion?: string; // ✅ Ubicación del consultorio
   numero_colegiatura: string;
   anios_experiencia: number;
   costo_consulta: number;

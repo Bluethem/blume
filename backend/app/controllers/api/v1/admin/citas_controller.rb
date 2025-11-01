@@ -274,7 +274,7 @@ class Api::V1::Admin::CitasController < Api::V1::Admin::BaseController
           cita.fecha_hora_inicio.strftime('%H:%M'),
           cita.motivo_consulta,
           I18n.t("cita.estados.#{cita.estado}", default: cita.estado.to_s.titleize),
-          "$#{cita.costo.to_f}"
+          "S/ #{cita.costo.to_f}"
         ]
       end
     end

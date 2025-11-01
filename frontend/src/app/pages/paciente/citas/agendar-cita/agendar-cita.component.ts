@@ -61,8 +61,32 @@ export class AgendarCitaComponent implements OnInit {
     // Verificar si viene médico por query params
     this.route.queryParams.subscribe(params => {
       const medicoId = params['medico_id'];
+      const slotInicio = params['slot_inicio'];
+      const slotFin = params['slot_fin'];
+      
       if (medicoId) {
         this.cargarMedicoPreseleccionado(medicoId);
+        
+        // Si viene con slot preseleccionado (desde cita rápida)
+        if (slotInicio && slotFin) {
+          const fecha = new Date(slotInicio).toISOString().split('T')[0];
+          this.fechaForm.patchValue({ fecha });
+          
+          // Esperar a que cargue el médico y luego los horarios
+          setTimeout(() => {
+            this.cargarHorarios(fecha);
+            setTimeout(() => {
+              // Preseleccionar el slot
+              const slot = this.horariosDisponibles?.slots?.find(s => 
+                s.fecha_hora_inicio === slotInicio && s.fecha_hora_fin === slotFin
+              );
+              if (slot) {
+                this.slotSeleccionado = slot;
+                this.currentStep = 2; // Ir directo al paso de motivo
+              }
+            }, 500);
+          }, 500);
+        }
       } else {
         this.cargarMedicos();
       }
@@ -268,5 +292,22 @@ export class AgendarCitaComponent implements OnInit {
     const maxDate = new Date();
     maxDate.setDate(maxDate.getDate() + 90); // 3 meses
     return maxDate.toISOString().split('T')[0];
+  }
+
+  // ✅ Getters para separar horarios (igual que agendar-cita-medico)
+  get horariosManana(): SlotHorario[] {
+    if (!this.horariosDisponibles?.slots) return [];
+    return this.horariosDisponibles.slots.filter((slot: SlotHorario) => {
+      const hora = new Date(slot.fecha_hora_inicio).getHours();
+      return hora < 12 && slot.disponible; // ✅ Solo disponibles
+    });
+  }
+
+  get horariosTarde(): SlotHorario[] {
+    if (!this.horariosDisponibles?.slots) return [];
+    return this.horariosDisponibles.slots.filter((slot: SlotHorario) => {
+      const hora = new Date(slot.fecha_hora_inicio).getHours();
+      return hora >= 12 && slot.disponible; // ✅ Solo disponibles
+    });
   }
 }

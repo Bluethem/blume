@@ -160,7 +160,7 @@
                   <div>
                     <p class="text-sm font-medium text-text-light-secondary dark:text-dark-secondary">Costo</p>
                     <p class="text-lg font-bold text-text-light-primary dark:text-dark-primary">
-                      ${{ cita.costo }}
+                      S/ {{ cita.costo }}
                     </p>
                   </div>
                   <div>
@@ -198,11 +198,14 @@
                   <span class="truncate">Valorar Consulta</span>
                 </button>
                 <button 
-                  (click)="descargarResumen()"
-                  class="flex w-full min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-11 px-4 bg-slate-100 dark:bg-slate-700/50 text-text-light-primary dark:text-dark-primary text-sm font-medium leading-normal gap-2 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                  (click)="descargarPdf()"
+                  [disabled]="descargandoPdf"
+                  class="flex w-full min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-11 px-4 text-sm font-medium leading-normal gap-2 transition-colors"
+                  [ngClass]="descargandoPdf ? 'bg-slate-300 dark:bg-slate-600 cursor-not-allowed' : 'bg-slate-100 dark:bg-slate-700/50 text-text-light-primary dark:text-dark-primary hover:bg-slate-200 dark:hover:bg-slate-700'"
                 >
-                  <span class="material-symbols-outlined">download</span>
-                  <span class="truncate">Descargar Resumen</span>
+                  <span class="material-symbols-outlined" *ngIf="!descargandoPdf">download</span>
+                  <span class="material-symbols-outlined animate-spin" *ngIf="descargandoPdf">progress_activity</span>
+                  <span class="truncate">{{ descargandoPdf ? 'Generando PDF...' : 'Descargar Resumen PDF' }}</span>
                 </button>
                 <button 
                   (click)="imprimir()"

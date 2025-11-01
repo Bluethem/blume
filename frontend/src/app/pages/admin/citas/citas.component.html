@@ -151,7 +151,7 @@
               </div>
             </td>
             <td class="px-6 py-4 max-w-xs truncate">{{ cita.motivo_consulta }}</td>
-            <td class="px-6 py-4">${{ cita.costo.toFixed(2) }}</td>
+            <td class="px-6 py-4">S/ {{ cita.costo.toFixed(2) }}</td>
             <td class="px-6 py-4">
               <span [class]="getEstadoClase(cita.estado)"
                     class="px-2 py-1 text-xs font-medium rounded-full">

@@ -23,7 +23,11 @@ class Notificacion < ApplicationRecord
     cita_creada: 0,
     cita_confirmada: 1,
     cita_cancelada: 2,
-    recordatorio: 3
+    recordatorio: 3,
+    pago_confirmado: 4,
+    pago_fallido: 5,
+    reembolso_procesado: 6,
+    pago_pendiente: 7
   }, prefix: :tipo
 
   # Asociaciones
@@ -55,7 +59,7 @@ class Notificacion < ApplicationRecord
   # Delegaciones
   delegate :nombre_completo, to: :usuario, prefix: true, allow_nil: true
 
-  # ✅ Métodos de clase
+  # Métodos de clase
   def self.enviar_recordatorios_citas
     # Este método se puede llamar desde un job diario
     # para enviar recordatorios 24 horas antes
@@ -66,13 +70,15 @@ class Notificacion < ApplicationRecord
       .where(estado: [:pendiente, :confirmada])
       .where(fecha_hora_inicio: manana.beginning_of_day..manana.end_of_day)
     
-    contador = 0
+    contador_pacientes = 0
+    contador_medicos = 0
     
     citas_manana.each do |cita|
-      # Solo crear recordatorio si no existe uno reciente
+      # Solo crear recordatorio si no existe uno reciente para esta cita
       next if cita.notificaciones.tipo_recordatorio.where('created_at > ?', 2.days.ago).exists?
       
       begin
+        # Recordatorio para el PACIENTE
         Notificacion.create!(
           usuario: cita.paciente.usuario,
           cita: cita,
@@ -80,14 +86,25 @@ class Notificacion < ApplicationRecord
           titulo: 'Recordatorio de cita',
           mensaje: "Recuerda tu cita mañana a las #{cita.fecha_hora_inicio.strftime('%H:%M')} con #{cita.medico.nombre_profesional}"
         )
-        contador += 1
+        contador_pacientes += 1
+        
+        # Recordatorio para el MÉDICO
+        Notificacion.create!(
+          usuario: cita.medico.usuario,
+          cita: cita,
+          tipo: :recordatorio,
+          titulo: 'Recordatorio de cita',
+          mensaje: "Mañana tienes cita a las #{cita.fecha_hora_inicio.strftime('%H:%M')} con #{cita.paciente.nombre_completo}"
+        )
+        contador_medicos += 1
       rescue => e
-        Rails.logger.error("Error al crear recordatorio para cita #{cita.id}: #{e.message}")
+        Rails.logger.error("Error al crear recordatorios para cita #{cita.id}: #{e.message}")
       end
     end
     
-    Rails.logger.info("Se enviaron #{contador} recordatorios de citas")
-    contador
+    total = contador_pacientes + contador_medicos
+    Rails.logger.info("Se enviaron #{total} recordatorios: #{contador_pacientes} a pacientes, #{contador_medicos} a médicos")
+    { total: total, pacientes: contador_pacientes, medicos: contador_medicos }
   end
   
   def self.marcar_todas_como_leidas(usuario_id)

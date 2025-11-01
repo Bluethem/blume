@@ -1,7 +1,7 @@
 class Api::V1::MedicoCitasController < ApplicationController
   before_action :authenticate_request!
   before_action :verificar_medico
-  before_action :set_cita, only: [:show, :completar, :cancelar]
+  before_action :set_cita, only: [:show, :completar, :cancelar, :descargar_pdf]
 
   # GET /api/v1/medico/citas
   def index
@@ -117,6 +117,21 @@ class Api::V1::MedicoCitasController < ApplicationController
   rescue => e
     Rails.logger.error("Error al cancelar cita: #{e.message}")
     render_error('Error al cancelar la cita', status: :internal_server_error)
+  end
+
+  # GET /api/v1/medico/citas/:id/descargar_pdf
+  def descargar_pdf
+    begin
+      pdf = PdfGeneratorService.generar_resumen_cita_medico(@cita)
+      
+      send_data pdf,
+                filename: "consulta_#{@cita.paciente.nombre_completo.parameterize}_#{Date.current.strftime('%Y%m%d')}.pdf",
+                type: 'application/pdf',
+                disposition: 'attachment'
+    rescue => e
+      Rails.logger.error("Error generando PDF de cita (médico): #{e.message}")
+      render_error('Error al generar el PDF', status: :internal_server_error)
+    end
   end
 
   private

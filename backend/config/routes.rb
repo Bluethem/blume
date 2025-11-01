@@ -56,6 +56,25 @@ Rails.application.routes.draw do
           put 'cancelar'
           post 'reagendar'
           post 'valorar'
+          get 'descargar_pdf'  # ✅ NUEVO: Descargar PDF de cita
+        end
+        collection do
+          get 'descargar_historial_pdf'  # ✅ NUEVO: Descargar historial médico
+        end
+      end
+
+      # =====================================================
+      # PAGOS PACIENTE
+      # =====================================================
+      namespace :paciente do
+        resources :pagos, only: [:index, :show, :create] do
+          member do
+            put 'confirmar'
+          end
+          collection do
+            get 'estadisticas'
+            get 'pendientes'
+          end
         end
       end
 
@@ -72,8 +91,12 @@ Rails.application.routes.draw do
         member do
           put 'completar'
           put 'cancelar'
+          get 'descargar_pdf'  # ✅ NUEVO: PDF de cita para médico
         end
       end
+      
+      # Exportación de estadísticas médico
+      get 'medico/estadisticas/exportar', to: 'medico_dashboard#exportar_estadisticas'
 
       # =====================================================
       # PACIENTES MÉDICO
@@ -119,12 +142,18 @@ Rails.application.routes.draw do
           member do
             post 'toggle_estado'
           end
+          collection do
+            get 'exportar_excel'  # ✅ NUEVO
+          end
         end
         
         # Gestión de pacientes
         resources :pacientes do
           member do
             post 'toggle_estado'
+          end
+          collection do
+            get 'exportar_excel'  # ✅ NUEVO
           end
         end
         
@@ -152,6 +181,8 @@ Rails.application.routes.draw do
         get 'reportes/ingresos', to: 'reportes#ingresos'
         get 'reportes/pacientes_nuevos', to: 'reportes#pacientes_nuevos'
         post 'reportes/exportar', to: 'reportes#exportar'
+        get 'reportes/exportar_pdf', to: 'reportes#exportar_pdf'  # ✅ NUEVO
+        get 'reportes/exportar_excel', to: 'reportes#exportar_excel'  # ✅ NUEVO
         
         # Configuración del Sistema
         get 'configuracion', to: 'configuracion#index'

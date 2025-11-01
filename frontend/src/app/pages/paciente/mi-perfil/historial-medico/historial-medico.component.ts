@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { CitasService } from '../../../../services/citas.service';
+import { PdfService } from '../../../../services/pdf.service';
 
 type FiltroFecha = 'todos' | '6meses' | '1ano' | 'personalizado';
 
@@ -25,10 +26,12 @@ interface CitaHistorial {
 export class HistorialMedicoComponent implements OnInit {
   private router = inject(Router);
   private citasService = inject(CitasService);
+  private pdfService = inject(PdfService);
 
   citasCompletadas: any[] = [];
   citasFiltradas: any[] = [];
   loading = false;
+  descargandoPdf = false; // ✅ NUEVO: Estado de descarga de PDF
   filtroActivo: FiltroFecha = 'todos';
 
   ngOnInit(): void {
@@ -93,8 +96,22 @@ export class HistorialMedicoComponent implements OnInit {
   }
 
   descargarResumen(): void {
-    // TODO: Implementar descarga de PDF
-    alert('Funcionalidad de descarga en desarrollo');
+    this.descargandoPdf = true;
+
+    this.pdfService.descargarHistorialMedico().subscribe({
+      next: (blob) => {
+        const fecha = new Date().toISOString().split('T')[0];
+        const nombreArchivo = `Historial_Medico_${fecha}.pdf`;
+        
+        this.pdfService.descargarArchivo(blob, nombreArchivo);
+        this.descargandoPdf = false;
+      },
+      error: (error) => {
+        console.error('Error al descargar historial médico:', error);
+        alert('Error al generar el PDF del historial. Por favor, intenta nuevamente.');
+        this.descargandoPdf = false;
+      }
+    });
   }
 
   volver(): void {

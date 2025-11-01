@@ -159,6 +159,36 @@ class Api::V1::Admin::PacientesController < Api::V1::Admin::BaseController
   rescue => e
     render_error('Error al cambiar estado del paciente', status: :internal_server_error)
   end
+
+  # GET /api/v1/admin/pacientes/exportar_excel
+  def exportar_excel
+    @pacientes = Paciente.includes(:usuario, :citas)
+                         .order(created_at: :desc)
+    
+    # Aplicar filtros
+    if params[:search].present?
+      search_term = "%#{params[:search]}%"
+      @pacientes = @pacientes.joins(:usuario)
+                             .where('usuarios.nombre ILIKE ? OR usuarios.apellido ILIKE ?', search_term, search_term)
+    end
+    
+    if params[:activo].present?
+      estado = params[:activo] == 'true'
+      @pacientes = @pacientes.joins(:usuario).where(usuarios: { activo: estado })
+    end
+    
+    begin
+      excel = ExcelGeneratorService.generar_listado_pacientes(@pacientes.distinct)
+      
+      send_data excel,
+                filename: "pacientes_#{Date.current.strftime('%Y%m%d')}.xlsx",
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                disposition: 'attachment'
+    rescue => e
+      Rails.logger.error("Error generando Excel de pacientes: #{e.message}")
+      render_error('Error al generar el archivo Excel', status: :internal_server_error)
+    end
+  end
   
   private
   

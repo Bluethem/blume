@@ -55,8 +55,8 @@ class Valoracion < ApplicationRecord
 
   private
 
-  # Actualizar la calificación promedio del médico
+  # Actualizar la calificación promedio del médico en la DB
   def actualizar_calificacion_medico
-    medico.actualizar_calificacion_promedio
+    medico.actualizar_calificacion_promedio!
   end
 end

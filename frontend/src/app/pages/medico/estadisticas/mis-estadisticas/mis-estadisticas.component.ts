@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { ExcelService } from '../../../../services/excel.service';
 import { environment } from '../../../../../environments/environment';
 
 interface Estadisticas {
@@ -48,10 +49,12 @@ interface ApiResponse<T> {
 })
 export class MisEstadisticasComponent implements OnInit {
   private http = inject(HttpClient);
+  private excelService = inject(ExcelService);
   private apiUrl = environment.apiUrl;
 
   estadisticas: Estadisticas | null = null;
   loading = false;
+  descargandoExcel = false; // ✅ NUEVO
 
   // Filtros
   periodoActivo: string = 'semana';
@@ -91,11 +94,6 @@ export class MisEstadisticasComponent implements OnInit {
   getPeriodoLabel(): string {
     const periodo = this.periodos.find(p => p.value === this.periodoActivo);
     return periodo ? periodo.label : 'Este Mes';
-  }
-
-  exportarDatos(): void {
-    // TODO: Implementar exportación a CSV/PDF
-    alert('Funcionalidad de exportación en desarrollo');
   }
 
   getEstadoBadgeClass(estado: string): string {
@@ -171,5 +169,51 @@ export class MisEstadisticasComponent implements OnInit {
   getCircleOffset(offset: number): number {
     const circunferencia = 2 * Math.PI * 15.915;
     return -(offset / 100) * circunferencia;
+  }
+
+  // ✅ NUEVO: Exportar estadísticas a Excel
+  exportarDatos(): void {
+    this.descargandoExcel = true;
+
+    // Calcular fechas según el período seleccionado
+    const hoy = new Date();
+    let fechaInicio: string | undefined;
+    let fechaFin: string = hoy.toISOString().split('T')[0];
+
+    switch (this.periodoActivo) {
+      case 'semana':
+        const semanaAtras = new Date(hoy);
+        semanaAtras.setDate(hoy.getDate() - 7);
+        fechaInicio = semanaAtras.toISOString().split('T')[0];
+        break;
+      case 'mes':
+        const mesAtras = new Date(hoy);
+        mesAtras.setMonth(hoy.getMonth() - 1);
+        fechaInicio = mesAtras.toISOString().split('T')[0];
+        break;
+      case 'trimestre':
+        const trimestreAtras = new Date(hoy);
+        trimestreAtras.setMonth(hoy.getMonth() - 3);
+        fechaInicio = trimestreAtras.toISOString().split('T')[0];
+        break;
+      case 'anio':
+        const anioAtras = new Date(hoy);
+        anioAtras.setFullYear(hoy.getFullYear() - 1);
+        fechaInicio = anioAtras.toISOString().split('T')[0];
+        break;
+    }
+
+    this.excelService.exportarEstadisticasMedico(fechaInicio, fechaFin).subscribe({
+      next: (blob) => {
+        const nombreArchivo = `Estadisticas_${this.periodoActivo}_${fechaFin}.xlsx`;
+        this.excelService.descargarArchivo(blob, nombreArchivo);
+        this.descargandoExcel = false;
+      },
+      error: (error) => {
+        console.error('Error al exportar estadísticas:', error);
+        alert('Error al generar el archivo Excel. Por favor, intenta nuevamente.');
+        this.descargandoExcel = false;
+      }
+    });
   }
 }

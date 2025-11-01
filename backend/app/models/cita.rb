@@ -36,6 +36,7 @@ class Cita < ApplicationRecord
   belongs_to :medico
   belongs_to :cancelada_por, class_name: 'Usuario', optional: true
   has_many :notificaciones, dependent: :destroy
+  has_many :pagos, dependent: :destroy
 
   # Validaciones
   validates :paciente_id, presence: true
@@ -196,6 +197,48 @@ class Cita < ApplicationRecord
     else
       "#{minutos} minuto#{'s' if minutos > 1}"
     end
+  end
+
+  # ✅ Métodos de pago
+  def pago_inicial
+    pagos.find_by(tipo_pago: :pago_consulta)
+  end
+
+  def pagos_adicionales
+    pagos.where(tipo_pago: :pago_adicional)
+  end
+
+  def monto_total
+    costo.to_f + monto_adicional.to_f
+  end
+
+  def monto_pagado
+    pagos.completados.sum(:monto).to_f
+  end
+
+  def saldo_pendiente
+    monto_total - monto_pagado
+  end
+
+  def pagado_completamente?
+    pagado && saldo_pendiente <= 0
+  end
+
+  def tiene_pagos_pendientes?
+    !pagado || saldo_pendiente > 0
+  end
+
+  def puede_agregar_pago_adicional?
+    completada? && !requiere_pago_adicional
+  end
+
+  def agregar_monto_adicional(monto, concepto)
+    return false unless puede_agregar_pago_adicional?
+    
+    update(
+      requiere_pago_adicional: true,
+      monto_adicional: self.monto_adicional.to_f + monto
+    )
   end
 
   private

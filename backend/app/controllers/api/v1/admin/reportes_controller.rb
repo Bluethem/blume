@@ -251,4 +251,46 @@ class Api::V1::Admin::ReportesController < Api::V1::Admin::BaseController
     Rails.logger.error("Error en exportación: #{e.message}")
     render_error('Error al exportar', status: :internal_server_error)
   end
+
+  # GET /api/v1/admin/reportes/exportar_pdf
+  def exportar_pdf
+    fecha_inicio = params[:fecha_inicio]&.to_date || 1.month.ago.to_date
+    fecha_fin = params[:fecha_fin]&.to_date || Date.today
+    
+    citas = Cita.where(fecha_hora_inicio: fecha_inicio.beginning_of_day..fecha_fin.end_of_day)
+               .includes(:medico, :paciente)
+    
+    begin
+      pdf = PdfGeneratorService.generar_reporte_citas_admin(citas, fecha_inicio, fecha_fin)
+      
+      send_data pdf,
+                filename: "reporte_citas_#{fecha_inicio.strftime('%Y%m%d')}_#{fecha_fin.strftime('%Y%m%d')}.pdf",
+                type: 'application/pdf',
+                disposition: 'attachment'
+    rescue => e
+      Rails.logger.error("Error generando PDF de reporte: #{e.message}")
+      render_error('Error al generar el PDF', status: :internal_server_error)
+    end
+  end
+
+  # GET /api/v1/admin/reportes/exportar_excel
+  def exportar_excel
+    fecha_inicio = params[:fecha_inicio]&.to_date || 1.month.ago.to_date
+    fecha_fin = params[:fecha_fin]&.to_date || Date.today
+    
+    citas = Cita.where(fecha_hora_inicio: fecha_inicio.beginning_of_day..fecha_fin.end_of_day)
+               .includes(:medico, :paciente)
+    
+    begin
+      excel = ExcelGeneratorService.generar_reporte_citas_admin(citas, fecha_inicio, fecha_fin)
+      
+      send_data excel,
+                filename: "reporte_citas_#{fecha_inicio.strftime('%Y%m%d')}_#{fecha_fin.strftime('%Y%m%d')}.xlsx",
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                disposition: 'attachment'
+    rescue => e
+      Rails.logger.error("Error generando Excel de reporte: #{e.message}")
+      render_error('Error al generar el archivo Excel', status: :internal_server_error)
+    end
+  end
 end

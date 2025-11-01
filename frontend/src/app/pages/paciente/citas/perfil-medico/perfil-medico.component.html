@@ -132,7 +132,7 @@
                 <div class="border-t border-gray-200 dark:border-gray-700 pt-4 md:border-0 md:pt-0 md:pl-6">
                   <p class="text-sm font-medium text-secondary-button dark:text-gray-400">Costo de Consulta</p>
                   <p class="text-lg font-semibold text-text-light dark:text-text-dark mt-1">
-                    ${{ medico.costo_consulta }}
+                    S/ {{ medico.costo_consulta }}
                   </p>
                 </div>
               </div>
@@ -266,6 +266,13 @@
             <span class="material-symbols-outlined mr-3">mail</span>
             <span>{{ medico.email }}</span>
           </div>
+          <div class="flex items-start" *ngIf="medico.direccion">
+            <span class="material-symbols-outlined mr-3 mt-0.5">location_on</span>
+            <div class="flex-1">
+              <p class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">Ubicación del Consultorio</p>
+              <p class="text-sm">{{ medico.direccion }}</p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -279,6 +286,9 @@
             </label>
             <input 
               [(ngModel)]="citaForm.fecha"
+              (ngModelChange)="onFechaChange($event)"
+              [min]="fechaMinima"
+              [max]="fechaMaxima"
               name="fecha"
               class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark shadow-sm focus:border-primary focus:ring-primary"
               id="date"
@@ -290,20 +300,38 @@
             <label class="block text-sm font-medium text-secondary-button dark:text-gray-400 mb-1" for="time">
               Hora
             </label>
+            
+            <!-- Loading -->
+            <div *ngIf="loadingHorarios" class="w-full p-3 text-center text-sm text-gray-500">
+              Cargando horarios disponibles...
+            </div>
+
+            <!-- Select de horarios -->
             <select 
+              *ngIf="!loadingHorarios"
               [(ngModel)]="citaForm.hora"
               name="hora"
               class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark shadow-sm focus:border-primary focus:ring-primary"
               id="time"
+              [disabled]="!citaForm.fecha || horariosDisponibles.length === 0"
               required
             >
-              <option value="">Seleccione una hora</option>
-              <option *ngFor="let hora of horariosDisponibles" [value]="hora">{{ hora }}</option>
+              <option value="">{{ citaForm.fecha ? 'Seleccione una hora' : 'Primero seleccione una fecha' }}</option>
+              <option *ngFor="let slot of horariosDisponibles" [value]="formatearHoraSlot(slot.fecha_hora_inicio)">
+                {{ formatearHoraSlot(slot.fecha_hora_inicio) }}
+              </option>
             </select>
+
+            <!-- Mensaje de no disponibilidad -->
+            <p *ngIf="!loadingHorarios && citaForm.fecha && horariosDisponibles.length === 0" 
+               class="mt-2 text-xs text-orange-600 dark:text-orange-400">
+              No hay horarios disponibles para esta fecha
+            </p>
           </div>
           <button 
             type="submit"
-            class="w-full flex justify-center py-3 px-4 rounded-lg shadow-sm text-sm font-bold text-white bg-primary hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
+            [disabled]="!citaForm.fecha || !citaForm.hora || loadingHorarios"
+            class="w-full flex justify-center py-3 px-4 rounded-lg shadow-sm text-sm font-bold text-white bg-primary hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Confirmar Cita
           </button>

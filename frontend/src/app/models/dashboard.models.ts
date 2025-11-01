@@ -44,6 +44,7 @@ export interface Medico {
   anios_experiencia: number;
   costo_consulta: number;
   biografia?: string;
+  direccion?: string; // ✅ Ubicación del consultorio
   especialidad: string;
   especialidad_principal?: {
     id: string;

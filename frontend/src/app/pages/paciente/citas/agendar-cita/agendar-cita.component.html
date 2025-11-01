@@ -100,7 +100,7 @@
                 <p class="text-brand-text-primary dark:text-white text-base font-bold leading-normal">{{ medico.nombre_completo }}</p>
                 <p>{{ medico.especialidad_principal?.nombre || medico.especialidad || 'General' }}</p>
                 <p class="text-brand-text-secondary dark:text-gray-400 text-xs mt-1">{{ medico.anios_experiencia }} años de experiencia</p>
-                <p class="text-primary font-bold text-sm mt-2">${{ medico.costo_consulta }} MXN</p>
+                <p class="text-primary font-bold text-sm mt-2">S/ {{ medico.costo_consulta }}</p>
               </div>
               <button 
                 type="button"
@@ -154,25 +154,48 @@
           </div>
 
           <!-- Horarios Disponibles -->
-          <div *ngIf="!isLoadingHorarios && horariosDisponibles" class="mb-6">
+          <div *ngIf="!isLoadingHorarios && horariosDisponibles" class="mb-6 space-y-4">
             <label class="block text-sm font-medium text-brand-text-primary dark:text-white mb-2">
               Horarios disponibles - {{ horariosDisponibles.dia_semana }}
             </label>
 
-            <div *ngIf="horariosDisponibles.disponible" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-              <button 
-                *ngFor="let slot of horariosDisponibles?.slots" 
-                (click)="seleccionarHorario(slot)"
-                [disabled]="!slot.disponible"
-                [class.selected]="slotSeleccionado?.fecha_hora_inicio === slot.fecha_hora_inicio"
-                class="slot-button">
-                {{ slot.hora_inicio }} - {{ slot.hora_fin }}
-              </button>
+            <!-- Mañana -->
+            <div *ngIf="horariosManana.length > 0">
+              <p class="font-semibold text-gray-600 dark:text-gray-400 mb-2">Mañana</p>
+              <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                <button 
+                  *ngFor="let slot of horariosManana"
+                  (click)="seleccionarHorario(slot)"
+                  [class.bg-primary]="slotSeleccionado?.fecha_hora_inicio === slot.fecha_hora_inicio"
+                  [class.text-white]="slotSeleccionado?.fecha_hora_inicio === slot.fecha_hora_inicio"
+                  [class.border-primary]="slotSeleccionado?.fecha_hora_inicio === slot.fecha_hora_inicio"
+                  class="slot-button">
+                  {{ formatearHora(slot.fecha_hora_inicio) }}
+                </button>
+              </div>
             </div>
 
-            <div *ngIf="!horariosDisponibles.disponible" class="text-center py-8">
+            <!-- Tarde -->
+            <div *ngIf="horariosTarde.length > 0">
+              <p class="font-semibold text-gray-600 dark:text-gray-400 mb-2">Tarde</p>
+              <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                <button 
+                  *ngFor="let slot of horariosTarde"
+                  (click)="seleccionarHorario(slot)"
+                  [class.bg-primary]="slotSeleccionado?.fecha_hora_inicio === slot.fecha_hora_inicio"
+                  [class.text-white]="slotSeleccionado?.fecha_hora_inicio === slot.fecha_hora_inicio"
+                  [class.border-primary]="slotSeleccionado?.fecha_hora_inicio === slot.fecha_hora_inicio"
+                  class="slot-button">
+                  {{ formatearHora(slot.fecha_hora_inicio) }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Sin horarios disponibles -->
+            <div *ngIf="horariosManana.length === 0 && horariosTarde.length === 0" class="text-center py-8">
               <span class="material-symbols-outlined text-5xl text-gray-400 mb-2">event_busy</span>
               <p class="text-gray-500 dark:text-gray-400">No hay horarios disponibles para esta fecha</p>
+              <p class="text-sm text-gray-400 mt-2">Por favor, selecciona otra fecha</p>
             </div>
           </div>
 
@@ -283,7 +306,7 @@
             <!-- Costo -->
             <div class="p-4 bg-primary/10 dark:bg-primary/20 rounded-lg">
               <p class="text-sm text-brand-text-secondary dark:text-gray-400 mb-1">Costo de la consulta</p>
-              <p class="text-2xl font-bold text-primary">${{ medicoSeleccionado?.costo_consulta }} MXN</p>
+              <p class="text-2xl font-bold text-primary">S/ {{ medicoSeleccionado?.costo_consulta }}</p>
             </div>
           </div>
 

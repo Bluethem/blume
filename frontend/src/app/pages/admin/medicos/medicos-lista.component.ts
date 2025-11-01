@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AdminMedicosService, MedicoListItem } from '../../../services/admin-medicos.service';
+import { ExcelService } from '../../../services/excel.service';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
@@ -14,10 +15,12 @@ import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 })
 export class MedicosListaComponent implements OnInit {
   private medicosService = inject(AdminMedicosService);
+  private excelService = inject(ExcelService);
   private router = inject(Router);
   
   medicos: MedicoListItem[] = [];
   loading = true;
+  descargandoExcel = false; // ✅ NUEVO
   showModal = false;
   modalMode: 'create' | 'edit' = 'create';
   selectedMedicoId: string | null = null;
@@ -155,7 +158,26 @@ export class MedicosListaComponent implements OnInit {
   }
   
   exportToExcel(): void {
-    // TODO: Implementar exportación a Excel
-    console.log('Exportar a Excel');
+    this.descargandoExcel = true;
+    
+    // Preparar filtros actuales
+    const filtros: any = {};
+    if (this.searchTerm) {
+      filtros.search = this.searchTerm;
+    }
+    
+    this.excelService.exportarMedicos(filtros).subscribe({
+      next: (blob) => {
+        const fecha = new Date().toISOString().split('T')[0];
+        const nombreArchivo = `Medicos_${fecha}.xlsx`;
+        this.excelService.descargarArchivo(blob, nombreArchivo);
+        this.descargandoExcel = false;
+      },
+      error: (error) => {
+        console.error('Error al exportar médicos:', error);
+        alert('Error al generar el archivo Excel. Por favor, intenta nuevamente.');
+        this.descargandoExcel = false;
+      }
+    });
   }
 }

@@ -18,9 +18,12 @@
           </p>
         </div>
         <button (click)="exportarDatos()"
-                class="flex min-w-[84px] cursor-pointer items-center justify-center gap-2 overflow-hidden rounded-lg bg-primary h-10 px-4 text-white text-sm font-bold leading-normal tracking-wide transition-colors hover:bg-primary/90">
-          <span class="material-symbols-outlined text-lg">download</span>
-          <span class="truncate">Exportar Datos</span>
+                [disabled]="descargandoExcel"
+                class="flex min-w-[84px] items-center justify-center gap-2 overflow-hidden rounded-lg h-10 px-4 text-white text-sm font-bold leading-normal tracking-wide transition-colors"
+                [ngClass]="descargandoExcel ? 'bg-primary/50 cursor-not-allowed' : 'bg-primary cursor-pointer hover:bg-primary/90'">
+          <span class="material-symbols-outlined text-lg" *ngIf="!descargandoExcel">download</span>
+          <span class="material-symbols-outlined text-lg animate-spin" *ngIf="descargandoExcel">progress_activity</span>
+          <span class="truncate">{{ descargandoExcel ? 'Generando...' : 'Exportar Datos' }}</span>
         </button>
       </header>
 

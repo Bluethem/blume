@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MedicoCitasService } from '../../../../services/medico-citas.service';
+import { PdfService } from '../../../../services/pdf.service';
 import { CitaMedico } from '../../../../models/medico-citas.models';
 
 @Component({
@@ -15,9 +16,11 @@ export class DetalleCitaComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private citasService = inject(MedicoCitasService);
+  private pdfService = inject(PdfService);
 
   cita: CitaMedico | null = null;
   loading = false;
+  descargandoPdf = false; // ✅ NUEVO
   citaId: string = '';
 
   ngOnInit(): void {
@@ -143,5 +146,28 @@ export class DetalleCitaComponent implements OnInit {
 
   puedeCancelar(): boolean {
     return this.cita?.estado === 'confirmada' || this.cita?.estado === 'pendiente';
+  }
+
+  // ✅ NUEVO: Descargar PDF de la cita
+  descargarPdf(): void {
+    if (!this.citaId || !this.cita) return;
+
+    this.descargandoPdf = true;
+
+    this.pdfService.descargarResumenCitaMedico(this.citaId).subscribe({
+      next: (blob) => {
+        const fecha = new Date(this.cita!.fecha_hora_inicio);
+        const paciente = this.cita!.paciente?.nombre_completo?.replace(/\s+/g, '_') || 'paciente';
+        const nombreArchivo = `Consulta_${paciente}_${fecha.toISOString().split('T')[0]}.pdf`;
+        
+        this.pdfService.descargarArchivo(blob, nombreArchivo);
+        this.descargandoPdf = false;
+      },
+      error: (error) => {
+        console.error('Error al descargar PDF:', error);
+        alert('Error al generar el PDF. Por favor, intenta nuevamente.');
+        this.descargandoPdf = false;
+      }
+    });
   }
 }

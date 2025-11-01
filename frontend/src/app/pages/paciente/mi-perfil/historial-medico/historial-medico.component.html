@@ -13,9 +13,12 @@
       </div>
       <button 
         (click)="descargarResumen()"
-        class="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-primary text-white gap-2 text-sm font-bold leading-normal tracking-[0.015em] w-full md:w-auto hover:bg-primary/90 transition-colors"
+        [disabled]="descargandoPdf"
+        class="flex min-w-[84px] max-w-[480px] items-center justify-center overflow-hidden rounded-lg h-10 px-4 gap-2 text-sm font-bold leading-normal tracking-[0.015em] w-full md:w-auto transition-colors"
+        [ngClass]="descargandoPdf ? 'bg-primary/50 cursor-not-allowed' : 'bg-primary text-white cursor-pointer hover:bg-primary/90'"
       >
-        <span class="material-symbols-outlined">download</span>
+        <span class="material-symbols-outlined" *ngIf="!descargandoPdf">download</span>
+        <span class="material-symbols-outlined animate-spin" *ngIf="descargandoPdf">progress_activity</span>
         <span class="truncate">Descargar Resumen</span>
       </button>
     </div>
