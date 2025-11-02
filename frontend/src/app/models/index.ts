@@ -117,6 +117,14 @@ export interface Cita {
   motivo_cancelacion?: string;
   cancelada_por_id?: string;
   costo: number;
+  
+  // ✅ CAMPOS DE PAGO
+  pagado: boolean;
+  requiere_pago_adicional?: boolean;
+  monto_adicional?: number;
+  permite_reprogramacion?: boolean;
+  reprogramaciones_count?: number;
+  
   created_at: string;
   updated_at: string;
   

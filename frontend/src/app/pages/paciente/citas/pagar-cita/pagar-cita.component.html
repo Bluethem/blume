@@ -1,0 +1,162 @@
+<!-- Loading -->
+<div *ngIf="cargando" class="flex flex-col justify-center items-center min-h-screen">
+  <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mb-4"></div>
+  <p class="text-text-secondary-light dark:text-text-secondary-dark">Cargando información...</p>
+</div>
+
+<!-- Página de Pago -->
+<div *ngIf="!cargando && cita" class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
+  <div class="max-w-4xl mx-auto">
+    
+    <!-- Header con botón volver -->
+    <div class="mb-6">
+      <button 
+        (click)="cancelar()"
+        class="flex items-center gap-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-primary transition-colors"
+      >
+        <span class="material-symbols-outlined">arrow_back</span>
+        Volver a Mis Citas
+      </button>
+    </div>
+
+    <!-- Título -->
+    <div class="mb-8">
+      <h1 class="text-3xl lg:text-4xl font-black tracking-tighter text-gray-900 dark:text-white flex items-center gap-3">
+        <span class="material-symbols-outlined text-primary text-4xl">credit_card</span>
+        Pagar Consulta
+      </h1>
+      <p class="text-text-secondary-light dark:text-text-secondary-dark mt-2">
+        Completa el pago de tu consulta médica
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Columna Izquierda: Información de la Cita -->
+      <div class="lg:col-span-1">
+        <div class="card p-6 sticky top-6">
+          <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">receipt_long</span>
+            Detalle de la Consulta
+          </h2>
+          
+          <div class="space-y-4">
+            <!-- Médico -->
+            <div>
+              <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Médico</p>
+              <p class="font-semibold">{{ cita.medico?.nombre_profesional || 'N/A' }}</p>
+            </div>
+
+            <!-- Especialidad -->
+            <div>
+              <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Especialidad</p>
+              <p class="font-medium">{{ cita.medico?.especialidad_principal?.nombre || 'General' }}</p>
+            </div>
+
+            <!-- Fecha -->
+            <div>
+              <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Fecha y Hora</p>
+              <p class="font-medium">{{ cita.fecha_hora_inicio | date:'dd/MM/yyyy HH:mm' }}</p>
+            </div>
+
+            <div class="h-px bg-border-light dark:bg-border-dark my-4"></div>
+
+            <!-- Monto Total -->
+            <div class="bg-primary/5 dark:bg-primary/10 rounded-lg p-4">
+              <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-1">Total a Pagar</p>
+              <p class="text-3xl font-bold text-success">S/ {{ costoNumerico | number:'1.2-2' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna Derecha: Métodos de Pago -->
+      <div class="lg:col-span-2">
+        <div class="card p-6">
+          
+          <!-- Métodos de Pago -->
+          <h2 class="text-lg font-bold mb-4">Selecciona un método de pago</h2>
+          
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+            <button
+              *ngFor="let metodo of metodosDisponibles"
+              type="button"
+              (click)="seleccionarMetodo(metodo)"
+              [disabled]="procesando"
+              [class.ring-2]="metodoSeleccionado === metodo"
+              [class.ring-primary]="metodoSeleccionado === metodo"
+              [class.bg-primary/5]="metodoSeleccionado === metodo"
+              class="card p-6 hover:shadow-card-hover hover:border-primary transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex flex-col items-center gap-3"
+            >
+              <span 
+                class="material-symbols-outlined text-5xl"
+                [class.text-primary]="metodoSeleccionado === metodo"
+                [class.text-text-secondary-light]="metodoSeleccionado !== metodo"
+              >
+                {{ getIconoMetodo(metodo) }}
+              </span>
+              <span 
+                class="text-sm font-medium text-center"
+                [class.text-primary]="metodoSeleccionado === metodo"
+                [class.font-bold]="metodoSeleccionado === metodo"
+              >
+                {{ getLabelMetodo(metodo) }}
+              </span>
+            </button>
+          </div>
+
+          <!-- Instrucciones -->
+          <div 
+            *ngIf="metodoSeleccionado" 
+            class="p-4 rounded-lg mb-6"
+            [ngClass]="{
+              'bg-blue-50 dark:bg-blue-900/20': metodoSeleccionado === 'tarjeta',
+              'bg-purple-50 dark:bg-purple-900/20': metodoSeleccionado === 'yape',
+              'bg-pink-50 dark:bg-pink-900/20': metodoSeleccionado === 'plin',
+              'bg-green-50 dark:bg-green-900/20': metodoSeleccionado === 'efectivo',
+              'bg-indigo-50 dark:bg-indigo-900/20': metodoSeleccionado === 'transferencia'
+            }"
+          >
+            <div class="flex items-start gap-3">
+              <span class="material-symbols-outlined text-primary text-xl mt-0.5">info</span>
+              <div class="flex-1">
+                <p class="text-sm font-semibold mb-1">{{ getTituloInstrucciones() }}</p>
+                <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                  {{ getInstrucciones() }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Advertencia si no hay método -->
+          <div *ngIf="!metodoSeleccionado" class="flex items-center gap-2 p-4 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300 mb-6">
+            <span class="material-symbols-outlined text-xl">warning</span>
+            <p class="text-sm">Por favor, seleccione un método de pago para continuar</p>
+          </div>
+
+          <!-- Botones de Acción -->
+          <div class="flex items-center justify-end gap-3 pt-4 border-t border-border-light dark:border-border-dark">
+            <button
+              type="button"
+              (click)="cancelar()"
+              [disabled]="procesando"
+              class="px-6 py-2.5 text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:text-text-primary-light dark:hover:text-text-primary-dark transition-colors disabled:opacity-50"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              (click)="procesarPago()"
+              [disabled]="!metodoSeleccionado || procesando"
+              class="px-8 py-2.5 text-sm font-bold text-white bg-primary hover:bg-primary-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-sm"
+            >
+              <span *ngIf="procesando" class="animate-spin material-symbols-outlined text-base">refresh</span>
+              <span class="material-symbols-outlined text-base" *ngIf="!procesando">{{ getIconoBotonPagar() }}</span>
+              {{ getTextBotonPagar() }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

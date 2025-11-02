@@ -105,7 +105,7 @@ module Api
       end
 
       def medicos_disponibles
-        medicos = Medico.includes(:usuario, :certificaciones, :medico_especialidades, :especialidades, :valoraciones)
+        medicos = ::Medico.includes(:usuario, :certificaciones, :medico_especialidades, :especialidades, :valoraciones)
           .joins(:usuario)
           .where(usuarios: { activo: true })
           .limit(6)

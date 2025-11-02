@@ -3,7 +3,7 @@ class Api::V1::Admin::MedicosController < Api::V1::Admin::BaseController
   
   # GET /api/v1/admin/medicos
   def index
-    @medicos = Medico.includes(usuario: :medico)
+    @medicos = ::Medico.includes(usuario: :medico)
                      .order(created_at: :desc)
     
     # Búsqueda
@@ -74,7 +74,7 @@ class Api::V1::Admin::MedicosController < Api::V1::Admin::BaseController
     if @usuario.save
       # Crear médico
       medico_data = medico_params.except(:usuario_attributes, :especialidades, :certificaciones)
-      @medico = Medico.new(medico_data.merge(usuario: @usuario))
+      @medico = ::Medico.new(medico_data.merge(usuario: @usuario))
       
       if @medico.save
         # Agregar especialidades
@@ -164,7 +164,7 @@ class Api::V1::Admin::MedicosController < Api::V1::Admin::BaseController
 
   # GET /api/v1/admin/medicos/exportar_excel
   def exportar_excel
-    @medicos = Medico.includes(:usuario, :especialidades, :citas)
+    @medicos = ::Medico.includes(:usuario, :especialidades, :citas)
                      .order(created_at: :desc)
     
     # Aplicar mismo filtros que index
@@ -200,7 +200,7 @@ class Api::V1::Admin::MedicosController < Api::V1::Admin::BaseController
   private
   
   def set_medico
-    @medico = Medico.find(params[:id])
+    @medico = ::Medico.find(params[:id])
   rescue ActiveRecord::RecordNotFound
     render_error('Médico no encontrado', status: :not_found)
   end

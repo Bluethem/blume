@@ -1,0 +1,210 @@
+<!-- Título -->
+<div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+  <div>
+    <h1 class="text-3xl lg:text-4xl font-black tracking-tighter text-gray-900 dark:text-white flex items-center gap-3">
+      <span class="material-symbols-outlined text-warning text-4xl">event_repeat</span>
+      Mis Reprogramaciones
+    </h1>
+    <p class="text-text-secondary-light dark:text-text-secondary-dark mt-2">
+      Gestiona tus solicitudes de reprogramación de citas
+    </p>
+  </div>
+</div>
+
+<!-- Filtros -->
+<div class="card p-4 mb-6">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <!-- Filtro Estado -->
+    <div>
+      <label class="block text-sm font-medium mb-2 text-text-secondary-light dark:text-text-secondary-dark">
+        Filtrar por estado
+      </label>
+      <select 
+        [(ngModel)]="filtroEstado" 
+        (change)="aplicarFiltros()"
+        class="w-full h-10 px-3 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-primary focus:border-primary transition-all"
+      >
+        <option value="">Todos</option>
+        <option value="pendiente">Pendientes</option>
+        <option value="aprobada">Aprobadas</option>
+        <option value="rechazada">Rechazadas</option>
+        <option value="cancelada">Canceladas</option>
+      </select>
+    </div>
+
+    <!-- Botón Limpiar -->
+    <div class="flex items-end">
+      <button 
+        (click)="limpiarFiltros()"
+        class="h-10 px-4 rounded-lg border border-border-light dark:border-border-dark hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-2"
+      >
+        <span class="material-symbols-outlined text-base">close</span>
+        Limpiar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Loading -->
+<div *ngIf="cargando" class="flex flex-col justify-center items-center py-20">
+  <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+  <p class="text-text-secondary-light dark:text-text-secondary-dark">Cargando reprogramaciones...</p>
+</div>
+
+<!-- Empty State -->
+<div *ngIf="!cargando && reprogramaciones.length === 0" class="text-center py-20">
+  <span class="material-symbols-outlined text-6xl text-gray-400 mb-4">calendar_today</span>
+  <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+    No tienes reprogramaciones
+  </h3>
+  <p class="text-gray-500 dark:text-gray-400">
+    Tus solicitudes de reprogramación aparecerán aquí
+  </p>
+</div>
+
+<!-- Grid de Reprogramaciones -->
+<div *ngIf="!cargando && reprogramaciones.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  <div *ngFor="let reprog of reprogramaciones" 
+       class="card p-5 hover:shadow-card-hover hover:border-primary transition-all">
+    
+    <!-- Header -->
+    <div class="flex justify-between items-start mb-4">
+      <span class="text-xs font-bold py-1 px-3 rounded-full"
+            [ngClass]="{
+              'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400': reprog.estado === 'pendiente',
+              'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400': reprog.estado === 'aprobada',
+              'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400': reprog.estado === 'rechazada',
+              'bg-gray-100 text-gray-700 dark:bg-gray-900/20 dark:text-gray-400': reprog.estado === 'cancelada'
+            }">
+        {{ reprog.estado_label }}
+      </span>
+      <span class="text-sm text-text-secondary-light dark:text-text-secondary-dark">
+        {{ reprog.created_at | date:'dd/MM/yyyy' }}
+      </span>
+    </div>
+
+    <!-- Cita Original -->
+    <div class="mb-4 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+      <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-2 font-semibold">
+        Cita Original:
+      </p>
+      <div class="space-y-1">
+        <p class="flex items-center gap-2 text-sm">
+          <span class="material-symbols-outlined text-primary text-base">person</span>
+          {{ reprog.cita_original.medico }}
+        </p>
+        <p class="flex items-center gap-2 text-sm text-text-secondary-light dark:text-text-secondary-dark">
+          <span class="material-symbols-outlined text-base">calendar_today</span>
+          {{ reprog.cita_original.fecha | date:'dd/MM/yyyy HH:mm' }}
+        </p>
+      </div>
+    </div>
+
+    <div class="h-px bg-border-light dark:bg-border-dark my-4"></div>
+
+    <!-- Información -->
+    <div class="space-y-3">
+      <!-- Motivo -->
+      <div>
+        <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Motivo</p>
+        <p class="font-medium">{{ reprog.motivo_label }}</p>
+      </div>
+
+      <!-- Descripción -->
+      <div>
+        <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Descripción</p>
+        <p class="text-sm">{{ reprog.descripcion }}</p>
+      </div>
+
+      <!-- Fechas Propuestas -->
+      <div>
+        <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-2">Fechas propuestas</p>
+        <ul class="space-y-2">
+          <li *ngFor="let fecha of reprog.fechas_propuestas" 
+              class="flex items-center justify-between text-sm p-2 rounded bg-gray-50 dark:bg-gray-800/50">
+            <span class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-base">schedule</span>
+              {{ fecha | date:'dd/MM/yyyy HH:mm' }}
+            </span>
+            <span 
+              *ngIf="fecha === reprog.fecha_seleccionada" 
+              class="text-xs font-semibold py-0.5 px-2 rounded-full bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">
+              Seleccionada
+            </span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Reembolso -->
+      <div *ngIf="reprog.requiere_reembolso" 
+           class="flex items-center gap-2 p-2 rounded-lg"
+           [ngClass]="{
+             'bg-blue-50 dark:bg-blue-900/20': !reprog.reembolso_procesado,
+             'bg-green-50 dark:bg-green-900/20': reprog.reembolso_procesado
+           }">
+        <span class="material-symbols-outlined text-base"
+              [ngClass]="{
+                'text-blue-600': !reprog.reembolso_procesado,
+                'text-green-600': reprog.reembolso_procesado
+              }">
+          {{ reprog.reembolso_procesado ? 'check_circle' : 'schedule' }}
+        </span>
+        <span class="text-sm font-medium"
+              [ngClass]="{
+                'text-blue-700 dark:text-blue-400': !reprog.reembolso_procesado,
+                'text-green-700 dark:text-green-400': reprog.reembolso_procesado
+              }">
+          {{ reprog.reembolso_procesado ? 'Reembolsado' : 'Reembolso pendiente' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Footer con acciones -->
+    <div class="mt-4 pt-4 border-t border-border-light dark:border-border-dark flex gap-2">
+      <button 
+        class="flex-1 py-2 text-sm font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors flex items-center justify-center gap-2"
+        (click)="verDetalle(reprog)">
+        <span class="material-symbols-outlined text-base">visibility</span>
+        Ver Detalle
+      </button>
+      <button 
+        *ngIf="reprog.estado === 'pendiente'"
+        class="py-2 px-3 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+        (click)="cancelarReprogramacion(reprog.id); $event.stopPropagation()">
+        <span class="material-symbols-outlined text-base">close</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Paginación -->
+<div *ngIf="totalPaginas > 1" class="flex justify-center mt-8">
+  <nav class="flex items-center gap-2">
+    <button
+      (click)="cambiarPagina(paginaActual - 1)"
+      [disabled]="paginaActual === 1"
+      class="inline-flex items-center justify-center size-9 rounded-md border border-border-light dark:border-border-dark bg-white dark:bg-background-dark text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+    >
+      <span class="material-symbols-outlined text-base">chevron_left</span>
+    </button>
+
+    <button
+      *ngFor="let pagina of getPaginas()"
+      (click)="cambiarPagina(pagina)"
+      [class.border-primary]="pagina === paginaActual"
+      [class.bg-primary]="pagina === paginaActual"
+      [class.text-white]="pagina === paginaActual"
+      class="inline-flex items-center justify-center size-9 rounded-md border border-border-light dark:border-border-dark bg-white dark:bg-background-dark text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+    >
+      {{ pagina }}
+    </button>
+
+    <button
+      (click)="cambiarPagina(paginaActual + 1)"
+      [disabled]="paginaActual === totalPaginas"
+      class="inline-flex items-center justify-center size-9 rounded-md border border-border-light dark:border-border-dark bg-white dark:bg-background-dark text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+    >
+      <span class="material-symbols-outlined text-base">chevron_right</span>
+    </button>
+  </nav>
+</div>

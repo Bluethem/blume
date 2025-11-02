@@ -216,11 +216,31 @@
             </p>
           </div>
         </div>
-        <p class="font-bold text-lg">S/ {{ cita.costo }}</p>
+        <div class="flex flex-col items-end gap-1">
+          <p class="font-bold text-lg">S/ {{ cita.costo }}</p>
+          <!-- Badge de pago -->
+          <span 
+            *ngIf="cita.pagado" 
+            class="text-xs font-semibold py-1 px-3 rounded-full bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400 flex items-center gap-1"
+          >
+            <span class="material-symbols-outlined text-sm">check_circle</span>
+            Pagada
+          </span>
+        </div>
       </div>
 
       <!-- Botones de acción -->
       <div class="mt-4 flex gap-2 justify-end flex-wrap">
+        <!-- Botón de Pago -->
+        <button 
+          *ngIf="!cita.pagado && (cita.estado === 'confirmada' || cita.estado === 'pendiente')"
+          (click)="abrirModalPago(cita)"
+          class="text-sm font-bold text-white bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg transition-colors flex items-center gap-1 shadow-sm"
+        >
+          <span class="material-symbols-outlined text-base">credit_card</span>
+          Pagar Consulta
+        </button>
+
         <button 
           (click)="verDetalle(cita)"
           class="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:text-primary px-3 py-1 rounded-md transition-colors"

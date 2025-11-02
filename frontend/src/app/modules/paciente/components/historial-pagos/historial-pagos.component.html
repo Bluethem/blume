@@ -1,0 +1,277 @@
+<!-- Título -->
+<div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+  <div>
+    <h1 class="text-3xl lg:text-4xl font-black tracking-tighter text-gray-900 dark:text-white flex items-center gap-3">
+      <span class="material-symbols-outlined text-primary text-4xl">credit_card</span>
+      Mis Pagos
+    </h1>
+    <p class="text-text-secondary-light dark:text-text-secondary-dark mt-2">
+      Visualiza y gestiona todos tus pagos realizados
+    </p>
+  </div>
+</div>
+
+<!-- ✅ NUEVO: Pagos Adicionales Pendientes -->
+<div *ngIf="citasConPagosAdicionales.length > 0" class="mb-6">
+  <div class="flex items-center gap-2 mb-4">
+    <span class="material-symbols-outlined text-warning text-2xl">warning</span>
+    <h2 class="text-xl font-bold text-warning">Pagos Adicionales Pendientes</h2>
+  </div>
+  
+  <div class="grid grid-cols-1 gap-4">
+    <div 
+      *ngFor="let cita of citasConPagosAdicionales" 
+      class="card p-5 border-l-4 border-warning hover:shadow-card-hover transition-all"
+    >
+      <div class="flex justify-between items-start gap-4">
+        <!-- Información -->
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="material-symbols-outlined text-primary">medical_services</span>
+            <h3 class="font-bold text-lg">{{ cita.medico?.nombre_profesional }}</h3>
+          </div>
+          
+          <div class="space-y-1 text-sm text-text-secondary-light dark:text-text-secondary-dark mb-3">
+            <p class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-sm">calendar_today</span>
+              {{ cita.fecha_hora_inicio | date:'dd/MM/yyyy HH:mm' }}
+            </p>
+            <p class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-sm">description</span>
+              Consulta completada
+            </p>
+          </div>
+
+          <!-- Desglose de costos -->
+          <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 space-y-2">
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-600 dark:text-gray-400">Costo de consulta:</span>
+              <span class="font-semibold text-green-600">S/ {{ cita.costo | number:'1.2-2' }} ✓</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-gray-600 dark:text-gray-400">Cargo adicional:</span>
+              <span class="font-semibold text-warning">S/ {{ cita.monto_adicional | number:'1.2-2' }}</span>
+            </div>
+            <div class="h-px bg-gray-200 dark:bg-gray-700"></div>
+            <div class="flex justify-between font-bold">
+              <span>Total pendiente:</span>
+              <span class="text-lg text-warning">S/ {{ cita.monto_adicional | number:'1.2-2' }}</span>
+            </div>
+          </div>
+
+          <!-- Concepto del cargo -->
+          <div *ngIf="cita.observaciones" class="mt-3 text-xs text-gray-500 dark:text-gray-400">
+            <span class="font-semibold">Concepto:</span> {{ extraerConceptoAdicional(cita.observaciones) }}
+          </div>
+        </div>
+
+        <!-- Botón de pago -->
+        <div class="flex flex-col items-end gap-2">
+          <button
+            (click)="pagarAdicional(cita)"
+            class="px-6 py-3 bg-warning hover:bg-yellow-600 text-white font-bold rounded-lg transition-colors shadow-sm flex items-center gap-2"
+          >
+            <span class="material-symbols-outlined">credit_card</span>
+            Pagar Ahora
+          </button>
+          <p class="text-xs text-gray-500">Pago requerido</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Filtros -->
+<div class="card p-4 mb-6">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Filtro Estado -->
+    <div>
+      <label class="block text-sm font-medium mb-2 text-text-secondary-light dark:text-text-secondary-dark">
+        Estado
+      </label>
+      <select 
+        [(ngModel)]="filtros.estado" 
+        (change)="aplicarFiltros()"
+        class="w-full h-10 px-3 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-primary focus:border-primary transition-all"
+      >
+        <option value="">Todos</option>
+        <option value="pendiente">Pendientes</option>
+        <option value="completado">Completados</option>
+        <option value="fallido">Fallidos</option>
+      </select>
+    </div>
+
+    <!-- Filtro Método -->
+    <div>
+      <label class="block text-sm font-medium mb-2 text-text-secondary-light dark:text-text-secondary-dark">
+        Método de pago
+      </label>
+      <select 
+        [(ngModel)]="filtros.metodo" 
+        (change)="aplicarFiltros()"
+        class="w-full h-10 px-3 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-primary focus:border-primary transition-all"
+      >
+        <option value="">Todos</option>
+        <option value="tarjeta">Tarjeta</option>
+        <option value="efectivo">Efectivo</option>
+        <option value="yape">Yape</option>
+        <option value="plin">Plin</option>
+        <option value="transferencia">Transferencia</option>
+      </select>
+    </div>
+
+    <!-- Filtro Fecha Desde -->
+    <div>
+      <label class="block text-sm font-medium mb-2 text-text-secondary-light dark:text-text-secondary-dark">
+        Desde
+      </label>
+      <input 
+        type="date" 
+        [(ngModel)]="filtros.fecha_desde" 
+        (change)="aplicarFiltros()"
+        class="w-full h-10 px-3 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-primary focus:border-primary transition-all"
+      >
+    </div>
+
+    <!-- Filtro Fecha Hasta -->
+    <div>
+      <label class="block text-sm font-medium mb-2 text-text-secondary-light dark:text-text-secondary-dark">
+        Hasta
+      </label>
+      <input 
+        type="date" 
+        [(ngModel)]="filtros.fecha_hasta" 
+        (change)="aplicarFiltros()"
+        class="w-full h-10 px-3 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-primary focus:border-primary transition-all"
+      >
+    </div>
+  </div>
+</div>
+
+<!-- Loading -->
+<div *ngIf="cargando" class="flex flex-col justify-center items-center py-20">
+  <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+  <p class="text-text-secondary-light dark:text-text-secondary-dark">Cargando pagos...</p>
+</div>
+
+<!-- Empty State -->
+<div *ngIf="!cargando && pagos.length === 0" class="text-center py-20">
+  <span class="material-symbols-outlined text-6xl text-gray-400 mb-4">receipt_long</span>
+  <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+    No tienes pagos registrados
+  </h3>
+  <p class="text-gray-500 dark:text-gray-400">
+    Cuando realices un pago, aparecerá aquí
+  </p>
+</div>
+
+<!-- Grid de Pagos -->
+<div *ngIf="!cargando && pagos.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  <div *ngFor="let pago of pagos" 
+       class="card p-5 hover:shadow-card-hover hover:border-primary transition-all cursor-pointer"
+       (click)="verDetalle(pago)">
+    
+    <!-- Header -->
+    <div class="flex justify-between items-start mb-4">
+      <span class="text-xs font-bold py-1 px-3 rounded-full"
+            [ngClass]="{
+              'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400': pago.estado === 'completado',
+              'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400': pago.estado === 'pendiente',
+              'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400': pago.estado === 'fallido'
+            }">
+        {{ getLabelEstado(pago.estado) }}
+      </span>
+      <span class="text-sm text-text-secondary-light dark:text-text-secondary-dark">
+        {{ pago.created_at | date:'dd/MM/yyyy' }}
+      </span>
+    </div>
+
+    <!-- Monto -->
+    <div class="flex justify-between items-center mb-4">
+      <div>
+        <h3 class="text-2xl font-bold text-primary">S/ {{ pago.monto | number:'1.2-2' }}</h3>
+        <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">
+          {{ pago.concepto }}
+        </p>
+      </div>
+      <span class="material-symbols-outlined text-primary text-4xl">payments</span>
+    </div>
+
+    <div class="h-px bg-border-light dark:bg-border-dark my-4"></div>
+
+    <!-- Información del médico -->
+    <div class="space-y-3">
+      <div>
+        <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Médico</p>
+        <p class="font-semibold">{{ pago.cita.medico }}</p>
+      </div>
+
+      <div *ngIf="pago.cita.especialidad">
+        <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Especialidad</p>
+        <p class="font-medium">{{ pago.cita.especialidad }}</p>
+      </div>
+
+      <div>
+        <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Método de pago</p>
+        <p class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-base">{{ getIconoMetodo(pago.metodo_pago) }}</span>
+          {{ getLabelMetodo(pago.metodo_pago) }}
+        </p>
+      </div>
+
+      <div *ngIf="pago.transaction_id">
+        <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">ID Transacción</p>
+        <code class="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+          {{ pago.transaction_id }}
+        </code>
+      </div>
+
+      <div *ngIf="pago.fecha_pago">
+        <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">Fecha de pago</p>
+        <p class="text-sm">{{ pago.fecha_pago | date:'dd/MM/yyyy HH:mm' }}</p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="mt-4 pt-4 border-t border-border-light dark:border-border-dark">
+      <button 
+        class="w-full py-2 text-sm font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors flex items-center justify-center gap-2"
+        (click)="verDetalle(pago); $event.stopPropagation()">
+        <span class="material-symbols-outlined text-base">visibility</span>
+        Ver Detalle
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Paginación -->
+<div *ngIf="totalPaginas > 1" class="flex justify-center mt-8">
+  <nav class="flex items-center gap-2">
+    <button
+      (click)="cambiarPagina(paginaActual - 1)"
+      [disabled]="paginaActual === 1"
+      class="inline-flex items-center justify-center size-9 rounded-md border border-border-light dark:border-border-dark bg-white dark:bg-background-dark text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+    >
+      <span class="material-symbols-outlined text-base">chevron_left</span>
+    </button>
+
+    <button
+      *ngFor="let pagina of getPaginas()"
+      (click)="cambiarPagina(pagina)"
+      [class.border-primary]="pagina === paginaActual"
+      [class.bg-primary]="pagina === paginaActual"
+      [class.text-white]="pagina === paginaActual"
+      class="inline-flex items-center justify-center size-9 rounded-md border border-border-light dark:border-border-dark bg-white dark:bg-background-dark text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+    >
+      {{ pagina }}
+    </button>
+
+    <button
+      (click)="cambiarPagina(paginaActual + 1)"
+      [disabled]="paginaActual === totalPaginas"
+      class="inline-flex items-center justify-center size-9 rounded-md border border-border-light dark:border-border-dark bg-white dark:bg-background-dark text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+    >
+      <span class="material-symbols-outlined text-base">chevron_right</span>
+    </button>
+  </nav>
+</div>

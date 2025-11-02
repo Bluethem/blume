@@ -177,6 +177,11 @@
                         class="text-sm font-bold text-primary bg-primary/10 hover:bg-primary/20 px-4 py-2 rounded-lg transition-colors">
                   Ver Diagnóstico
                 </button>
+                <button (click)="agregarCostoAdicional(cita.id)"
+                        class="text-sm font-bold text-white bg-amber-500 hover:bg-amber-600 px-4 py-2 rounded-lg transition-colors flex items-center gap-1">
+                  <span class="material-symbols-outlined text-base">add_circle</span>
+                  Agregar costo adicional
+                </button>
               </ng-container>
 
               <!-- Sin acciones para canceladas -->

@@ -183,6 +183,10 @@ export class MisCitasComponent implements OnInit {
     this.router.navigate(['/medico/citas/detalle', citaId]);
   }
 
+  agregarCostoAdicional(citaId: string): void {
+    this.router.navigate(['/medico/citas', citaId, 'agregar-costo-adicional']);
+  }
+
   getPaginaNumbers(): number[] {
     const pages: number[] = [];
     for (let i = 1; i <= Math.min(this.totalPages, 3); i++) {

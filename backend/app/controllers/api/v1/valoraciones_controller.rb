@@ -141,7 +141,7 @@ module Api
 
       # GET /api/v1/medicos/:medico_id/estadisticas_valoraciones
       def estadisticas
-        @medico = Medico.find(params[:medico_id])
+        @medico = ::Medico.find(params[:medico_id])
         
         render json: {
           success: true,
@@ -156,7 +156,7 @@ module Api
       private
 
       def set_medico
-        @medico = Medico.find(params[:medico_id])
+        @medico = ::Medico.find(params[:medico_id])
       rescue ActiveRecord::RecordNotFound
         render json: {
           success: false,

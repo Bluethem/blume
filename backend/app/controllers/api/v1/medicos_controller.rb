@@ -8,7 +8,7 @@ module Api
 
       # GET /api/v1/medicos
       def index
-        @medicos = Medico.includes(:usuario, :certificaciones, :especialidades)
+        @medicos = ::Medico.includes(:usuario, :certificaciones, :especialidades)
                         .joins(:usuario)
                         .where(usuarios: { activo: true })
 
@@ -54,7 +54,7 @@ module Api
           
           if usuario.save
             # Crear perfil de médico
-            @medico = Medico.new(medico_params.except(:especialidad_ids))
+            @medico = ::Medico.new(medico_params.except(:especialidad_ids))
             @medico.usuario_id = usuario.id
             
             if @medico.save
@@ -120,7 +120,7 @@ module Api
           return
         end
 
-        @medicos = Medico.joins(:usuario)
+        @medicos = ::Medico.joins(:usuario)
                          .left_joins(:especialidades)
                          .where('usuarios.nombre ILIKE ? OR usuarios.apellido ILIKE ? OR medicos.numero_colegiatura ILIKE ? OR especialidades.nombre ILIKE ?',
                                 "%#{query}%", "%#{query}%", "%#{query}%", "%#{query}%")
@@ -137,7 +137,7 @@ module Api
         fecha = params[:fecha]&.to_date || Date.today
         especialidad_id = params[:especialidad_id]
 
-        @medicos = Medico.joins(:usuario)
+        @medicos = ::Medico.joins(:usuario)
                          .where(usuarios: { activo: true })
                          .includes(:horario_medicos, :especialidades)
 
@@ -224,7 +224,7 @@ module Api
       private
 
       def set_medico
-        @medico = Medico.includes(:usuario, :especialidades).find(params[:id])
+        @medico = ::Medico.includes(:usuario, :especialidades).find(params[:id])
       end
 
       def authorize_medico_access

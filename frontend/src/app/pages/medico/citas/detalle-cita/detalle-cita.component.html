@@ -183,6 +183,14 @@
               <span class="truncate">Cancelar Cita</span>
             </button>
 
+            <!-- ✅ NUEVO: Agregar Costo Adicional (solo si está completada) -->
+            <button *ngIf="cita?.estado === 'completada'"
+                    (click)="abrirModalAgregarCosto()"
+                    class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-lg h-11 px-4 bg-warning text-white text-sm font-bold leading-normal tracking-wide gap-2 hover:bg-yellow-600 transition-colors">
+              <span class="material-symbols-outlined">add_circle</span>
+              <span class="truncate">Agregar Costo Adicional</span>
+            </button>
+
             <!-- Descargar Resumen PDF -->
             <button (click)="descargarPdf()"
                     [disabled]="descargandoPdf"

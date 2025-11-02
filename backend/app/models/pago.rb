@@ -7,13 +7,13 @@ class Pago < ApplicationRecord
   has_one :medico, through: :cita
   
   # === Enums ===
-  enum tipo_pago: {
+  enum :tipo_pago, {
     pago_consulta: 0,      # Pago inicial de la consulta
     pago_adicional: 1,     # Pago extra durante la consulta
     reembolso: 2           # Reembolso por cancelación
   }
   
-  enum estado: {
+  enum :estado, {
     pendiente: 0,
     procesando: 1,
     completado: 2,
@@ -22,7 +22,7 @@ class Pago < ApplicationRecord
     cancelado: 5
   }
   
-  enum metodo_pago: {
+  enum :metodo_pago, {
     efectivo: 0,
     tarjeta: 1,
     transferencia: 2,

@@ -87,6 +87,11 @@ export const routes: Routes = [
           .then(m => m.DetalleCitaComponent)
       },
       {
+        path: 'citas/pagar/:id',
+        loadComponent: () => import('./pages/paciente/citas/pagar-cita/pagar-cita.component')
+          .then(m => m.PagarCitaComponent)
+      },
+      {
         path: 'mi-perfil',
         loadComponent: () => import('./pages/paciente/mi-perfil/mi-perfil.component')
           .then(m => m.MiPerfilComponent)
@@ -100,6 +105,16 @@ export const routes: Routes = [
         path: 'notificaciones',
         loadComponent: () => import('./pages/paciente/notificaciones/notificaciones.component')
           .then(m => m.NotificacionesComponent)
+      },
+      {
+        path: 'pagos',
+        loadComponent: () => import('./modules/paciente/components/historial-pagos/historial-pagos.component')
+          .then(m => m.HistorialPagosComponent)
+      },
+      {
+        path: 'reprogramaciones',
+        loadComponent: () => import('./modules/paciente/components/lista-reprogramaciones/lista-reprogramaciones.component')
+          .then(m => m.ListaReprogramacionesComponent)
       }
     ]
   },
@@ -126,6 +141,11 @@ export const routes: Routes = [
         path: 'citas/detalle/:id',
         loadComponent: () => import('./pages/medico/citas/detalle-cita/detalle-cita.component')
           .then(m => m.DetalleCitaComponent)
+      },
+      {
+        path: 'citas/:id/agregar-costo-adicional',
+        loadComponent: () => import('./pages/medico/citas/agregar-costo-adicional/agregar-costo-adicional.component')
+          .then(m => m.AgregarCostoAdicionalComponent)
       },
       {
         path: 'citas/atender/:id',
@@ -166,6 +186,11 @@ export const routes: Routes = [
         path: 'notificaciones',
         loadComponent: () => import('./pages/medico/notificaciones/notificaciones.component')
           .then(m => m.NotificacionesComponent)
+      },
+      {
+        path: 'reprogramaciones',
+        loadComponent: () => import('./modules/paciente/components/lista-reprogramaciones/lista-reprogramaciones.component')
+          .then(m => m.ListaReprogramacionesComponent)
       },
       {
         path: '',

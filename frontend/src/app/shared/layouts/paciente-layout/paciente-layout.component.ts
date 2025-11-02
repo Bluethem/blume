@@ -143,7 +143,7 @@ export class PacienteLayoutComponent implements OnInit {
   cerrarSesion(): void {
     if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
       this.authService.logout();
-      this.router.navigate(['/auth/login']);
+      this.router.navigate(['/login']);
     }
   }
 

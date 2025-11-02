@@ -74,6 +74,18 @@ Rails.application.routes.draw do
           collection do
             get 'estadisticas'
             get 'pendientes'
+            get 'adicionales_pendientes'
+            post 'adicional', to: 'pagos#pagar_adicional'
+          end
+        end
+        
+        # Reprogramaciones
+        resources :reprogramaciones, only: [:index, :show, :create] do
+          member do
+            put 'cancelar'
+          end
+          collection do
+            get 'pendientes'
           end
         end
       end
@@ -130,6 +142,22 @@ Rails.application.routes.draw do
       put 'medico/notificaciones/:id/marcar_leida', to: 'medico_notificaciones#marcar_leida'
       put 'medico/notificaciones/:id/marcar_no_leida', to: 'medico_notificaciones#marcar_no_leida'
       delete 'medico/notificaciones/:id', to: 'medico_notificaciones#destroy'
+
+      # =====================================================
+      # REPROGRAMACIONES MÉDICO
+      # =====================================================
+      namespace :medico do
+        resources :reprogramaciones, only: [:index, :show] do
+          member do
+            put 'aprobar'
+            put 'rechazar'
+          end
+          collection do
+            get 'pendientes'
+            post 'registrar_falta'
+          end
+        end
+      end
 
       # =====================================================
       # MÓDULO ADMINISTRADOR
@@ -297,6 +325,7 @@ Rails.application.routes.draw do
           put 'completar'
           put 'reagendar'
           post 'valorar'
+          post 'agregar_costo_adicional'
         end
       end
 

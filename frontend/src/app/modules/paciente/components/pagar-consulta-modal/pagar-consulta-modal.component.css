@@ -1,0 +1,59 @@
+/* Estilos para que el modal aparezca centrado y flotante */
+
+/* Override de NgBootstrap para centrar el modal */
+::ng-deep .modal-payment {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+::ng-deep .modal-payment .modal-dialog {
+  margin: 1.75rem auto !important;
+  max-width: 800px !important;
+  width: 90% !important;
+}
+
+::ng-deep .modal-payment .modal-content {
+  border: none !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3) !important;
+  overflow: hidden !important;
+  max-height: 90vh !important;
+}
+
+::ng-deep .modal-payment .modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Animación del modal */
+::ng-deep .modal-payment.show .modal-dialog {
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Dark mode */
+:host-context(.dark) ::ng-deep .modal-payment .modal-content {
+  background-color: rgb(31, 41, 55) !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  ::ng-deep .modal-payment .modal-dialog {
+    width: 95% !important;
+    margin: 0.5rem auto !important;
+  }
+  
+  ::ng-deep .modal-payment .modal-content {
+    max-height: 95vh !important;
+  }
+}

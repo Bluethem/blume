@@ -27,7 +27,11 @@ class Notificacion < ApplicationRecord
     pago_confirmado: 4,
     pago_fallido: 5,
     reembolso_procesado: 6,
-    pago_pendiente: 7
+    pago_pendiente: 7,
+    reprogramacion_solicitada: 8,
+    reprogramacion_aprobada: 9,
+    reprogramacion_rechazada: 10,
+    cita_no_asistida: 11
   }, prefix: :tipo
 
   # Asociaciones

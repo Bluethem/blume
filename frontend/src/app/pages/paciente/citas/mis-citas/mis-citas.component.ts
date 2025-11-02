@@ -271,4 +271,11 @@ export class MisCitasComponent implements OnInit {
 
     return paginas;
   }
+
+  abrirModalPago(cita: any): void {
+    // Navegar a la página de pago pasando la cita en el estado
+    this.router.navigate(['/paciente/citas/pagar', cita.id], {
+      state: { cita: cita }
+    });
+  }
 }

@@ -122,6 +122,67 @@ module Api
           })
         end
         
+        # GET /api/v1/paciente/pagos/adicionales_pendientes
+        def adicionales_pendientes
+          citas = @paciente.citas
+                           .where(estado: :completada, requiere_pago_adicional: true)
+                           .includes(:medico)
+                           .order(fecha_hora_inicio: :desc)
+          
+          render_success(citas.map { |c| cita_con_pago_adicional_json(c) })
+        end
+        
+        # POST /api/v1/paciente/pagos/adicional
+        def pagar_adicional
+          cita = @paciente.citas.find(params[:cita_id])
+          
+          unless cita.requiere_pago_adicional?
+            return render_error('La cita no requiere pago adicional')
+          end
+          
+          if cita.monto_adicional <= 0
+            return render_error('El monto adicional debe ser mayor a 0')
+          end
+          
+          # Crear pago adicional
+          pago = Pago.create!(
+            cita: cita,
+            usuario: current_user,
+            tipo_pago: :pago_adicional,
+            metodo_pago: params[:metodo_pago],
+            monto: cita.monto_adicional,
+            estado: :completado,
+            concepto: 'Pago adicional',
+            descripcion: "Pago adicional de la consulta",
+            fecha_pago: Time.current
+          )
+          
+          # Actualizar cita
+          cita.update!(
+            requiere_pago_adicional: false,
+            pagado: true
+          )
+          
+          # Notificar al médico
+          Notificacion.create!(
+            usuario: cita.medico.usuario,
+            cita: cita,
+            tipo: :pago_completado,
+            titulo: 'Pago Adicional Recibido',
+            mensaje: "El paciente #{@paciente.nombre_completo} ha pagado el monto adicional de S/ #{pago.monto}"
+          )
+          
+          render_success(
+            pago_json(pago),
+            message: 'Pago adicional procesado exitosamente'
+          )
+        rescue ActiveRecord::RecordNotFound
+          render_error('Cita no encontrada', status: :not_found)
+        rescue => e
+          Rails.logger.error("Error al procesar pago adicional: #{e.message}")
+          render_error('Error al procesar el pago adicional', status: :internal_server_error)
+        end
+        
         private
         
         def verificar_paciente
@@ -175,6 +236,21 @@ module Api
           end
           
           json
+        end
+        
+        def cita_con_pago_adicional_json(cita)
+          {
+            id: cita.id,
+            fecha_hora_inicio: cita.fecha_hora_inicio.iso8601,
+            costo: cita.costo.to_f,
+            monto_adicional: cita.monto_adicional.to_f,
+            observaciones: cita.observaciones,
+            medico: {
+              id: cita.medico.id,
+              nombre_profesional: cita.medico.nombre_profesional,
+              especialidad: cita.medico.especialidad_principal&.nombre
+            }
+          }
         end
       end
     end

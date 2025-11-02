@@ -78,7 +78,7 @@ module Api
 
       # GET /api/v1/horarios/por_medico/:medico_id
       def por_medico
-        medico = Medico.find(params[:medico_id])
+        medico = ::Medico.find(params[:medico_id])
         @horarios = medico.horarios_disponibles.where(activo: true).order(:dia_semana, :hora_inicio)
 
         render_success(@horarios.map { |h| horario_response(h) })

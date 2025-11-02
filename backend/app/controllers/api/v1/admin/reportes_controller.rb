@@ -148,7 +148,7 @@ class Api::V1::Admin::ReportesController < Api::V1::Admin::BaseController
     fecha_inicio = Date.parse(fecha_inicio.to_s) if fecha_inicio.is_a?(String)
     fecha_fin = Date.parse(fecha_fin.to_s) if fecha_fin.is_a?(String)
 
-    medicos = Medico.joins(:usuario, :citas)
+    medicos = ::Medico.joins(:usuario, :citas)
                     .where(citas: { fecha_hora_inicio: fecha_inicio.beginning_of_day..fecha_fin.end_of_day })
                     .group('medicos.id', 'usuarios.nombre', 'usuarios.apellido')
                     .select('medicos.id, usuarios.nombre, usuarios.apellido, 

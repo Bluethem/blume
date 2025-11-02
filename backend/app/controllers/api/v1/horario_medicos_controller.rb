@@ -156,7 +156,7 @@ module Api
       private
       
       def set_medico
-        @medico = Medico.find(params[:medico_id])
+        @medico = ::Medico.find(params[:medico_id])
       end
       
       def set_horario

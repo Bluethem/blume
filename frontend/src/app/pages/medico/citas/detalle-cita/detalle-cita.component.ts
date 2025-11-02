@@ -170,4 +170,17 @@ export class DetalleCitaComponent implements OnInit {
       }
     });
   }
+
+  // ✅ NUEVO: Abrir nueva pestaña para agregar costo adicional
+  abrirModalAgregarCosto(): void {
+    if (!this.cita) return;
+
+    // Solo permitir si está completada
+    if (this.cita.estado !== 'completada') {
+      return;
+    }
+
+    // Navegar en la misma pestaña
+    this.router.navigate(['/medico/citas', this.cita.id, 'agregar-costo-adicional']);
+  }
 }

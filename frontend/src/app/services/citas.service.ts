@@ -225,4 +225,15 @@ export class CitasService {
   eliminarCita(id: string): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`);
   }
+
+  agregarCostoAdicional(citaId: string, monto: number, concepto: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${citaId}/agregar_costo_adicional`, {
+      monto,
+      concepto
+    });
+  }
+
+  getCitasConPagosPendientes(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/con_pagos_pendientes`);
+  }
 }

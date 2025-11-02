@@ -33,12 +33,21 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_01_060122) do
     t.datetime "fecha_atencion"
     t.datetime "fecha_hora_fin", null: false
     t.datetime "fecha_hora_inicio", null: false
+    t.datetime "fecha_no_asistencia"
     t.uuid "medico_id", null: false
+    t.decimal "monto_adicional", precision: 10, scale: 2, default: "0.0"
     t.text "motivo_cancelacion"
     t.text "motivo_consulta"
+    t.text "motivo_no_asistencia"
+    t.boolean "notificado_no_asistencia", default: false
     t.text "observaciones"
     t.uuid "paciente_id", null: false
+    t.boolean "pagado", default: false, null: false
+    t.boolean "permite_reprogramacion", default: true, null: false
+    t.integer "quien_no_asistio"
     t.text "receta"
+    t.integer "reprogramaciones_count", default: 0, null: false
+    t.boolean "requiere_pago_adicional", default: false, null: false
     t.datetime "updated_at", null: false
     t.index ["cancelada_por_id"], name: "index_citas_on_cancelada_por_id"
     t.index ["estado"], name: "index_citas_on_estado"
@@ -46,6 +55,9 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_01_060122) do
     t.index ["medico_id", "fecha_hora_inicio"], name: "index_citas_on_medico_fecha"
     t.index ["medico_id"], name: "index_citas_on_medico_id"
     t.index ["paciente_id"], name: "index_citas_on_paciente_id"
+    t.index ["pagado"], name: "index_citas_on_pagado"
+    t.index ["quien_no_asistio"], name: "index_citas_on_quien_no_asistio"
+    t.index ["requiere_pago_adicional"], name: "index_citas_on_requiere_pago_adicional"
     t.check_constraint "fecha_hora_fin > fecha_hora_inicio", name: "check_fecha_fin_mayor_inicio"
   end
 
@@ -156,6 +168,62 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_01_060122) do
     t.index ["usuario_id"], name: "index_pacientes_on_usuario_id", unique: true
   end
 
+  create_table "pagos", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "cita_id", null: false
+    t.text "concepto"
+    t.datetime "created_at", null: false
+    t.text "descripcion"
+    t.integer "estado", default: 0, null: false
+    t.datetime "fecha_pago"
+    t.datetime "fecha_reembolso"
+    t.jsonb "metadata", default: {}
+    t.integer "metodo_pago", default: 0, null: false
+    t.decimal "monto", precision: 10, scale: 2, null: false
+    t.uuid "paciente_id", null: false
+    t.string "payment_gateway"
+    t.integer "tipo_pago", default: 0, null: false
+    t.string "transaction_id"
+    t.datetime "updated_at", null: false
+    t.index ["cita_id", "tipo_pago"], name: "index_pagos_on_cita_id_and_tipo_pago"
+    t.index ["cita_id"], name: "index_pagos_on_cita_id"
+    t.index ["estado"], name: "index_pagos_on_estado"
+    t.index ["fecha_pago"], name: "index_pagos_on_fecha_pago"
+    t.index ["paciente_id"], name: "index_pagos_on_paciente_id"
+    t.index ["tipo_pago"], name: "index_pagos_on_tipo_pago"
+    t.index ["transaction_id"], name: "index_pagos_on_transaction_id", unique: true
+  end
+
+  create_table "reprogramaciones", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "aprobado_por_id"
+    t.uuid "cita_nueva_id"
+    t.uuid "cita_original_id", null: false
+    t.datetime "created_at", null: false
+    t.text "descripcion"
+    t.integer "estado", default: 0, null: false
+    t.datetime "fecha_aprobacion"
+    t.datetime "fecha_propuesta_1"
+    t.datetime "fecha_propuesta_2"
+    t.datetime "fecha_propuesta_3"
+    t.datetime "fecha_rechazo"
+    t.datetime "fecha_seleccionada"
+    t.text "justificacion"
+    t.jsonb "metadata", default: {}
+    t.integer "motivo", default: 0, null: false
+    t.text "motivo_rechazo"
+    t.boolean "reembolso_procesado", default: false
+    t.boolean "requiere_reembolso", default: false
+    t.uuid "solicitado_por_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["aprobado_por_id"], name: "index_reprogramaciones_on_aprobado_por_id"
+    t.index ["cita_nueva_id"], name: "index_reprogramaciones_on_cita_nueva_id"
+    t.index ["cita_original_id", "estado"], name: "index_reprogramaciones_on_cita_original_id_and_estado"
+    t.index ["cita_original_id"], name: "index_reprogramaciones_on_cita_original_id"
+    t.index ["created_at"], name: "index_reprogramaciones_on_created_at"
+    t.index ["estado"], name: "index_reprogramaciones_on_estado"
+    t.index ["motivo"], name: "index_reprogramaciones_on_motivo"
+    t.index ["solicitado_por_id"], name: "index_reprogramaciones_on_solicitado_por_id"
+  end
+
   create_table "usuarios", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.boolean "activo", default: true, null: false
     t.string "apellido", null: false
@@ -211,6 +279,12 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_01_060122) do
   add_foreign_key "notificaciones", "citas"
   add_foreign_key "notificaciones", "usuarios"
   add_foreign_key "pacientes", "usuarios"
+  add_foreign_key "pagos", "citas"
+  add_foreign_key "pagos", "pacientes"
+  add_foreign_key "reprogramaciones", "citas", column: "cita_nueva_id"
+  add_foreign_key "reprogramaciones", "citas", column: "cita_original_id"
+  add_foreign_key "reprogramaciones", "usuarios", column: "aprobado_por_id"
+  add_foreign_key "reprogramaciones", "usuarios", column: "solicitado_por_id"
   add_foreign_key "valoraciones", "citas"
   add_foreign_key "valoraciones", "medicos"
   add_foreign_key "valoraciones", "pacientes"

@@ -31,12 +31,20 @@ class Cita < ApplicationRecord
     no_asistio: 4
   }, prefix: :estado
 
+  # ✅ ENUM para quien no asistió
+  enum :quien_no_asistio, {
+    paciente: 0,
+    medico: 1
+  }, prefix: :falta, allow_nil: true
+
   # Asociaciones
   belongs_to :paciente
   belongs_to :medico
   belongs_to :cancelada_por, class_name: 'Usuario', optional: true
   has_many :notificaciones, dependent: :destroy
   has_many :pagos, dependent: :destroy
+  has_many :reprogramaciones_como_original, class_name: 'Reprogramacion', foreign_key: 'cita_original_id', dependent: :destroy
+  has_many :reprogramaciones_como_nueva, class_name: 'Reprogramacion', foreign_key: 'cita_nueva_id', dependent: :nullify
 
   # Validaciones
   validates :paciente_id, presence: true
@@ -233,15 +241,99 @@ class Cita < ApplicationRecord
   end
 
   def agregar_monto_adicional(monto, concepto)
-    return false unless puede_agregar_pago_adicional?
+    return false unless completada?
+    
+    # Agregar concepto a las observaciones
+    concepto_text = "\n[Cargo adicional: S/ #{monto} - #{concepto}]"
+    nuevas_observaciones = (observaciones || "") + concepto_text
     
     update(
       requiere_pago_adicional: true,
-      monto_adicional: self.monto_adicional.to_f + monto
+      monto_adicional: self.monto_adicional.to_f + monto,
+      observaciones: nuevas_observaciones
     )
   end
 
+  # ✅ Métodos de reprogramación
+  def puede_reprogramarse?
+    permite_reprogramacion && 
+      reprogramaciones_count < 3 &&
+      (estado_confirmada? || estado_pendiente? || estado_no_asistio?)
+  end
+
+  def tiene_reprogramacion_pendiente?
+    reprogramaciones_como_original.pendientes.exists?
+  end
+
+  def reprogramacion_activa
+    reprogramaciones_como_original.where(estado: [:pendiente, :aprobada]).first
+  end
+
+  def marcar_falta_paciente!(motivo = nil)
+    transaction do
+      update!(
+        estado: :no_asistio,
+        quien_no_asistio: :paciente,
+        motivo_no_asistencia: motivo || 'Paciente no se presentó a la cita',
+        fecha_no_asistencia: Time.current
+      )
+      
+      # Crear notificación
+      notificar_falta_paciente
+    end
+  end
+
+  def marcar_falta_medico!(motivo = nil)
+    transaction do
+      update!(
+        estado: :no_asistio,
+        quien_no_asistio: :medico,
+        motivo_no_asistencia: motivo || 'Médico no pudo atender la cita',
+        fecha_no_asistencia: Time.current
+      )
+      
+      # Crear notificación
+      notificar_falta_medico
+    end
+  end
+
+  def requiere_reprogramacion_automatica?
+    estado_no_asistio? && pagado? && !tiene_reprogramacion_pendiente?
+  end
+
   private
+
+  def notificar_falta_paciente
+    return if notificado_no_asistencia?
+    
+    Notificacion.create!(
+      usuario: paciente.usuario,
+      cita: self,
+      tipo: :cita_no_asistida,
+      titulo: 'Falta a Cita Registrada',
+      mensaje: "No asististe a tu cita del #{fecha_hora_inicio.strftime('%d/%m/%Y a las %H:%M')}. Si deseas, puedes solicitar una reprogramación."
+    )
+    
+    update_column(:notificado_no_asistencia, true)
+  rescue => e
+    Rails.logger.error("Error al notificar falta de paciente: #{e.message}")
+  end
+
+  def notificar_falta_medico
+    return if notificado_no_asistencia?
+    
+    Notificacion.create!(
+      usuario: paciente.usuario,
+      cita: self,
+      tipo: :cita_cancelada,
+      titulo: 'Cita Cancelada por Médico',
+      mensaje: "Lamentamos informarte que tu cita del #{fecha_hora_inicio.strftime('%d/%m/%Y a las %H:%M')} fue cancelada. Se procederá con la reprogramación automáticamente."
+    )
+    
+    update_column(:notificado_no_asistencia, true)
+  rescue => e
+    Rails.logger.error("Error al notificar falta de médico: #{e.message}")
+  end
 
   def calcular_fecha_fin
     return unless fecha_hora_inicio.present? && medico.present?
