@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PagosService } from '../../../../core/services/pagos.service';
 import { MetodoPago, METODOS_PAGO_LABELS } from '../../../../core/models/pago.model';
+import { CitasStateService } from '../../../../services/citas-state.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -31,7 +32,8 @@ export class PagarCitaComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private pagosService: PagosService
+    private pagosService: PagosService,
+    private citasStateService: CitasStateService
   ) {
     // Obtener la cita desde el estado de navegación
     const navigation = this.router.getCurrentNavigation();
@@ -178,6 +180,7 @@ export class PagarCitaComponent implements OnInit {
         this.procesando = false;
         
         if (response.success) {
+          this.citasStateService.notificarCitaActualizada();
           Swal.fire({
             title: '¡Pago Registrado!',
             text: 'Tu pago ha sido registrado exitosamente',
@@ -185,7 +188,7 @@ export class PagarCitaComponent implements OnInit {
             confirmButtonText: 'Ver mis citas',
             confirmButtonColor: '#B71C1C'
           }).then(() => {
-            this.router.navigate(['/paciente/citas']);
+            this.router.navigate(['/paciente/citas/mis-citas']);
           });
         }
       },

@@ -470,6 +470,10 @@ module Api
           motivo_cancelacion: cita.motivo_cancelacion,
           cancelada_por_id: cita.cancelada_por_id,
           costo: cita.costo,
+          # ✅ Campos de pago
+          pagado: cita.pagado,
+          requiere_pago_adicional: cita.requiere_pago_adicional,
+          monto_adicional: cita.monto_adicional&.to_f,
           created_at: cita.created_at,
           updated_at: cita.updated_at,
           paciente: {

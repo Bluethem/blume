@@ -190,6 +190,9 @@ module Api
           observaciones: cita.observaciones,
           diagnostico: cita.diagnostico,
           costo: cita.costo,
+          pagado: cita.pagado, # ✅ AGREGADO
+          requiere_pago_adicional: cita.requiere_pago_adicional, # ✅ AGREGADO
+          monto_adicional: cita.monto_adicional&.to_f, # ✅ AGREGADO
           puede_cancelar: cita.puede_cancelarse?,
           medico: {
             id: cita.medico.id,
@@ -214,6 +217,9 @@ module Api
           diagnostico: cita.diagnostico,
           motivo_cancelacion: cita.motivo_cancelacion,
           costo: cita.costo,
+          pagado: cita.pagado, # ✅ AGREGADO
+          requiere_pago_adicional: cita.requiere_pago_adicional, # ✅ AGREGADO
+          monto_adicional: cita.monto_adicional&.to_f, # ✅ AGREGADO
           puede_cancelar: cita.puede_cancelarse?,
           medico: {
             id: cita.medico.id,

@@ -47,12 +47,12 @@ module Api
           if cita.pagado?
             return render_error('Esta cita ya ha sido pagada', status: :unprocessable_entity)
           end
-          
-          # Verificar si ya existe un pago completado para esta cita
-          if cita.pago_inicial&.completado?
-            return render_error('Esta cita ya tiene un pago completado', status: :unprocessable_entity)
+
+          # Bloquear pagos duplicados (pendiente o completado) para pago inicial
+          if Pago.where(cita: cita, tipo_pago: :pago_inicial, estado: [:pendiente, :completado]).exists?
+            return render_error('Ya existe un pago registrado para esta cita', status: :unprocessable_entity)
           end
-          
+
           # Verificar si la cita está cancelada
           if cita.estado_cancelada?
             return render_error('No se puede pagar una cita cancelada', status: :unprocessable_entity)
@@ -61,7 +61,7 @@ module Api
           unless cita.puede_confirmarse? || cita.confirmada?
             return render_error('La cita no está disponible para pago', status: :unprocessable_entity)
           end
-          
+
           pago = PaymentService.crear_pago_inicial(
             cita,
             params[:metodo_pago],
@@ -75,6 +75,8 @@ module Api
             
             if resultado[:exitoso]
               cita.update!(pagado: true)
+              cita.reload
+
               render_success(
                 pago_json(resultado[:pago]),
                 message: 'Pago procesado exitosamente'
@@ -167,6 +169,11 @@ module Api
           
           if cita.monto_adicional <= 0
             return render_error('El monto adicional debe ser mayor a 0')
+          end
+
+          # Evitar doble pago adicional si ya se registró uno completado
+          if Pago.where(cita: cita, tipo_pago: :pago_adicional, estado: :completado).exists?
+            return render_error('El pago adicional ya fue registrado', status: :unprocessable_entity)
           end
           
           # Crear pago adicional

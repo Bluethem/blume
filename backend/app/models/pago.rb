@@ -8,7 +8,7 @@ class Pago < ApplicationRecord
   
   # === Enums ===
   enum :tipo_pago, {
-    pago_consulta: 0,      # Pago inicial de la consulta
+    pago_inicial: 0,      # Pago inicial de la consulta
     pago_adicional: 1,     # Pago extra durante la consulta
     reembolso: 2           # Reembolso por cancelación
   }
@@ -40,7 +40,7 @@ class Pago < ApplicationRecord
   validates :transaction_id, uniqueness: true, allow_blank: true
   
   # Validar que no haya múltiples pagos de consulta para la misma cita
-  validate :unico_pago_consulta_por_cita, if: :pago_consulta?
+  validate :unico_pago_consulta_por_cita, if: :pago_inicial?
   
   # === Scopes ===
   scope :completados, -> { where(estado: :completado) }
@@ -129,7 +129,7 @@ class Pago < ApplicationRecord
   
   # Valida que solo haya un pago de consulta por cita
   def unico_pago_consulta_por_cita
-    if Pago.where(cita_id: cita_id, tipo_pago: :pago_consulta)
+    if Pago.where(cita_id: cita_id, tipo_pago: :pago_inicial)
            .where.not(id: id)
            .exists?
       errors.add(:base, 'Ya existe un pago de consulta para esta cita')
@@ -140,7 +140,7 @@ class Pago < ApplicationRecord
   def actualizar_estado_cita
     case estado
     when 'completado'
-      if pago_consulta?
+      if pago_inicial?
         cita.update(pagado: true)
       end
     when 'reembolsado'

@@ -209,7 +209,7 @@ class Cita < ApplicationRecord
 
   # ✅ Métodos de pago
   def pago_inicial
-    pagos.find_by(tipo_pago: :pago_consulta)
+    pagos.find_by(tipo_pago: :pago_inicial)
   end
 
   def pagos_adicionales

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -6,6 +6,8 @@ import { CitasService } from '../../../../services/citas.service';
 import { PagosService } from '../../../../core/services/pagos.service';
 import { Cita } from '../../../../models';
 import Swal from 'sweetalert2'; // ✅ AGREGADO
+import { CitasStateService } from '../../../../services/citas-state.service';
+import { Subscription } from 'rxjs';
 
 type EstadoCita = 'todas' | 'proximas' | 'completadas' | 'canceladas';
 
@@ -16,10 +18,12 @@ type EstadoCita = 'todas' | 'proximas' | 'completadas' | 'canceladas';
   templateUrl: './mis-citas.component.html',
   styleUrl: './mis-citas.component.css'
 })
-export class MisCitasComponent implements OnInit {
+export class MisCitasComponent implements OnInit, OnDestroy {
   private citasService = inject(CitasService);
   private pagosService = inject(PagosService); // ✅ AGREGADO
   private router = inject(Router);
+  private citasStateService = inject(CitasStateService);
+  private citaActualizadaSub?: Subscription;
 
   // Estado
   citas: Cita[] = [];
@@ -48,6 +52,16 @@ export class MisCitasComponent implements OnInit {
   ngOnInit(): void {
     this.cargarCitas();
     this.cargarContadores();
+
+    this.citaActualizadaSub = this.citasStateService.citaActualizada$.subscribe(() => {
+      this.cargarCitas();
+      this.cargarContadores();
+    });
+  }
+
+  ngOnDestroy(): void {
+    // Cancelar la suscripción cuando se destruya el componente
+    this.citaActualizadaSub?.unsubscribe();
   }
 
   cargarCitas(): void {
@@ -56,7 +70,8 @@ export class MisCitasComponent implements OnInit {
 
     const params: any = {
       page: this.currentPage,
-      per_page: this.perPage
+      per_page: this.perPage,
+      _t: Date.now()
     };
 
     // Aplicar filtro de estado
@@ -74,9 +89,22 @@ export class MisCitasComponent implements OnInit {
       params.fecha = this.fechaFiltro;
     }
 
+    console.log('📤 Cargando citas con params:', params);
+
     this.citasService.getMisCitas(params).subscribe({
       next: (response) => {
         if (response.success) {
+          console.log('📋 Citas recibidas:', response.data);
+          
+          response.data.forEach((cita: any, index: number) => {
+            console.log(`Cita ${index + 1}:`, {
+              id: cita.id?.slice(0, 8) + '...',
+              estado: cita.estado,
+              pagado: cita.pagado,  // <-- ESTO ES LO IMPORTANTE
+              medico: cita.medico?.nombre_completo
+            });
+          });
+
           this.citas = response.data;
           
           if (response.meta) {
@@ -89,6 +117,7 @@ export class MisCitasComponent implements OnInit {
         this.loading = false;
       },
       error: (err) => {
+        console.error('❌ Error al cargar citas:', err);
         this.error = 'Error al cargar las citas. Por favor, intente nuevamente.';
         this.loading = false;
       }

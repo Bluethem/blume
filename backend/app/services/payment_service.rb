@@ -13,7 +13,7 @@ class PaymentService
     pago = Pago.create!(
       cita: cita,
       paciente: cita.paciente,
-      tipo_pago: :pago_consulta,
+      tipo_pago: :pago_inicial,
       estado: :pendiente,
       metodo_pago: metodo_pago,
       monto: cita.costo,
