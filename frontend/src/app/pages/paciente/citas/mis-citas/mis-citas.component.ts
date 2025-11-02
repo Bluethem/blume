@@ -3,7 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CitasService } from '../../../../services/citas.service';
+import { PagosService } from '../../../../core/services/pagos.service';
 import { Cita } from '../../../../models';
+import Swal from 'sweetalert2'; // ✅ AGREGADO
 
 type EstadoCita = 'todas' | 'proximas' | 'completadas' | 'canceladas';
 
@@ -16,6 +18,7 @@ type EstadoCita = 'todas' | 'proximas' | 'completadas' | 'canceladas';
 })
 export class MisCitasComponent implements OnInit {
   private citasService = inject(CitasService);
+  private pagosService = inject(PagosService); // ✅ AGREGADO
   private router = inject(Router);
 
   // Estado
@@ -133,25 +136,50 @@ export class MisCitasComponent implements OnInit {
   }
 
   cancelarCita(cita: Cita): void {
-    if (confirm('¿Estás seguro de que deseas cancelar esta cita?')) {
-      this.citasService.cancelarCita(cita.id, 'Cancelada por el paciente').subscribe({
-        next: (response) => {
-          if (response.success) {
-            alert('Cita cancelada exitosamente');
-            this.cargarCitas();
-            this.cargarContadores();
+    Swal.fire({
+      title: '¿Cancelar cita?',
+      text: '¿Estás seguro de que deseas cancelar esta cita?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, cancelar',
+      cancelButtonText: 'No',
+      confirmButtonColor: '#B71C1C',
+      cancelButtonColor: '#6b7280'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.citasService.cancelarCita(cita.id, 'Cancelada por el paciente').subscribe({
+          next: (response) => {
+            if (response.success) {
+              Swal.fire({
+                title: '¡Cancelada!',
+                text: 'La cita ha sido cancelada exitosamente',
+                icon: 'success',
+                confirmButtonColor: '#B71C1C'
+              });
+              this.cargarCitas();
+              this.cargarContadores();
+            }
+          },
+          error: () => {
+            Swal.fire({
+              title: 'Error',
+              text: 'No se pudo cancelar la cita',
+              icon: 'error',
+              confirmButtonColor: '#B71C1C'
+            });
           }
-        },
-        error: () => {
-          alert('Error al cancelar la cita');
-        }
-      });
-    }
+        });
+      }
+    });
   }
 
   unirseVideollamada(cita: Cita): void {
-    // TODO: Implementar lógica de videollamada
-    alert('Funcionalidad de videollamada en desarrollo');
+    Swal.fire({
+      title: 'Próximamente',
+      text: 'La funcionalidad de videollamada estará disponible pronto',
+      icon: 'info',
+      confirmButtonColor: '#B71C1C'
+    });
   }
 
   volverAgendar(cita: Cita): void {
@@ -175,6 +203,83 @@ export class MisCitasComponent implements OnInit {
       this.cargarCitas();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+  }
+
+  // ✅ MÉTODO PARA PAGAR (MEJORADO)
+  abrirModalPago(cita: any): void {
+    // Validación: Verificar si ya está pagada
+    if (cita.pagado) {
+      Swal.fire({
+        title: 'Cita ya pagada',
+        text: 'Esta cita ya ha sido pagada',
+        icon: 'info',
+        confirmButtonColor: '#B71C1C'
+      });
+      return;
+    }
+
+    // Validación: Verificar si está cancelada
+    if (cita.estado === 'cancelada') {
+      Swal.fire({
+        title: 'Cita cancelada',
+        text: 'No puedes pagar una cita cancelada',
+        icon: 'warning',
+        confirmButtonColor: '#B71C1C'
+      });
+      return;
+    }
+
+    // Navegar a la página de pago pasando la cita en el estado
+    this.router.navigate(['/paciente/citas/pagar', cita.id], {
+      state: { cita: cita }
+    });
+  }
+
+  // ✅ MÉTODO PARA VER DETALLE DEL PAGO (MEJORADO)
+  verDetallePago(cita: any): void {
+    // Mostrar loading
+    Swal.fire({
+      title: 'Cargando...',
+      text: 'Obteniendo información del pago',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    // Buscar el pago de la cita
+    this.pagosService.getPagos({ 
+      page: 1, 
+      per_page: 10 
+    }).subscribe({
+      next: (response: any) => {
+        Swal.close();
+        
+        // Buscar el pago que corresponde a esta cita
+        const pago = response.data?.pagos?.find((p: any) => p.cita.id === cita.id);
+        
+        if (pago) {
+          this.router.navigate(['/paciente/pago', pago.id]);
+        } else {
+          Swal.fire({
+            title: 'Sin información',
+            text: 'No se encontró información del pago para esta cita',
+            icon: 'info',
+            confirmButtonColor: '#B71C1C'
+          });
+        }
+      },
+      error: (error) => {
+        Swal.close();
+        console.error('Error al obtener pagos:', error);
+        Swal.fire({
+          title: 'Error',
+          text: 'No se pudo obtener la información del pago',
+          icon: 'error',
+          confirmButtonColor: '#B71C1C'
+        });
+      }
+    });
   }
 
   // Helpers
@@ -270,12 +375,5 @@ export class MisCitasComponent implements OnInit {
     }
 
     return paginas;
-  }
-
-  abrirModalPago(cita: any): void {
-    // Navegar a la página de pago pasando la cita en el estado
-    this.router.navigate(['/paciente/citas/pagar', cita.id], {
-      state: { cita: cita }
-    });
   }
 }

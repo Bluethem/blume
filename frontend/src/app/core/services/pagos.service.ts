@@ -103,4 +103,8 @@ export class PagosService {
       metodo_pago: metodoPago
     });
   }
+
+  obtenerPago(pagoId: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/paciente/pagos/${pagoId}`);
+  }
 }

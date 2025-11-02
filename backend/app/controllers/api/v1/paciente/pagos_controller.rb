@@ -42,6 +42,21 @@ module Api
         # Crear pago para una cita
         def create
           cita = @paciente.citas.find(params[:cita_id])
+
+          # Verificar si la cita ya está pagada
+          if cita.pagado?
+            return render_error('Esta cita ya ha sido pagada', status: :unprocessable_entity)
+          end
+          
+          # Verificar si ya existe un pago completado para esta cita
+          if cita.pago_inicial&.completado?
+            return render_error('Esta cita ya tiene un pago completado', status: :unprocessable_entity)
+          end
+          
+          # Verificar si la cita está cancelada
+          if cita.estado_cancelada?
+            return render_error('No se puede pagar una cita cancelada', status: :unprocessable_entity)
+          end
           
           unless cita.puede_confirmarse? || cita.confirmada?
             return render_error('La cita no está disponible para pago', status: :unprocessable_entity)
@@ -59,6 +74,7 @@ module Api
             resultado = PaymentService.procesar_pago(pago.id)
             
             if resultado[:exitoso]
+              cita.update!(pagado: true)
               render_success(
                 pago_json(resultado[:pago]),
                 message: 'Pago procesado exitosamente'
@@ -76,6 +92,8 @@ module Api
               message: 'Pago registrado. Pendiente de confirmación'
             )
           end
+        rescue ActiveRecord::RecordNotFound
+          render_error('Cita no encontrada', status: :not_found)
         rescue PaymentService::PaymentError => e
           render_error(e.message, status: :unprocessable_entity)
         rescue => e
@@ -134,7 +152,14 @@ module Api
         
         # POST /api/v1/paciente/pagos/adicional
         def pagar_adicional
-          cita = @paciente.citas.find(params[:cita_id])
+          cita_id = params[:cita_id]
+          metodo_pago = params[:metodo_pago]
+          
+          cita = @paciente.citas.find_by(id: cita_id)
+          
+          unless cita
+            return render_error('Cita no encontrada', status: :not_found)
+          end
           
           unless cita.requiere_pago_adicional?
             return render_error('La cita no requiere pago adicional')
@@ -147,9 +172,9 @@ module Api
           # Crear pago adicional
           pago = Pago.create!(
             cita: cita,
-            usuario: current_user,
+            paciente: @paciente,
             tipo_pago: :pago_adicional,
-            metodo_pago: params[:metodo_pago],
+            metodo_pago: metodo_pago,
             monto: cita.monto_adicional,
             estado: :completado,
             concepto: 'Pago adicional',
@@ -167,7 +192,7 @@ module Api
           Notificacion.create!(
             usuario: cita.medico.usuario,
             cita: cita,
-            tipo: :pago_completado,
+            tipo: :pago_confirmado, 
             titulo: 'Pago Adicional Recibido',
             mensaje: "El paciente #{@paciente.nombre_completo} ha pagado el monto adicional de S/ #{pago.monto}"
           )

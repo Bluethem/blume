@@ -243,13 +243,16 @@ class Cita < ApplicationRecord
   def agregar_monto_adicional(monto, concepto)
     return false unless completada?
     
-    # Agregar concepto a las observaciones
+    # Calcular nuevo monto total
+    nuevo_monto = self.monto_adicional.to_f + monto
+    
+    # Agregar concepto a las observaciones (sin duplicar)
     concepto_text = "\n[Cargo adicional: S/ #{monto} - #{concepto}]"
     nuevas_observaciones = (observaciones || "") + concepto_text
     
     update(
       requiere_pago_adicional: true,
-      monto_adicional: self.monto_adicional.to_f + monto,
+      monto_adicional: nuevo_monto,
       observaciones: nuevas_observaciones
     )
   end

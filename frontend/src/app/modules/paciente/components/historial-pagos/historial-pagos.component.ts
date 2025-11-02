@@ -2,6 +2,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { PagosService } from '../../../../core/services/pagos.service';
 import { 
   Pago, 
@@ -16,7 +17,7 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-historial-pagos',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './historial-pagos.component.html',
   styles: []
 })

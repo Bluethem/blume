@@ -1,7 +1,7 @@
 module Api
   module V1
     class CitasController < ApplicationController
-      before_action :set_cita, only: [:show, :update, :destroy, :confirmar, :cancelar, :completar, :reprogramar]
+      before_action :set_cita, only: [:show, :update, :destroy, :confirmar, :cancelar, :completar, :reprogramar, :agregar_costo_adicional]
       before_action :authorize_cita_access, only: [:show, :update, :destroy, :cancelar, :reprogramar, :completar]
 
       # GET /api/v1/citas
@@ -256,6 +256,62 @@ module Api
         render_success(paginated_citas.map { |c| cita_response(c) }, meta: pagination_meta(citas))
       end
 
+      # POST /api/v1/citas/:id/agregar_costo_adicional
+      def agregar_costo_adicional
+        @cita = Cita.find(params[:id])
+        
+        # Validar permisos (solo el médico de la cita o admin)
+        unless current_user.es_administrador? || 
+              (current_user.es_medico? && current_user.medico.id == @cita.medico_id)
+          return render_error('No autorizado', status: :forbidden)
+        end
+        
+        # Validar que la cita esté completada
+        unless @cita.completada?
+          return render_error('Solo se pueden agregar costos adicionales a citas completadas')
+        end
+        
+        # Obtener parámetros
+        monto = params[:monto].to_f
+        concepto = params[:concepto]
+        
+        # Validaciones
+        if monto <= 0
+          return render_error('El monto debe ser mayor a 0')
+        end
+        
+        if concepto.blank?
+          return render_error('Debe especificar el concepto del cargo adicional')
+        end
+        
+        # Agregar el monto adicional
+        if @cita.agregar_monto_adicional(monto, concepto)
+          # Crear notificación para el paciente
+          Notificacion.create!(
+            usuario: @cita.paciente.usuario,
+            cita: @cita,
+            tipo: :pago_adicional,
+            titulo: 'Pago Adicional Requerido',
+            mensaje: "Se ha agregado un cargo adicional de S/ #{monto} por: #{concepto}. " \
+                    "Total pendiente: S/ #{@cita.saldo_pendiente}"
+          )
+          
+          render_success(
+            {
+              cita: cita_response(@cita),
+              monto_adicional: monto,
+              concepto: concepto,
+              total_pendiente: @cita.saldo_pendiente
+            },
+            message: 'Costo adicional agregado exitosamente'
+          )
+        else
+          render_error('No se pudo agregar el costo adicional')
+        end
+      rescue ActiveRecord::RecordNotFound
+        render_error('Cita no encontrada', status: :not_found)
+      end
+
       private
 
       def set_cita
@@ -435,62 +491,6 @@ module Api
             especialidades: cita.medico.especialidades.map { |e| e.nombre }
           }
         }
-      end
-
-      # POST /api/v1/citas/:id/agregar_costo_adicional
-      def agregar_costo_adicional
-        @cita = Cita.find(params[:id])
-        
-        # Validar permisos (solo el médico de la cita o admin)
-        unless current_user.es_administrador? || 
-              (current_user.es_medico? && current_user.medico.id == @cita.medico_id)
-          return render_error('No autorizado', status: :forbidden)
-        end
-        
-        # Validar que la cita esté completada
-        unless @cita.completada?
-          return render_error('Solo se pueden agregar costos adicionales a citas completadas')
-        end
-        
-        # Obtener parámetros
-        monto = params[:monto].to_f
-        concepto = params[:concepto]
-        
-        # Validaciones
-        if monto <= 0
-          return render_error('El monto debe ser mayor a 0')
-        end
-        
-        if concepto.blank?
-          return render_error('Debe especificar el concepto del cargo adicional')
-        end
-        
-        # Agregar el monto adicional
-        if @cita.agregar_monto_adicional(monto, concepto)
-          # Crear notificación para el paciente
-          Notificacion.create!(
-            usuario: @cita.paciente.usuario,
-            cita: @cita,
-            tipo: :pago_adicional,
-            titulo: 'Pago Adicional Requerido',
-            mensaje: "Se ha agregado un cargo adicional de S/ #{monto} por: #{concepto}. " \
-                    "Total pendiente: S/ #{@cita.saldo_pendiente}"
-          )
-          
-          render_success(
-            {
-              cita: cita_response(@cita, detailed: true),
-              monto_adicional: monto,
-              concepto: concepto,
-              total_pendiente: @cita.saldo_pendiente
-            },
-            message: 'Costo adicional agregado exitosamente'
-          )
-        else
-          render_error('No se pudo agregar el costo adicional')
-        end
-      rescue ActiveRecord::RecordNotFound
-        render_error('Cita no encontrada', status: :not_found)
       end
     end
   end

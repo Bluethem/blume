@@ -31,7 +31,8 @@ class Notificacion < ApplicationRecord
     reprogramacion_solicitada: 8,
     reprogramacion_aprobada: 9,
     reprogramacion_rechazada: 10,
-    cita_no_asistida: 11
+    cita_no_asistida: 11,
+    pago_adicional: 12
   }, prefix: :tipo
 
   # Asociaciones

@@ -57,11 +57,25 @@ export class PagarCitaComponent implements OnInit {
     if (this.cita.pagado) {
       Swal.fire({
         title: 'Cita ya pagada',
-        text: 'Esta cita ya ha sido pagada',
+        text: 'Esta cita ya ha sido pagada anteriormente',
         icon: 'info',
         confirmButtonColor: '#B71C1C'
+      }).then(() => {
+        this.router.navigate(['/paciente/citas/mis-citas']);
       });
-      this.router.navigate(['/paciente/citas']);
+      return;
+    }
+
+    if (this.cita.estado === 'cancelada') {
+      Swal.fire({
+        title: 'Cita cancelada',
+        text: 'No puedes pagar una cita cancelada',
+        icon: 'warning',
+        confirmButtonColor: '#B71C1C'
+      }).then(() => {
+        this.router.navigate(['/paciente/citas/mis-citas']);
+      });
+      return;
     }
   }
 
@@ -143,6 +157,16 @@ export class PagarCitaComponent implements OnInit {
 
   procesarPago(): void {
     if (!this.metodoSeleccionado || this.procesando || !this.cita) return;
+
+    if (this.cita.pagado) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Esta cita ya ha sido pagada',
+        icon: 'error',
+        confirmButtonColor: '#B71C1C'
+      });
+      return;
+    }
 
     this.procesando = true;
 

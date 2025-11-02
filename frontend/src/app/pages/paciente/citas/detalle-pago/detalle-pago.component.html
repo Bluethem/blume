@@ -1,0 +1,251 @@
+<!-- Loading -->
+<div *ngIf="cargando" class="flex flex-col justify-center items-center min-h-screen">
+  <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mb-4"></div>
+  <p class="text-text-secondary-light dark:text-text-secondary-dark">Cargando detalle del pago...</p>
+</div>
+
+<!-- Contenido Principal -->
+<div *ngIf="!cargando && pago" class="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
+  <div class="max-w-5xl mx-auto">
+    
+    <!-- Header con botón volver -->
+    <div class="mb-6">
+      <button 
+        (click)="volver()"
+        class="flex items-center gap-2 text-text-secondary-light dark:text-text-secondary-dark hover:text-primary transition-colors"
+      >
+        <span class="material-symbols-outlined">arrow_back</span>
+        Volver al Historial de Pagos
+      </button>
+    </div>
+
+    <!-- Título Principal -->
+    <div class="mb-8">
+      <h1 class="text-3xl lg:text-4xl font-black tracking-tighter text-gray-900 dark:text-white flex items-center gap-3">
+        <span class="material-symbols-outlined text-primary text-4xl">receipt_long</span>
+        Detalle de Pago
+      </h1>
+      <p class="text-text-secondary-light dark:text-text-secondary-dark mt-2">
+        Información completa de tu transacción
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Columna Izquierda: Información Principal -->
+      <div class="lg:col-span-2 space-y-6">
+        
+        <!-- Card: Estado del Pago -->
+        <div class="card p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-bold flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">info</span>
+              Estado del Pago
+            </h2>
+            <span 
+              [class]="estadoClass"
+              class="px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2"
+            >
+              <span class="material-symbols-outlined text-lg">{{ estadoIcono }}</span>
+              {{ estadoLabel }}
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Monto -->
+            <div class="col-span-2 p-4 bg-primary/5 rounded-lg border border-primary/20">
+              <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-1">
+                Monto Total
+              </p>
+              <p class="text-4xl font-black text-primary">
+                S/ {{ pago.monto | number:'1.2-2' }}
+              </p>
+            </div>
+
+            <!-- Tipo de Pago -->
+            <div>
+              <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-2">
+                Tipo de Pago
+              </p>
+              <p class="font-semibold text-gray-900 dark:text-white">
+                {{ tipoLabel }}
+              </p>
+            </div>
+
+            <!-- Método de Pago -->
+            <div>
+              <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-2">
+                Método de Pago
+              </p>
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">{{ metodoIcono }}</span>
+                <span class="font-semibold text-gray-900 dark:text-white">{{ metodoLabel }}</span>
+              </div>
+            </div>
+
+            <!-- Fecha de Pago -->
+            <div>
+              <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-2">
+                Fecha de Pago
+              </p>
+              <p class="font-semibold text-gray-900 dark:text-white">
+                {{ pago.fecha_pago ? (pago.fecha_pago | date:'dd/MM/yyyy HH:mm') : 'Pendiente' }}
+              </p>
+            </div>
+
+            <!-- ID de Transacción -->
+            <div>
+              <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-2">
+                ID de Transacción
+              </p>
+              <p class="font-mono text-sm text-gray-700 dark:text-gray-300">
+                {{ pago.transaction_id || 'N/A' }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card: Información de la Cita -->
+        <div class="card p-6">
+          <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">medical_services</span>
+            Información de la Consulta
+          </h2>
+
+          <div class="space-y-4">
+            <!-- Médico -->
+            <div class="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <span class="material-symbols-outlined text-primary text-2xl">person</span>
+              <div class="flex-1">
+                <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">
+                  Médico
+                </p>
+                <p class="font-bold text-gray-900 dark:text-white">
+                  {{ pago.cita.medico }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Especialidad -->
+            <div class="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <span class="material-symbols-outlined text-primary text-2xl">local_hospital</span>
+              <div class="flex-1">
+                <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">
+                  Especialidad
+                </p>
+                <p class="font-semibold text-gray-900 dark:text-white">
+                  {{ pago.cita.especialidad || 'General' }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Fecha de Cita -->
+            <div class="flex items-start gap-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <span class="material-symbols-outlined text-primary text-2xl">event</span>
+              <div class="flex-1">
+                <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">
+                  Fecha de Consulta
+                </p>
+                <p class="font-semibold text-gray-900 dark:text-white">
+                  {{ pago.cita.fecha | date:'EEEE, dd \'de\' MMMM \'de\' yyyy' }}
+                </p>
+                <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">
+                  {{ pago.cita.fecha | date:'HH:mm' }} hrs
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card: Descripción -->
+        <div class="card p-6" *ngIf="pago.descripcion || pago.concepto">
+          <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">description</span>
+            Detalles Adicionales
+          </h2>
+          
+          <div class="space-y-3">
+            <div *ngIf="pago.concepto">
+              <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">
+                Concepto
+              </p>
+              <p class="text-gray-900 dark:text-white">{{ pago.concepto }}</p>
+            </div>
+            
+            <div *ngIf="pago.descripcion">
+              <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-1">
+                Descripción
+              </p>
+              <p class="text-gray-700 dark:text-gray-300">{{ pago.descripcion }}</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Columna Derecha: Acciones -->
+      <div class="lg:col-span-1">
+        <div class="card p-6 sticky top-6 space-y-4">
+          <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">menu</span>
+            Acciones
+          </h2>
+
+          <!-- Botón Descargar Comprobante -->
+          <button
+            *ngIf="pago.estado === 'completado'"
+            (click)="descargarComprobante()"
+            class="w-full btn btn-primary flex items-center justify-center gap-2"
+          >
+            <span class="material-symbols-outlined">download</span>
+            Descargar Comprobante
+          </button>
+
+          <!-- Botón Enviar por Email -->
+          <button
+            *ngIf="pago.estado === 'completado'"
+            (click)="enviarComprobantePorEmail()"
+            class="w-full btn btn-secondary flex items-center justify-center gap-2"
+          >
+            <span class="material-symbols-outlined">email</span>
+            Enviar por Email
+          </button>
+
+          <!-- Información de Ayuda -->
+          <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div class="flex gap-3">
+              <span class="material-symbols-outlined text-blue-600 dark:text-blue-400">info</span>
+              <div>
+                <p class="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2">
+                  ¿Necesitas ayuda?
+                </p>
+                <p class="text-xs text-blue-700 dark:text-blue-400">
+                  Si tienes alguna duda sobre este pago, contacta a soporte@blume.com
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Timeline de Registro -->
+          <div class="mt-6 pt-6 border-t border-border-light dark:border-border-dark">
+            <p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mb-3 font-semibold">
+              Información de Registro
+            </p>
+            <div class="space-y-2 text-xs text-text-secondary-light dark:text-text-secondary-dark">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm">event</span>
+                <span>Creado: {{ pago.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm">fingerprint</span>
+                <span class="font-mono">ID: {{ pago.id | slice:0:8 }}...</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

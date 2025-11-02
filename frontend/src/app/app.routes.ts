@@ -87,6 +87,11 @@ export const routes: Routes = [
           .then(m => m.DetalleCitaComponent)
       },
       {
+        path: 'pago/:id',
+        loadComponent: () => import('./pages/paciente/citas/detalle-pago/detalle-pago.component')
+          .then(m => m.DetallePagoComponent)
+      },
+      {
         path: 'citas/pagar/:id',
         loadComponent: () => import('./pages/paciente/citas/pagar-cita/pagar-cita.component')
           .then(m => m.PagarCitaComponent)
