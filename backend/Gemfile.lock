@@ -115,6 +115,7 @@ GEM
     et-orbi (1.4.0)
       tzinfo
     ffi (1.17.2-x64-mingw-ucrt)
+    ffi (1.17.2-x86_64-linux-gnu)
     fugit (1.12.1)
       et-orbi (~> 1.4)
       raabro (~> 1.4)
@@ -187,6 +188,8 @@ GEM
     nio4r (2.7.4)
     nokogiri (1.18.10-x64-mingw-ucrt)
       racc (~> 1.4)
+    nokogiri (1.18.10-x86_64-linux-gnu)
+      racc (~> 1.4)
     ostruct (0.6.3)
     parallel (1.27.0)
     parser (3.3.9.0)
@@ -195,6 +198,7 @@ GEM
     pdf-core (0.10.0)
     pg (1.6.2)
     pg (1.6.2-x64-mingw-ucrt)
+    pg (1.6.2-x86_64-linux)
     pp (0.6.3)
       prettyprint
     prawn (2.5.0)
@@ -322,6 +326,7 @@ GEM
     stringio (3.1.7)
     thor (1.4.0)
     thruster (0.1.16)
+    thruster (0.1.16-x86_64-linux)
     timeout (0.4.3)
     tsort (0.2.0)
     ttfunk (1.8.0)
@@ -343,6 +348,7 @@ GEM
 
 PLATFORMS
   x64-mingw-ucrt
+  x86_64-linux
 
 DEPENDENCIES
   bcrypt (~> 3.1.7)
