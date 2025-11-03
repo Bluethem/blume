@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { CitasService } from '../../../../services/citas.service';
 import { PagosService } from '../../../../core/services/pagos.service';
 import { Cita } from '../../../../models';
-import Swal from 'sweetalert2'; // ✅ AGREGADO
+import Swal from 'sweetalert2';
 import { CitasStateService } from '../../../../services/citas-state.service';
 import { Subscription } from 'rxjs';
 
@@ -20,7 +20,7 @@ type EstadoCita = 'todas' | 'proximas' | 'completadas' | 'canceladas';
 })
 export class MisCitasComponent implements OnInit, OnDestroy {
   private citasService = inject(CitasService);
-  private pagosService = inject(PagosService); // ✅ AGREGADO
+  private pagosService = inject(PagosService);
   private router = inject(Router);
   private citasStateService = inject(CitasStateService);
   private citaActualizadaSub?: Subscription;

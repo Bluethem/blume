@@ -2,7 +2,7 @@
 
 ### Diagrama Entidad-Relación
 
-![Diagrama relacional](/database/DiagramaRelacionalPC2.png)
+![Diagrama relacional](/database/DiagramaRelacionalBlume.png)
 
 ### Tablas Detalladas
 
