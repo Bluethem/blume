@@ -13,7 +13,9 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
             'localhost:4200', 
             'localhost:3000',
             '127.0.0.1:4200',
-            '127.0.0.1:3000'
+            '127.0.0.1:3000',
+            'https://blume-alpha.vercel.app',
+            'https://blume.vercel.app'
     
     # En producción, agrega tu dominio:
     # origins 'https://tudominio.com', 'https://www.tudominio.com'
