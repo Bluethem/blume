@@ -3,6 +3,54 @@ module Api
     class AuthController < ApplicationController
       skip_before_action :authenticate_request!, only: [:login, :register, :forgot_password, :reset_password, :validate_reset_token]
 
+      # POST /api/v1/auth/register
+      def register
+        Rails.logger.info "📥 Params recibidos: #{params.inspect}"
+        
+        ActiveRecord::Base.transaction do
+          # 1. Crear usuario
+          user = Usuario.new(register_params)
+          user.rol = :paciente
+          
+          Rails.logger.info "👤 Usuario a crear: #{user.attributes.inspect}"
+          
+          unless user.save
+            Rails.logger.error "❌ Error al crear usuario: #{user.errors.full_messages}"
+            return render_error('Error al crear usuario', errors: user.errors.full_messages)
+          end
+          
+          # 2. Crear paciente
+          # ✅ SOLUCIÓN: Usar ::Paciente para referenciar el modelo global
+          paciente = ::Paciente.new(paciente_params.merge(usuario_id: user.id))
+          
+          Rails.logger.info "🏥 Paciente a crear: #{paciente.attributes.inspect}"
+          
+          unless paciente.save
+            Rails.logger.error "❌ Error al crear paciente: #{paciente.errors.full_messages}"
+            raise ActiveRecord::Rollback, "Error al crear perfil de paciente: #{paciente.errors.full_messages.join(', ')}"
+          end
+          
+          # 3. Generar token y responder
+          token = JsonWebToken.encode(user_id: user.id)
+          
+          render_success(
+            {
+              token: token,
+              user: user_response(user)
+            },
+            message: 'Registro exitoso',
+            status: :created
+          )
+        end
+      rescue ActiveRecord::Rollback => e
+        Rails.logger.error("Rollback en registro: #{e.message}")
+        render_error("Error en el registro: #{e.message}", status: :unprocessable_entity)
+      rescue => e
+        Rails.logger.error("Error inesperado en registro: #{e.message}")
+        Rails.logger.error(e.backtrace.join("\n"))
+        render_error('Error interno en el registro', status: :internal_server_error)
+      end
+
       # POST /api/v1/auth/login
       def login
         user = Usuario.find_by(email: login_params[:email].downcase)
@@ -24,41 +72,6 @@ module Api
         else
           render_error('Email o contraseña incorrectos', status: :unauthorized)
         end
-      end
-
-      # POST /api/v1/auth/register
-      def register
-        ActiveRecord::Base.transaction do
-          # Crear usuario
-          user = Usuario.new(register_params)
-          user.rol = :paciente
-          
-          if user.save
-            # Crear perfil según el rol
-            profile = create_user_profile(user)
-            
-            if profile&.persisted?
-              token = JsonWebToken.encode(user_id: user.id)
-              
-              render_success(
-                {
-                  token: token,
-                  user: user_response(user)
-                },
-                message: 'Registro exitoso',
-                status: :created
-              )
-            else
-              raise ActiveRecord::Rollback, "Profile creation failed"
-            end
-          else
-            render_error('Error al crear el usuario', errors: user.errors.full_messages)
-          end
-        end
-      rescue => e
-        Rails.logger.error("Registration error: #{e.message}")
-        Rails.logger.error(e.backtrace.join("\n"))
-        render_error('Error en el registro. Intente nuevamente.', status: :internal_server_error)
       end
 
       # GET /api/v1/auth/me
@@ -102,13 +115,8 @@ module Api
         usuario = Usuario.find_by(email: email.downcase.strip)
         
         if usuario
-          # Generar token
           usuario.generate_password_reset_token
           
-          # TODO: Enviar email con el token
-          # UserMailer.password_reset(usuario).deliver_later
-          
-          # Por ahora, imprimir el token en consola para testing
           Rails.logger.info("\n" + "="*80)
           Rails.logger.info("TOKEN DE RESET DE CONTRASEÑA")
           Rails.logger.info("Usuario: #{usuario.email}")
@@ -118,7 +126,6 @@ module Api
           Rails.logger.info("="*80 + "\n")
         end
         
-        # Por seguridad, siempre devolver éxito aunque el email no exista
         render_success(
           nil,
           message: 'Si el correo está registrado, recibirás un enlace de recuperación'
@@ -155,26 +162,21 @@ module Api
         new_password = params[:password]
         password_confirmation = params[:password_confirmation]
         
-        # Validar que los parámetros estén presentes
         if token.blank? || new_password.blank? || password_confirmation.blank?
           return render_error('Todos los campos son requeridos', status: :bad_request)
         end
         
-        # Buscar usuario por token
         usuario = Usuario.find_by(reset_password_token: token)
         
         if usuario.nil?
           return render_error('Token inválido', status: :unprocessable_entity)
         end
         
-        # Verificar que el token no haya expirado
         if usuario.password_reset_token_expired?
           return render_error('El token ha expirado. Solicita uno nuevo.', status: :unprocessable_entity)
         end
         
-        # Actualizar contraseña
         if usuario.update(password: new_password, password_confirmation: password_confirmation)
-          # Limpiar token de reset
           usuario.clear_password_reset_token
           
           render_success(nil, message: 'Contraseña actualizada exitosamente')
@@ -216,6 +218,7 @@ module Api
 
       def paciente_params
         return {} unless params[:paciente].present?
+        
         params.require(:paciente).permit(
           :fecha_nacimiento,
           :genero,
@@ -229,32 +232,13 @@ module Api
 
       def medico_params
         return {} unless params[:medico].present?
+        
         params.require(:medico).permit(
           :numero_colegiatura,
           :anios_experiencia,
           :biografia,
           :costo_consulta
         )
-      end
-
-      def create_user_profile(user)
-        case user.rol
-        when 'paciente'
-          Paciente.create!(
-            paciente_params.merge(usuario_id: user.id)
-          )
-        when 'medico'
-          Medico.create!(
-            medico_params.merge(usuario_id: user.id, anios_experiencia: medico_params[:anios_experiencia] || 0)
-          )
-        else
-          # Para administradores no se crea perfil adicional
-          OpenStruct.new(persisted?: true)
-        end
-      rescue => e
-        Rails.logger.error("Error creating profile: #{e.message}")
-        Rails.logger.error("Backtrace: #{e.backtrace.first(5).join("\n")}")
-        nil
       end
 
       def user_response(user)
@@ -308,7 +292,6 @@ module Api
             }
           end
         when 'administrador'
-          # Los administradores solo tienen información básica de usuario
           response[:admin] = {
             permisos: ['gestionar_usuarios', 'gestionar_medicos', 'gestionar_pacientes', 'ver_reportes']
           }

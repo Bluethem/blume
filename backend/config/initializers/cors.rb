@@ -13,11 +13,11 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
             'localhost:4200', 
             'localhost:3000',
             '127.0.0.1:4200',
-            '127.0.0.1:3000',
-            # En producción - Vercel
-            'https://blume-alpha.vercel.app',
-            'https://blume.vercel.app'  # Por si cambias el nombre
+            '127.0.0.1:3000'
     
+    # En producción, agrega tu dominio:
+    # origins 'https://tudominio.com', 'https://www.tudominio.com'
+
     resource '*',
       headers: :any,
       methods: [:get, :post, :put, :patch, :delete, :options, :head],
@@ -25,3 +25,6 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
       expose: ['Authorization']
   end
 end
+
+# Para producción, considera usar una variable de entorno:
+# origins ENV['ALLOWED_ORIGINS']&.split(',') || 'http://localhost:4200'
